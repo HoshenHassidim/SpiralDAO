@@ -146,6 +146,7 @@ contract Projects {
 
         Offer storage offer = offers[_offerId];
 
+        require(offer.manager != msg.sender, "Offer manager cannot rate their own offer");
         require(!offer.hasVoted[msg.sender], "You have already rated this offer");
         require(offer.isOpenForRating, "Offer is not open for rating");
 
