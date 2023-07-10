@@ -136,6 +136,7 @@ contract Solutions {
     // Function to rate a solution
     function rateSolution(uint256 _solutionId, uint256 _rating) external onlyMember {
         require(solutionCounter >= _solutionId, "Invalid solution ID");
+        require(solutions[_solutionId].creator != msg.sender, "Creator cannot rate their own solution");
         require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING");
         require(solutions[_solutionId].isOpenForRating, "Solution is not open for rating");
         require(
