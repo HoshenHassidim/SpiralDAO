@@ -38,6 +38,7 @@ contract Solutions {
     uint256 constant MAX_RATING = 10; // Maximum possible rating
     uint256 constant MIN_RATING_COUNT = 2; // Minimum count of ratings required
     uint256 constant MIN_RATING_AVERAGE = 7; // Minimum average rating required
+    uint256 constant MIN_TOTAL_RATE_COUNT = 3; // Minimum number ratings required
 
     // Events to log actions happening in the contract
     event SolutionProposed(uint256 solutionId, uint256 problemId, address creator, string name);
@@ -174,7 +175,7 @@ contract Solutions {
         }
 
         // Check if the total ratings meet the requirements
-        return totalRatingsForProblem >= 3;
+        return totalRatingsForProblem >= MIN_TOTAL_RATE_COUNT;
     }
 
     // Function to view the details of a solution
