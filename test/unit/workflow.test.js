@@ -217,7 +217,7 @@ describe("Workflow", function () {
         expect(taskDetails[8]).to.equal(3)
     })
 
-    it("Should have transferred the tokens to the performer, administrator and operator", async function () {
+    it("Should have transferred the tokens to the performer & administrator", async function () {
         const taskDetails = await tasks.getTaskDetails(taskId)
         let performerBalance = await tokenManagement.viewBalance(
             performerAccount.address,
