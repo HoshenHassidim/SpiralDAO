@@ -10,6 +10,7 @@ import "./TokenManagement.sol";
 contract Projects {
     // State variables
     uint256 private offerCounter;
+    uint256 constant MAX_RATING = 10;
 
     // Project structure
     struct Project {
@@ -142,7 +143,7 @@ contract Projects {
     // External function to rate a management offer
     function rateOffer(uint256 _offerId, uint256 _rating) external onlyMember {
         require(_offerId > 0 && _offerId <= offerCounter, "Invalid offer ID");
-        require(_rating >= 1 && _rating <= 10, "Rating must be between 1 and 10");
+        require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING");
 
         Offer storage offer = offers[_offerId];
 
