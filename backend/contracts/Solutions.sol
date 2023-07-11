@@ -34,11 +34,18 @@ contract Solutions {
     // Mapping to keep track of solutions for a specific problem
     mapping(uint256 => uint256[]) private problemToSolutions;
 
+    // A dynamic list of all solution ids
+    uint256[] private allSolutions;
+
     // Constants for the rating system
     uint256 constant MAX_RATING = 10; // Maximum possible rating
     uint256 constant MIN_RATING_COUNT = 2; // Minimum count of ratings required
     uint256 constant MIN_RATING_AVERAGE = 7; // Minimum average rating required
     uint256 constant MIN_TOTAL_RATE_COUNT = 3; // Minimum number ratings required
+
+    uint256 constant SOLUTION_ID_INDEX = 2; // Index where the solution id is held
+    uint256 constant RATING_NUMBER_INDEX = 1; // Index where the number of raters is held
+    uint256 constant TOTAL_RATING_INDEX = 0; // Index where the total rating is held
 
     // Events to log actions happening in the contract
     event SolutionProposed(uint256 solutionId, uint256 problemId, address creator, string name);
@@ -147,9 +154,21 @@ contract Solutions {
 
         // Update the solution rating and rater count
         solutions[_solutionId].ratingSum += _rating;
+        //solutions.allRatings.push(_rating);
         solutions[_solutionId].numberOfRaters++;
         solutions[_solutionId].hasRated[msg.sender] = true;
 
+        // if (solutions[_solutionId].numberOfRaters > 1){
+        //     allRatings[solutions[_solutionId].indexOfArray] = [solutions[_solutionId].ratingSum, solutions[_solutionId].numberOfRaters, solutions[_solutionId].solutionId];
+
+        // }
+        // else {
+        // allRatings.push([solutions[_solutionId].ratingSum, solutions[_solutionId].numberOfRaters, solutions[_solutionId].solutionId]);
+        // solutions[_solutionId].indexOfArray = allRatings.length - 1;
+        // }
+        if (solutions[_solutionId].numberOfRaters > 1){
+            allSolutions.push(_solutionId);
+        }
         // Emit the event
         emit SolutionRated(_solutionId, msg.sender, _rating);
     }
@@ -158,10 +177,15 @@ contract Solutions {
     function canBecomeProject(uint256 _solutionId) external view returns (bool) {
         Solution storage solution = solutions[_solutionId];
 
+        uint256 avgRating = solution.ratingSum / solution.numberOfRaters;
+        
+        // if (avgRating > highestRating) {
+        //     highestRating = avgRating;
+        // }
         // Check if the solution meets the rating requirements
         if (
             solution.numberOfRaters < MIN_RATING_COUNT ||
-            (solution.ratingSum / solution.numberOfRaters) < MIN_RATING_AVERAGE
+            avgRating < MIN_RATING_AVERAGE || _solutionId != findSolutionWithHighestRating()
         ) {
             return false;
         }
@@ -176,6 +200,28 @@ contract Solutions {
 
         // Check if the total ratings meet the requirements
         return totalRatingsForProblem >= MIN_TOTAL_RATE_COUNT;
+    }
+
+    // Function to find the highest rated solution
+    function findSolutionWithHighestRating() private view returns (uint256) {
+        uint256 highestRating = 0;
+        uint256 highestRatingSolutionId;
+
+        // Iterate over the keys in the mapping
+        for (uint256 i = 0; i < allSolutions.length; i++) {
+            uint256 solutionId = allSolutions[i];
+            Solution storage solution = solutions[solutionId];
+            // Calculate the rating for the current solution
+            uint256 rating = solution.ratingSum / solution.numberOfRaters;
+
+            // Update highestRating and highestRatingSolutionId if the current rating is higher
+            if (rating > highestRating) {
+                highestRating = rating;
+                highestRatingSolutionId = solutionId;
+            }
+        }
+
+        return highestRatingSolutionId;
     }
 
     // Function to view the details of a solution
