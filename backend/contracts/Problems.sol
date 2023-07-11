@@ -87,7 +87,7 @@ contract Problems {
 
     // This function allows a member to rate a problem
     function rateProblem(uint _problemId, uint _rating) external onlyMember {
-        require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING.");
+        require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING.");//note check to see if the console prints the value itself. the user will not know the value of MAX_RATING (To solve use string concatination)
 
         Problem storage problem = problems[_problemId];
 
