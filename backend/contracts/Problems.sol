@@ -91,6 +91,7 @@ contract Problems {
 
         Problem storage problem = problems[_problemId];
 
+        require(problem.creator != msg.sender, "Problem proposer cannot rate own problem");
         require(problem.openForRating, "Problem is closed for rating.");
         require(!problem.hasRated[msg.sender], "You have already rated this problem.");
 
