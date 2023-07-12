@@ -11,6 +11,8 @@ contract Projects {
     // State variables
     uint256 private offerCounter;
     uint256 constant MAX_RATING = 10;
+    uint256 constant MIN_NUM_RATERS = 3;
+    uint256 constant MIN_RATING_TO_ASSIGN = 7;
 
     // Project structure
     struct Project {
@@ -171,7 +173,7 @@ contract Projects {
         for (uint256 i = 0; i < projectToOffers[_projectId].length; i++) {
             Offer storage offer = offers[projectToOffers[_projectId][i]];
 
-            if (offer.numberOfRaters >= 3 && offer.isOpenForRating) {
+            if (offer.numberOfRaters >= MIN_NUM_RATERS && offer.isOpenForRating) {
                 uint256 averageRating = offer.ratingSum / offer.numberOfRaters;
 
                 // If the current offer has a better rating, set it as the best
@@ -183,7 +185,7 @@ contract Projects {
         }
 
         // If the best offer's average rating is above 7, assign the project manager
-        if (bestRating > 7) {
+        if (bestRating > MIN_RATING_TO_ASSIGN) {
             project.isOpenForManagementProposals = false;
             projects[_projectId].projectManager = offers[bestOfferId].manager;
         }
