@@ -68,20 +68,26 @@ describe("Workflow", function () {
 
     it("Should propose a solution", async function () {
         const problemId = await problems.getProblemCounter()
-        await solutions.connect(accounts[0]).proposeSolution(problemId, "Solution 1")
+        await solutions.connect(accounts[1]).proposeSolution(problemId, "Solution 1")
         const solutionId = await solutions.getSolutionCounter()
         expect((await solutions.viewSolutionDetails(solutionId))[3]).to.equal("Solution 1")
+    })
+
+    it("Test getter for problem and solution creators", async function () {
+        const Creators = await solutions.getCreators(1)
+        expect(Creators[0]).to.equal(accounts[1].address)
+        expect(Creators[1]).to.equal(accounts[0].address)
     })
 
     it("Should rate the solution", async function () {
         const solutionId = await solutions.getSolutionCounter()
 
-        for (let i = 1; i < 2; i++) {
+        for (let i = 2; i < 3; i++) {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 6)
         }
         expect(await solutions.canBecomeProject(solutionId)).to.be.false
 
-        for (let i = 3; i < 6; i++) {
+        for (let i = 4; i < 7; i++) {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
         }
         expect(await solutions.canBecomeProject(solutionId)).to.be.true
@@ -107,6 +113,15 @@ describe("Workflow", function () {
         expect(offerDetails[1]).to.equal(1)
         expect(offerDetails[2]).to.equal(projectManagerAccount.address)
         expect(offerDetails[5]).to.be.true
+    })
+
+    it("Should have transferred the tokens to the creators", async function () {
+        const Creators = await solutions.getCreators(1)
+        let problemCreatorBalance = await tokenManagement.viewBalance(Creators[1], 1)
+        let solutionCreatorBalance = await tokenManagement.viewBalance(Creators[0], 1)
+
+        expect(problemCreatorBalance).to.equal(10)
+        expect(solutionCreatorBalance).to.equal(10)
     })
 
     it("Should allow members to rate the management offer", async function () {

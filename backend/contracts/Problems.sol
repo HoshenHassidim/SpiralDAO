@@ -87,7 +87,7 @@ contract Problems {
 
     // This function allows a member to rate a problem
     function rateProblem(uint _problemId, uint _rating) external onlyMember {
-        require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING.");//note check to see if the console prints the value itself. the user will not know the value of MAX_RATING (To solve use string concatination)
+        require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING."); //note check to see if the console prints the value itself. the user will not know the value of MAX_RATING (To solve use string concatination)
 
         Problem storage problem = problems[_problemId];
 
@@ -167,5 +167,11 @@ contract Problems {
 
     function isProblemNameTaken(string memory _name) external view returns (bool) {
         return problemNames[_name];
+    }
+
+    // This function allows anyone to get the creator of a problem by its id
+    function getProblemCreator(uint _problemId) external view returns (address) {
+        require(_problemId > 0 && _problemId <= problemCounter, "Invalid problem ID.");
+        return problems[_problemId].creator;
     }
 }
