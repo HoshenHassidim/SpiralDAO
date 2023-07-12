@@ -55,6 +55,10 @@ contract Tasks {
     uint256 private taskCounter; // Counter for task ID
     uint256 private taskOfferCounter; // Counter for task offer ID
     uint256 private MIN_TASK_VALUE = 100; // Minimal task value
+    uint256 constant LEAST_NUM_RATERS = 2;
+    uint256 constant LEAST_RATING_AVERAGE = 7;
+    uint256 constant LEAST_NUM_RATERS = 7;
+    uint256 constant MAX_RATINGS =10;
 
     // Mapping to store tasks
     mapping(uint256 => Task) private tasks;
@@ -63,7 +67,7 @@ contract Tasks {
     mapping(uint256 => uint256[]) private taskToTaskOffer;
 
     // Mapping to store task offers
-    mapping(uint256 => TaskOffer) private taskOffers;
+    mapping(uint56 => TaskOffer) private taskOffers;
 
     // Mapping to prevent task name duplication within a project
     mapping(uint256 => mapping(string => bool)) private existingTaskNamesByProjectID;
@@ -254,7 +258,7 @@ contract Tasks {
         require(taskOffers[_offerId].offeror != msg.sender, "Offeror cannot rate their own offer");
         require(taskOffers[_offerId].isOpenForRating, "Offer is not open for rating");
         require(!taskOffers[_offerId].raters[msg.sender], "Member has already rated this offer");
-        require(_rating >= 1 && _rating <= 10, "Rating must be between 1 and 10");
+        require(_rating >= 1 && _rating <= MAX_RATINGS, "Rating must be between 1 and MAX_RATINGS");
 
         taskOffers[_offerId].ratingSum += _rating;
         taskOffers[_offerId].numberOfRaters++;
@@ -282,12 +286,12 @@ contract Tasks {
             TaskOffer storage offer = taskOffers[offerId];
 
             // Ensure that there are at least two raters for this offer.
-            if (offer.numberOfRaters >= 2) {
+            if (offer.numberOfRaters >= LEAST_NUM_RATERS) {
                 // Calculate the average rating for this offer.
                 uint256 averageRating = offer.ratingSum / offer.numberOfRaters;
 
                 // If the average rating is at least 7 and it is higher than the current highest rating, update the highest rating and corresponding offer ID.
-                if (averageRating >= 7 && averageRating > highestRating) {
+                if (averageRating >= LEAST_RATING_AVERAGE && averageRating > highestRating) {
                     highestRating = averageRating;
                     highestRatedOfferId = offerId;
                 }
@@ -335,7 +339,7 @@ contract Tasks {
             "Member has already rated this offer"
         );
         require(tasks[_taskId].performer != msg.sender, "Performer cannot rate their own task");
-        require(_rating != 0 && _rating <= 10, "Rating must be between 1 to 10");
+        require(_rating != 0 && _rating <= MAX_RATINGS, "Rating must be between 1 to MAX_RATINGS");
 
         verificationRaters[tasks[_taskId].verificationID][msg.sender] = true;
         tasks[_taskId].completionRatingSum += _rating;
@@ -354,9 +358,9 @@ contract Tasks {
             tasks[_taskId].status == TaskStatus.VERIFICATION,
             "Task is not in verification stage"
         );
-        require(tasks[_taskId].numberOfCompletionRaters >= 2, "Not enough ratings");
+        require(tasks[_taskId].numberOfCompletionRaters >= LEAST_NUM_RATERS, "Not enough ratings");
 
-        if (tasks[_taskId].completionRatingSum / tasks[_taskId].numberOfCompletionRaters >= 7) {
+        if (tasks[_taskId].completionRatingSum / tasks[_taskId].numberOfCompletionRaters >= LEAST_NUM_RATERS) {
             tasks[_taskId].status = TaskStatus.VERIFIED;
             address _projectManager = projectsContract.getProjectManager(
                 (tasks[_taskId].projectId)
