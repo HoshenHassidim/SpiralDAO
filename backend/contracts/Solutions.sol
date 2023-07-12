@@ -16,7 +16,7 @@ contract Solutions {
         uint256 ratingSum; // Sum of ratings the solution has received
         uint256 numberOfRaters; // Number of people who rated the solution
         bool isOpenForRating; // Whether the solution is open for rating
-        mapping(address => bool) hasRated; // Mapping to check if a member has already rated
+        mapping(address => uint) oldRating; // Mapping to check if a member has already rated
     }
 
     // Membership contract reference
@@ -147,16 +147,14 @@ contract Solutions {
         require(solutions[_solutionId].creator != msg.sender, "Creator cannot rate their own solution");
         require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING");
         require(solutions[_solutionId].isOpenForRating, "Solution is not open for rating");
-        require(
-            !solutions[_solutionId].hasRated[msg.sender],
-            "You have already rated this solution"
-        );
-
-        // Update the solution rating and rater count
+        
+        if(solutions[_solutionId].oldRating[msg.sender] > 0) {
+           solutions[_solutionId].ratingSum -= solutions[_solutionId].oldRating[msg.sender];
+        } else {
+           solutions[_solutionId].numberOfRaters++;
+        }
+        solutions[_solutionId].oldRating[msg.sender] = _rating;
         solutions[_solutionId].ratingSum += _rating;
-        //solutions.allRatings.push(_rating);
-        solutions[_solutionId].numberOfRaters++;
-        solutions[_solutionId].hasRated[msg.sender] = true;
 
         // if (solutions[_solutionId].numberOfRaters > 1){
         //     allRatings[solutions[_solutionId].indexOfArray] = [solutions[_solutionId].ratingSum, solutions[_solutionId].numberOfRaters, solutions[_solutionId].solutionId];
