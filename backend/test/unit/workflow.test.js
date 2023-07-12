@@ -38,7 +38,7 @@ describe("Workflow", function () {
     })
 
     it("Should register five members", async function () {
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 8; i++) {
             const name = String(i)
             await membership.connect(accounts[i]).registerMember(name)
             expect(await membership.isRegisteredMember(accounts[i].address)).to.be.true
@@ -55,12 +55,12 @@ describe("Workflow", function () {
     it("Should rate the problem", async function () {
         const problemId = await problems.getProblemCounter()
 
-        for (let i = 0; i < 1; i++) {
+        for (let i = 1; i < 2; i++) {
             await problems.connect(accounts[i]).rateProblem(problemId, 6)
         }
         expect(await problems.meetsRatingCriteria(problemId)).to.be.false
 
-        for (let i = 2; i < 4; i++) {
+        for (let i = 3; i < 4; i++) {
             await problems.connect(accounts[i]).rateProblem(problemId, 9)
         }
         expect(await problems.meetsRatingCriteria(problemId)).to.be.true
@@ -76,12 +76,12 @@ describe("Workflow", function () {
     it("Should rate the solution", async function () {
         const solutionId = await solutions.getSolutionCounter()
 
-        for (let i = 0; i < 1; i++) {
+        for (let i = 1; i < 2; i++) {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 6)
         }
         expect(await solutions.canBecomeProject(solutionId)).to.be.false
 
-        for (let i = 2; i < 4; i++) {
+        for (let i = 3; i < 6; i++) {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
         }
         expect(await solutions.canBecomeProject(solutionId)).to.be.true
