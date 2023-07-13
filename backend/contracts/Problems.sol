@@ -15,48 +15,59 @@ contract Problems {
     // The Problem struct defines the structure for each problem
     // Each problem has an id, creator, name, ratingSum, ratingCount, openForRating status, and a mapping of addresses that have rated it
     struct Problem {
-        uint id;
+        uint256 id;
         address creator;
         string name;
-        uint ratingSum;
-        uint ratingCount;
+        uint256 ratingSum;
+        uint256 ratingCount;
         bool openForRating;
-        mapping(address => bool) hasRated;
+        mapping(address => uint256) oldRating;
     }
+    //Errors 
+    error onlyRegisteredMember();
+    error nameRequired();
+    error nameExists();
+    error invalidProblemID();
+    error onlyCreatorCanCancel();
+    error problemAlreadyRated();
+    error problemClosedForRating();
+    error ratingOutOfRange();
+    error problemProposerCannotRate();
+    error userNameAlreadyExists();
+    error onlyCreatorCanChangeProblemName();
+    error cannotChangeNameAfterProblemHasBeenRated();
 
     // This is a counter for the problems raised, serving as the unique identifier for each problem
-    uint256 private problemCounter;
+   uint256 private problemCounter;
 
-    uint256 MAX_RATING = 10;
-    uint256 MIN_RATING_COUNT = 2;
-    uint256 MIN_RATING_AVERAGE = 7;
+   uint256 MAX_RATING = 10;
+   uint256 MIN_RATING_COUNT = 2;
+   uint256 MIN_RATING_AVERAGE = 7;
 
     // This mapping links each problem id to a Problem struct
-    mapping(uint => Problem) private problems;
+    mapping(uint256 => Problem) private problems;
 
     // This mapping helps prevent duplicate problem names
     mapping(string => bool) private problemNames;
 
     // These events are emitted when a new problem is raised, a problem is cancelled, or a problem is rated
-    event NewProblem(uint id, address creator, string name);
-    event ProblemCancelled(uint id);
-    event ProblemRated(uint id, address rater, uint rating);
-    event ProblemChanged(uint id, string name);
+    event NewProblem(uint256 id, address creator, string name);
+    event ProblemCancelled(uint256 id);
+    event ProblemRated(uint256 id, address rater, uint256 rating);
+    event ProblemChanged(uint256 id, string name);
 
     // This modifier ensures that only registered members can raise, cancel or rate a problem
     modifier onlyMember() {
-        require(
-            membershipContract.isRegisteredMember(msg.sender),
-            "Only registered members can perform this action"
-        );
+        if(!membershipContract.isRegisteredMember(msg.sender)) {
+            revert onlyRegisteredMember();
+        }
         _;
     }
 
     // This function allows a member to raise a problem
     function raiseProblem(string calldata _name) external onlyMember {
-        require(bytes(_name).length > 0, "Problem name is required and must not be empty.");
-        require(!problemNames[_name], "Problem name already exists, please use a different name.");
-
+        if (bytes(_name).length == 0) revert nameRequired();
+        if(problemNames[_name]) revert nameExists();
         problemCounter++;
 
         Problem storage newProblem = problems[problemCounter];
@@ -73,12 +84,12 @@ contract Problems {
     }
 
     // This function allows the creator of a problem to cancel it
-    function cancelProblem(uint _problemId) external onlyMember {
-        require(_problemId > 0 && _problemId <= problemCounter, "Invalid problem ID.");
+    function cancelProblem(uint256 _problemId) external onlyMember {
+        if(_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID();
         Problem storage problem = problems[_problemId];
-        require(problem.creator == msg.sender, "Only the creator can cancel the problem.");
-        require(problem.ratingCount == 0, "Problem has already been rated");
-        require(problem.openForRating, "Problem is already closed for rating.");
+        if(problem.creator != msg.sender) revert onlyCreatorCanCancel();
+        if(problem.ratingCount != 0) revert problemAlreadyRated();
+        if(!problem.openForRating) revert problemClosedForRating();
 
         problem.openForRating = false;
         // The problem is now closed for rating
@@ -86,25 +97,27 @@ contract Problems {
     }
 
     // This function allows a member to rate a problem
-    function rateProblem(uint _problemId, uint _rating) external onlyMember {
-        require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING."); //note check to see if the console prints the value itself. the user will not know the value of MAX_RATING (To solve use string concatination)
+    function rateProblem(uint256 _problemId, uint256 _rating) external onlyMember {
+        if(_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();//note check to see if the console prints the value itself. the user will not know the value of MAX_RATING (To solve use string concatination)
 
         Problem storage problem = problems[_problemId];
 
-        require(problem.creator != msg.sender, "Problem proposer cannot rate own problem");
-        require(problem.openForRating, "Problem is closed for rating.");
-        require(!problem.hasRated[msg.sender], "You have already rated this problem.");
-
+        if(problem.creator == msg.sender) revert problemProposerCannotRate();
+        if(!problem.openForRating) revert problemClosedForRating();
+        if(problem.oldRating[msg.sender] > 0) {
+           problem.ratingSum -= problem.oldRating[msg.sender];
+        } else {
+           problem.ratingCount++;
+        }
+        problem.oldRating[msg.sender] = _rating;
         problem.ratingSum += _rating;
-        problem.ratingCount++;
-        problem.hasRated[msg.sender] = true;
 
         emit ProblemRated(_problemId, msg.sender, _rating);
     }
 
     // This function checks if a problem meets certain rating criteria
-    function meetsRatingCriteria(uint _problemId) external view returns (bool) {
-        require(_problemId > 0 && _problemId <= problemCounter, "Invalid problem ID.");
+    function meetsRatingCriteria(uint256 _problemId) external view returns (bool) {
+        if(_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID();
         Problem storage problem = problems[_problemId];
 
         // The problem must have at least MIN_RATING_COUNT ratings
@@ -121,15 +134,16 @@ contract Problems {
     }
 
     // Function to change the name of a problem
-    function changeProblemName(uint _problemId, string calldata _newName) external onlyMember {
-        require(_problemId > 0 && _problemId <= problemCounter, "Invalid problem ID.");
-        require(bytes(_newName).length > 0, "New name is required and must not be empty.");
-        require(!problemNames[_newName], "New name already exists, please use a different name.");
+    function changeProblemName(uint256 _problemId, string calldata _newName) external onlyMember {
+     
+        if(_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID();
+        if (bytes(_newName).length == 0) revert nameRequired();
+        if(problemNames[_newName]) revert userNameAlreadyExists();
 
         Problem storage problem = problems[_problemId];
 
-        require(msg.sender == problem.creator, "Only the creator can change the problem name.");
-        require(problem.ratingCount == 0, "Cannot change name after the problem has been rated.");
+        if(msg.sender != problem.creator) revert onlyCreatorCanChangeProblemName();
+        if(problem.ratingCount != 0) revert cannotChangeNameAfterProblemHasBeenRated();
 
         // Delete the old name from the problemNames mapping
         problemNames[problem.name] = false;
@@ -143,10 +157,9 @@ contract Problems {
 
     // View function to see details about a problem
     function viewProblemDetails(
-        uint _problemId
-    ) external view returns (uint, address, string memory, uint, uint, bool) {
-        require(_problemId > 0 && _problemId <= problemCounter, "Invalid problem ID.");
-
+        uint256 _problemId
+    ) external view returns (uint256, address, string memory, uint256, uint256, bool) {
+        if(_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID();
         Problem storage problem = problems[_problemId];
 
         // Returns the problem details: id, creator, name, ratingSum, ratingCount, and openForRating status
@@ -161,17 +174,11 @@ contract Problems {
     }
 
     // View functions to get private state variables
-    function getProblemCounter() external view returns (uint) {
+    function getProblemCounter() external view returns (uint256) {
         return problemCounter;
     }
 
     function isProblemNameTaken(string memory _name) external view returns (bool) {
         return problemNames[_name];
-    }
-
-    // This function allows anyone to get the creator of a problem by its id
-    function getProblemCreator(uint _problemId) external view returns (address) {
-        require(_problemId > 0 && _problemId <= problemCounter, "Invalid problem ID.");
-        return problems[_problemId].creator;
     }
 }
