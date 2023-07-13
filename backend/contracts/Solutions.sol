@@ -144,7 +144,10 @@ contract Solutions {
     // Function to rate a solution
     function rateSolution(uint256 _solutionId, uint256 _rating) external onlyMember {
         require(solutionCounter >= _solutionId, "Invalid solution ID");
-        require(solutions[_solutionId].creator != msg.sender, "Creator cannot rate their own solution");
+        require(
+            solutions[_solutionId].creator != msg.sender,
+            "Creator cannot rate their own solution"
+        );
         require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING");
         require(solutions[_solutionId].isOpenForRating, "Solution is not open for rating");
         require(
@@ -166,7 +169,7 @@ contract Solutions {
         // allRatings.push([solutions[_solutionId].ratingSum, solutions[_solutionId].numberOfRaters, solutions[_solutionId].solutionId]);
         // solutions[_solutionId].indexOfArray = allRatings.length - 1;
         // }
-        if (solutions[_solutionId].numberOfRaters > 1){
+        if (solutions[_solutionId].numberOfRaters > 1) {
             allSolutions.push(_solutionId);
         }
         // Emit the event
@@ -178,14 +181,15 @@ contract Solutions {
         Solution storage solution = solutions[_solutionId];
 
         uint256 avgRating = solution.ratingSum / solution.numberOfRaters;
-        
+
         // if (avgRating > highestRating) {
         //     highestRating = avgRating;
         // }
         // Check if the solution meets the rating requirements
         if (
             solution.numberOfRaters < MIN_RATING_COUNT ||
-            avgRating < MIN_RATING_AVERAGE || _solutionId != findSolutionWithHighestRating()
+            avgRating < MIN_RATING_AVERAGE ||
+            _solutionId != findSolutionWithHighestRating()
         ) {
             return false;
         }
@@ -251,5 +255,17 @@ contract Solutions {
 
     function isSolutionNameTaken(string memory _name) external view returns (bool) {
         return solutionNames[_name];
+    }
+
+    // Function to get the creators of a solution and its corresponding problem
+    function getCreators(
+        uint256 _solutionId
+    ) external view returns (address solutionCreator, address problemCreator) {
+        require(_solutionId > 0 && _solutionId <= solutionCounter, "Solution ID is out of range");
+
+        Solution storage solution = solutions[_solutionId];
+        solutionCreator = solution.creator;
+
+        problemCreator = problemsContract.getProblemCreator(solution.problemId);
     }
 }

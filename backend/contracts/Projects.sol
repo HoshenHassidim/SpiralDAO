@@ -81,7 +81,19 @@ contract Projects {
             "Solution does not meet the criteria to become a project"
         );
 
-        tokenManagementContract.newProjectToken(_solutionId, "ProjectToken", "PT"); // Create a new token contract for the project
+        // Retrieve problem and solution creators
+        (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
+            _solutionId
+        );
+
+        // Create a new token contract for the project with problem and solution creators as parameters
+        tokenManagementContract.newProjectToken(
+            _solutionId,
+            "ProjectToken",
+            "PT",
+            problemCreator,
+            solutionCreator
+        );
 
         // Create new project and store it in the mapping
         projects[_solutionId] = Project(_solutionId, true, address(0));

@@ -15,9 +15,17 @@ contract TokenManagement {
     uint256 private INVERSE_PROJECT_MANAGER_SHARE = 10;
     // A constant value representing the DAO token payment ratio
     uint256 private INVERSE_DAO_TOKEN_PAY_RATIO = 10;
+    // A constant value represeting how much project tokens the problem creator will get
+    uint256 private PROJECT_TOKEN_PROBLEM_CREATOR = 10;
+    // A constant value represeting how much DAO tokens the problem creator will get
+    uint256 private DAO_TOKEN_PROBLEM_CREATOR = 10;
+    // A constant value represeting how much project tokens the problem creator will get
+    uint256 private PROJECT_TOKEN_SOLUTION_CREATOR = 10;
+    // A constant value represeting how much DAO tokens the problem creator will get
+    uint256 private DAO_TOKEN_SOLUTION_CREATOR = 10;
 
-    // The constructor sets the admin to the sender, and authorizes the sender
     constructor() {
+        // The constructor sets the admin to the sender, and authorizes the sender
         admin = msg.sender;
         authorizedContracts[msg.sender] = true;
         // Create a new DAO token and assign it to project ID 0
@@ -56,11 +64,20 @@ contract TokenManagement {
     function newProjectToken(
         uint256 projectId,
         string memory name,
-        string memory symbol
+        string memory symbol,
+        address problemCreator,
+        address solutionCreator
     ) external onlyAuthorized {
         require(projectId != 0, "Project ID cannot be zero");
         Tokens newToken = new Tokens(name, symbol, address(this));
         projectTokens[projectId] = newToken;
+        Tokens projectToken = projectTokens[projectId];
+        projectToken.mint(problemCreator, PROJECT_TOKEN_PROBLEM_CREATOR);
+        projectToken.mint(solutionCreator, PROJECT_TOKEN_SOLUTION_CREATOR);
+
+        Tokens Token = projectTokens[0];
+        Token.mint(problemCreator, DAO_TOKEN_PROBLEM_CREATOR);
+        Token.mint(solutionCreator, DAO_TOKEN_SOLUTION_CREATOR);
     }
 
     // Function to complete a task and mint tokens, can only be called by an authorized contract
