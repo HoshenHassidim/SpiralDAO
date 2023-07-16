@@ -27,7 +27,7 @@ contract Projects {
         uint256 ratingSum;
         uint256 numberOfRaters;
         bool isOpenForRating;
-        mapping(address => bool) hasVoted;
+        mapping(address => uint) oldRating;
     }
 
     // Project ID to Project mapping (solutionId is used as projectId)
@@ -160,12 +160,15 @@ contract Projects {
         Offer storage offer = offers[_offerId];
 
         require(offer.manager != msg.sender, "Offer manager cannot rate their own offer");
-        require(!offer.hasVoted[msg.sender], "You have already rated this offer");
         require(offer.isOpenForRating, "Offer is not open for rating");
 
+        if(offer.oldRating[msg.sender] > 0) {
+           offer.ratingSum -= offer.oldRating[msg.sender];
+        } else {
+           offer.numberOfRaters++;
+        }
+        offer.oldRating[msg.sender] = _rating;
         offer.ratingSum += _rating;
-        offer.numberOfRaters++;
-        offer.hasVoted[msg.sender] = true; // Mark the sender as having voted
 
         emit OfferRated(_offerId, msg.sender, _rating); // Emit the event
     }
