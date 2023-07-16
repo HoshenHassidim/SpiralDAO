@@ -17,7 +17,7 @@ export default function GetMember() {
   console.log(data)
     return (
         <div>
-            {data}
+            Welcome {data}
         </div>
     );
 }

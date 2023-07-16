@@ -41,13 +41,13 @@ export default function RegisterMember() {
 
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col items-center gap-2">
         <input type="text" className="text-black" name="username" value={username} onChange={handleChange} />
-      <button className="p-2 bg-red-500 rounded-lg ml-2 hover:bg-red-300" onClick={() => write()}>
+      <button className="p-2 bg-blue-500 rounded-lg ml-2 hover:bg-blue-400" onClick={() => write()}>
         {isLoading ? 'Registering...' : 'Register as a member'}
       </button>
       
-      {data && <GetMember />}
+      <GetMember />
       {/* {data ? data : "HELLO"} */}
       {/* {isSuccess && (
         <div>
