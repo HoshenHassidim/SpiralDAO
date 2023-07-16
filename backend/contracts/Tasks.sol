@@ -32,6 +32,7 @@ contract Tasks {
         TaskStatus status; // Task status, using the TaskStatus enum defined above
         mapping(address => bool) hasProposed; // Mapping to keep track of who has proposed to the task
         uint256 verificationID; // Unique verification ID
+        mapping(address => uint256) oldRating; //Mapping to keep track of user's old rating
     }
 
     // Mapping to keep track of who rated the task
@@ -48,6 +49,7 @@ contract Tasks {
         uint256 ratingSum; // Sum of ratings received for the offer
         uint256 numberOfRaters; // Number of ratings received for the offer
         bool isOpenForRating; // Flag to indicate if the offer is open for rating
+        mapping(address => uint256) oldRating; //Mapping to keep track of old user vote rating
         mapping(address => bool) raters; // Mapping to keep track of who rated the offer
     }
 
@@ -253,14 +255,17 @@ contract Tasks {
         require(tasks[taskOffers[_offerId].taskId].status == TaskStatus.OPEN, "Task is not open");
         require(taskOffers[_offerId].offeror != msg.sender, "Offeror cannot rate their own offer");
         require(taskOffers[_offerId].isOpenForRating, "Offer is not open for rating");
-        require(!taskOffers[_offerId].raters[msg.sender], "Member has already rated this offer");
         require(_rating >= 1 && _rating <= 10, "Rating must be between 1 and 10");
+        if((tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] > 0)) {
+            taskOffers[_offerId].ratingSum -= tasks[taskOffers[_offerId].taskId].oldRating[msg.sender];
+        }
+        else {
+            taskOffers[_offerId].numberOfRaters++;
+            taskOffers[_offerId].raters[msg.sender] = true;
 
+        }
+        tasks[taskOffers[_offerId].taskId].oldRating[msg.sender]  = _rating;
         taskOffers[_offerId].ratingSum += _rating;
-        taskOffers[_offerId].numberOfRaters++;
-
-        taskOffers[_offerId].raters[msg.sender] = true;
-
         emit OfferRated(_offerId, _rating);
     }
 
@@ -330,16 +335,18 @@ contract Tasks {
     // Updates the task's completion rating sum and number of completion raters, and emits a TaskExecutionRated event.
     function rateCompletedTask(uint256 _taskId, uint256 _rating) external validTaskID(_taskId) {
         require(tasks[_taskId].status == TaskStatus.VERIFICATION, "Task is not completed");
-        require(
-            verificationRaters[tasks[_taskId].verificationID][msg.sender] == false,
-            "Member has already rated this offer"
-        );
+    
         require(tasks[_taskId].performer != msg.sender, "Performer cannot rate their own task");
         require(_rating != 0 && _rating <= 10, "Rating must be between 1 to 10");
-
-        verificationRaters[tasks[_taskId].verificationID][msg.sender] = true;
-        tasks[_taskId].completionRatingSum += _rating;
+        if(verificationRaters[tasks[_taskId].verificationID][msg.sender]) {
+         tasks[_taskId].completionRatingSum -=tasks[_taskId].oldRating[msg.sender];
+        }
+        else {
         tasks[_taskId].numberOfCompletionRaters++;
+        verificationRaters[tasks[_taskId].verificationID][msg.sender] = true;
+        }
+        tasks[_taskId].oldRating[msg.sender] = _rating;
+        tasks[_taskId].completionRatingSum += _rating;
 
         // Emit the TaskRated event.
         emit TaskExecutionRated(_taskId, _rating);
