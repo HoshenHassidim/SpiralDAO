@@ -23,6 +23,13 @@ contract TokenManagement {
     uint256 private PROJECT_TOKEN_SOLUTION_CREATOR = 10;
     // A constant value represeting how much DAO tokens the problem creator will get
     uint256 private DAO_TOKEN_SOLUTION_CREATOR = 10;
+    error mustBeAdmin();
+    error mustBeAuthorised();
+    error addressCannotBeZero();
+    error projectIDMustBeGreaterThanZero();
+    error addressesCannotBeZero();
+    error taskValueMustBeGreaterThanZero();
+    error projectIDCannotBeZero();
 
     constructor() {
         // The constructor sets the admin to the sender, and authorizes the sender
@@ -35,28 +42,25 @@ contract TokenManagement {
 
     // Modifier to allow only the admin to perform certain actions
     modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can perform this action");
+        if (msg.sender != admin) revert mustBeAdmin();
         _;
     }
 
     // Modifier to allow only authorized contracts to perform certain actions
     modifier onlyAuthorized() {
-        require(
-            authorizedContracts[msg.sender],
-            "This contract is not authorized to perform this action"
-        );
+        if (!authorizedContracts[msg.sender]) revert mustBeAuthorised();
         _;
     }
 
     // Function to authorize a contract, can only be called by the admin
     function authorizeContract(address contractAddress) external onlyAdmin {
-        require(contractAddress != address(0), "Address cannot be zero");
+        if (contractAddress == address(0)) revert addressCannotBeZero();
         authorizedContracts[contractAddress] = true;
     }
 
     // Function to revoke authorization from a contract, can only be called by the admin
     function revokeContractAuthorization(address contractAddress) external onlyAdmin {
-        require(contractAddress != address(0), "Address cannot be zero");
+        if (contractAddress == address(0)) revert addressCannotBeZero();
         authorizedContracts[contractAddress] = false;
     }
 
@@ -68,7 +72,7 @@ contract TokenManagement {
         address problemCreator,
         address solutionCreator
     ) external onlyAuthorized {
-        require(projectId != 0, "Project ID cannot be zero");
+        if (projectId == 0) revert projectIDMustBeGreaterThanZero();
         Tokens newToken = new Tokens(name, symbol, address(this));
         projectTokens[projectId] = newToken;
         Tokens projectToken = projectTokens[projectId];
@@ -87,9 +91,9 @@ contract TokenManagement {
         uint256 taskValue,
         uint256 projectId
     ) external onlyAuthorized {
-        require(executor != address(0) && manager != address(0), "Addresses cannot be zero");
-        require(taskValue > 0, "Task value must be greater than zero");
-        require(projectId != 0, "Project ID cannot be zero");
+        if (executor == address(0) || manager == address(0)) revert addressesCannotBeZero();
+        if (taskValue <= 0) revert taskValueMustBeGreaterThanZero();
+        if (projectId == 0) revert projectIDCannotBeZero();
 
         uint256 executorPayment = taskValue;
         uint256 managerPayment = (taskValue * INVERSE_PROJECT_MANAGER_SHARE) / 100;
@@ -105,7 +109,7 @@ contract TokenManagement {
 
     // Function to view the balance of an address for a particular project
     function viewBalance(address _address, uint256 _projectId) external view returns (uint256) {
-        require(_address != address(0), "Address cannot be zero");
+        if (_address == address(0)) revert addressCannotBeZero();
 
         return projectTokens[_projectId].balanceOf(_address);
     }
@@ -117,7 +121,7 @@ contract TokenManagement {
 
     // Function to check if an address is authorized
     function isAuthorized(address _address) external view returns (bool) {
-        require(_address != address(0), "Address cannot be zero");
+        if (_address == address(0)) revert addressCannotBeZero();
 
         return authorizedContracts[_address];
     }
