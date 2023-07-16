@@ -7,13 +7,13 @@ import {
 } from "@web3modal/ethereum";
 import { Web3Modal } from "@web3modal/react";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { polygonMumbai } from "wagmi/chains";
+import { fantomTestnet } from "wagmi/chains";
 
 type WagmiProviderType = {
   children: React.ReactNode;
 };
 
-const chains = [polygonMumbai];
+const chains = [fantomTestnet];
 const projectId = process.env.NEXT_PUBLIC_W3C_PID;
 
 const { publicClient } = configureChains(chains, [w3mProvider({ projectId })]);
