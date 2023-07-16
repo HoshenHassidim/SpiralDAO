@@ -22,6 +22,7 @@ contract Problems {
         uint256 ratingCount;
         bool openForRating;
         mapping(address => uint256) oldRating;
+
     }
     //Errors 
     error onlyRegisteredMember();
@@ -104,6 +105,8 @@ contract Problems {
 
         if(problem.creator == msg.sender) revert problemProposerCannotRate();
         if(!problem.openForRating) revert problemClosedForRating();
+
+ 
         if(problem.oldRating[msg.sender] > 0) {
            problem.ratingSum -= problem.oldRating[msg.sender];
         } else {
