@@ -21,7 +21,7 @@ contract Problems {
         uint ratingSum;
         uint ratingCount;
         bool openForRating;
-        mapping(address => bool) hasRated;
+        mapping(address => uint) oldRating;
     }
 
     // This is a counter for the problems raised, serving as the unique identifier for each problem
@@ -93,11 +93,13 @@ contract Problems {
 
         require(problem.creator != msg.sender, "Problem proposer cannot rate own problem");
         require(problem.openForRating, "Problem is closed for rating.");
-        require(!problem.hasRated[msg.sender], "You have already rated this problem.");
-
+        if(problem.oldRating[msg.sender] > 0) {
+           problem.ratingSum -= problem.oldRating[msg.sender];
+        } else {
+           problem.ratingCount++;
+        }
+        problem.oldRating[msg.sender] = _rating;
         problem.ratingSum += _rating;
-        problem.ratingCount++;
-        problem.hasRated[msg.sender] = true;
 
         emit ProblemRated(_problemId, msg.sender, _rating);
     }
