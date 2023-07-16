@@ -1,11 +1,17 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 contract Membership {
     struct Member {
         string username;
     }
+
+    // Custom Errors
+    error AlreadyMember();
+    error UsernameRequired();
+    error UsernameAlreadyExists();
+    error NotMember();
 
     // Mapping of address to Member - made private
     mapping(address => Member) private members;
@@ -21,9 +27,9 @@ contract Membership {
 
     // Function to register a new member
     function registerMember(string memory _username) external {
-        require(bytes(members[msg.sender].username).length == 0, "Already a member.");
-        require(bytes(_username).length > 0, "Username is required.");
-        require(!isUsernameTaken(_username), "Username already exists");
+        if (bytes(members[msg.sender].username).length > 0) revert AlreadyMember();
+        if (bytes(_username).length == 0) revert UsernameRequired();
+        if (isUsernameTaken(_username)) revert UsernameAlreadyExists();
 
         Member storage newMember = members[msg.sender];
         newMember.username = _username;
@@ -34,7 +40,8 @@ contract Membership {
 
     // Function to unregister a member
     function unregisterMember() external {
-        require(bytes(members[msg.sender].username).length > 0, "Not a member.");
+        if (bytes(members[msg.sender].username).length == 0) revert NotMember();
+
         delete usernames[members[msg.sender].username];
         delete members[msg.sender];
 
@@ -53,7 +60,8 @@ contract Membership {
 
     // View function to access members mapping
     function getMember(address _address) public view returns (string memory) {
-        require(bytes(members[_address].username).length > 0, "Not a member.");
+        if (bytes(members[_address].username).length == 0) revert NotMember();
+
         return members[_address].username;
     }
 }
