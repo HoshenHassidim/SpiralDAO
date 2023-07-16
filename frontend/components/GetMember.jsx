@@ -1,6 +1,6 @@
 // import {abi} from "../../backend/artifacts/contracts/Membership.sol/Membership.json"
 import {abi} from "../app/MembershipABI.json"
-
+// import "../constants/networkMapping.json"
 import { useContractWrite, usePrepareContractWrite, useWaitForTransaction, useAccount, useContractRead } from 'wagmi'
 
 export default function GetMember() {
