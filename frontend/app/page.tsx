@@ -173,9 +173,37 @@
 
 // export default Home;
 "use client"
+
 import { Web3Button } from "@web3modal/react";
+import {useEffect, useState} from "react"
+
+// components
+import GetProblemCounter from "../components/GetProblemCounter";
+import RegisterMember from "../components/RegisterMember"
+
+import { useContractWrite, usePrepareContractWrite, useWaitForTransaction, useAccount, useContractRead } from 'wagmi'
+
+
 export default function home() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  //Address:
+  const { address, isConnecting, isDisconnected } = useAccount()
+  
+
+  if(!mounted) return <></>
+ 
+
   return (
-    <Web3Button />
+    <div className="mt-5 flex flex-col gap-2 justify-center items-center h-full">
+      {/* <div>{address}</div> */}
+      <Web3Button /> 
+
+      {/* <GetProblemCounter /> */}
+      <RegisterMember />
+ 
+    </div>
   )
+  
 }
