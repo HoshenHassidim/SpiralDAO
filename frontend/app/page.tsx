@@ -180,7 +180,6 @@ import {useEffect, useState} from "react"
 // components
 import GetProblemCounter from "../components/GetProblemCounter";
 import RegisterMember from "../components/RegisterMember"
-import GetMember from "../components/GetMember"
 
 import { useContractWrite, usePrepareContractWrite, useWaitForTransaction, useAccount, useContractRead } from 'wagmi'
 
@@ -197,15 +196,13 @@ export default function home() {
  
 
   return (
-    <div className="mt-5 flex justify-center items-center h-full">
+    <div className="mt-5 flex flex-col gap-2 justify-center items-center h-full">
       {/* <div>{address}</div> */}
       <Web3Button /> 
 
-      <GetProblemCounter />
+      {/* <GetProblemCounter /> */}
       <RegisterMember />
-      <GetMember />
-
-
+ 
     </div>
   )
   
