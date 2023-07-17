@@ -73,6 +73,8 @@ contract TokenManagement {
         address solutionCreator
     ) external onlyAuthorized {
         if (projectId == 0) revert projectIDMustBeGreaterThanZero();
+        if (problemCreator == address(0) || solutionCreator == address(0))
+            revert addressesCannotBeZero();
         Tokens newToken = new Tokens(name, symbol, address(this));
         projectTokens[projectId] = newToken;
         Tokens projectToken = projectTokens[projectId];
@@ -92,8 +94,8 @@ contract TokenManagement {
         uint256 projectId
     ) external onlyAuthorized {
         if (executor == address(0) || manager == address(0)) revert addressesCannotBeZero();
-        if (taskValue <= 0) revert taskValueMustBeGreaterThanZero();
-        if (projectId == 0) revert projectIDCannotBeZero();
+        else if (taskValue <= 0) revert taskValueMustBeGreaterThanZero();
+        else if (projectId == 0) revert projectIDCannotBeZero();
 
         uint256 executorPayment = taskValue;
         uint256 managerPayment = (taskValue * INVERSE_PROJECT_MANAGER_SHARE) / 100;
