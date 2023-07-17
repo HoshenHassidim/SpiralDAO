@@ -13,12 +13,11 @@ const GraphExample: NextPage = () => {
     console.log(data.activeMembers);
   }
   return (
-    <div>
-      Hiiiii
+    <div className="flex flex-wrap">
       {data &&
-        data.activeMembers.map((d) => {
-          <div>{d}</div>;
-        })}
+        data.activeMembers.map((d) => (
+          <div className=" m-5 p-5 bg-blue-500 rounded-xl" key={d}>{d.memberAddress}</div>
+        ))}
     </div>
   );
 };
