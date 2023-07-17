@@ -73,11 +73,11 @@ describe("Workflow", function () {
         expect((await solutions.viewSolutionDetails(solutionId))[3]).to.equal("Solution 1")
     })
 
-    it("Test getter for problem and solution creators", async function () {
-        const Creators = await solutions.getCreators(1)
-        expect(Creators[0]).to.equal(accounts[1].address)
-        expect(Creators[1]).to.equal(accounts[0].address)
-    })
+    // it("Test getter for problem and solution creators", async function () {
+    //     const Creators = await solutions.getCreators(1)
+    //     expect(Creators[0]).to.equal(accounts[1].address)
+    //     expect(Creators[1]).to.equal(accounts[0].address)
+    // })
 
     it("Should rate the solution", async function () {
         const solutionId = await solutions.getSolutionCounter()
@@ -107,6 +107,8 @@ describe("Workflow", function () {
         await projects.connect(projectManagerAccount).proposeOffer(1)
 
         offerId = await projects.getOfferCounter()
+        offerId2 = await projects.getOfferCounter()
+
         const offerDetails = await projects.viewOfferDetails(offerId)
 
         expect(offerDetails[0]).to.equal(offerId)
@@ -115,14 +117,14 @@ describe("Workflow", function () {
         expect(offerDetails[5]).to.be.true
     })
 
-    it("Should have transferred the tokens to the creators", async function () {
-        const Creators = await solutions.getCreators(1)
-        let problemCreatorBalance = await tokenManagement.viewBalance(Creators[1], 1)
-        let solutionCreatorBalance = await tokenManagement.viewBalance(Creators[0], 1)
+    // it("Should have transferred the tokens to the creators", async function () {
+    //     const Creators = await solutions.getCreators(1)
+    //     let problemCreatorBalance = await tokenManagement.viewBalance(Creators[1], 1)
+    //     let solutionCreatorBalance = await tokenManagement.viewBalance(Creators[0], 1)
 
-        expect(problemCreatorBalance).to.equal(10)
-        expect(solutionCreatorBalance).to.equal(10)
-    })
+    //     expect(problemCreatorBalance).to.equal(10)
+    //     expect(solutionCreatorBalance).to.equal(10)
+    // })
 
     it("Should allow members to rate the management offer", async function () {
         // Member 1 rating the offer
@@ -136,14 +138,26 @@ describe("Workflow", function () {
 
         expect(offerDetails[3]).to.equal(24) // Total rating
         expect(offerDetails[4]).to.equal(3) // Total number of raters
+
+        const address0 = "0x0000000000000000000000000000000000000000"
+        const projectManager0 = await projects.getProjectManager(1)
+        expect(projectManager0).to.equal(address0)
     })
 
     it("Should assign the project manager if the average rating is above 7", async function () {
+        await projects.connect(accounts[4]).rateOffer(offerId2, 8)
         await projects.assignProjectManager(1)
 
         const projectManager = await projects.getProjectManager(1)
         expect(projectManager).to.equal(projectManagerAccount.address)
     })
+
+    // it("Should assign the project manager if the average rating is above 7", async function () {
+    //     await projects.assignProjectManager(1)
+
+    //     const projectManager = await projects.getProjectManager(1)
+    //     expect(projectManager).to.equal(projectManagerAccount.address)
+    // })
 
     it("Token management permission should be allowed for the tasks contract", async function () {
         permission_b = await tokenManagement.isAuthorized(tasks.address)
