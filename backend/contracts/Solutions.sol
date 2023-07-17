@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 // Import external contracts
 import "./Membership.sol";
@@ -47,6 +47,17 @@ contract Solutions {
     uint256 constant RATING_NUMBER_INDEX = 1; // Index where the number of raters is held
     uint256 constant TOTAL_RATING_INDEX = 0; // Index where the total rating is held
 
+    error mustBeMember();
+    error onlySolutionCreatorCanPerform();
+    error invalidID();
+    error nameCannotBeEmpty();
+    error nameAlreadyExists();
+    error problemDoesNotMeetCriteria();
+    error solutonClosedForRating();
+    error solutionAlreadyRated();
+    error IDOutofRange();
+    error creatorCannotRateOwnProblem();
+    error ratingOutOfRange();
     // Events to log actions happening in the contract
     event SolutionProposed(uint256 solutionId, uint256 problemId, address creator, string name);
     event SolutionCancelled(uint256 solutionId);
@@ -55,19 +66,13 @@ contract Solutions {
 
     // Modifier to restrict functions to members only
     modifier onlyMember() {
-        require(
-            membershipContract.isRegisteredMember(msg.sender),
-            "Action restricted to registered members"
-        );
+        if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
         _;
     }
 
     // Modifier to restrict actions to solution creators
     modifier onlyCreator(uint256 _solutionId) {
-        require(
-            msg.sender == solutions[_solutionId].creator,
-            "Only the solution creator can perform this action"
-        );
+        if (msg.sender != solutions[_solutionId].creator) revert onlySolutionCreatorCanPerform();
         _;
     }
 
@@ -79,13 +84,10 @@ contract Solutions {
 
     // Function to propose a solution
     function proposeSolution(uint256 _problemId, string memory _name) external onlyMember {
-        require(problemsContract.getProblemCounter() >= _problemId, "Invalid problem ID");
-        require(bytes(_name).length > 0, "Solution name cannot be empty");
-        require(!solutionNames[_name], "Solution name already exists");
-        require(
-            problemsContract.meetsRatingCriteria(_problemId),
-            "Problem does not meet the rating criteria"
-        );
+        if (problemsContract.getProblemCounter() < _problemId) revert invalidID();
+        if (bytes(_name).length <= 0) revert nameCannotBeEmpty();
+        if (solutionNames[_name]) revert nameAlreadyExists();
+        if (!problemsContract.meetsRatingCriteria(_problemId)) revert problemDoesNotMeetCriteria();
 
         // Increment solution counter and create a new solution
         solutionCounter++;
@@ -108,9 +110,9 @@ contract Solutions {
     // Function to cancel a solution
     function cancelSolution(uint256 _solutionId) external onlyCreator(_solutionId) {
         Solution storage solution = solutions[_solutionId];
-        require(solutionCounter >= _solutionId, "Invalid solution ID");
-        require(solution.isOpenForRating, "The solution is already closed for rating");
-        require(solution.numberOfRaters == 0, "Solution has already been rated");
+        if (solutionCounter < _solutionId) revert invalidID();
+        if (!solution.isOpenForRating) revert solutonClosedForRating();
+        if (solution.numberOfRaters != 0) revert solutionAlreadyRated();
 
         // Mark the solution as closed for rating
         solution.isOpenForRating = false;
@@ -126,9 +128,9 @@ contract Solutions {
         uint256 _solutionId,
         string memory _newName
     ) external onlyCreator(_solutionId) {
-        require(solutionCounter >= _solutionId, "Invalid solution ID");
-        require(bytes(_newName).length > 0, "New name is required and must not be empty");
-        require(!solutionNames[_newName], "New name already exists, please use a different name");
+        if (solutionCounter < _solutionId) revert invalidID();
+        if (bytes(_newName).length <= 0) revert nameCannotBeEmpty();
+        if (solutionNames[_newName]) revert nameAlreadyExists();
 
         Solution storage solution = solutions[_solutionId];
 
@@ -143,18 +145,15 @@ contract Solutions {
 
     // Function to rate a solution
     function rateSolution(uint256 _solutionId, uint256 _rating) external onlyMember {
-        require(solutionCounter >= _solutionId, "Invalid solution ID");
-        require(
-            solutions[_solutionId].creator != msg.sender,
-            "Creator cannot rate their own solution"
-        );
-        require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING");
-        require(solutions[_solutionId].isOpenForRating, "Solution is not open for rating");
-        
-        if(solutions[_solutionId].oldRating[msg.sender] > 0) {
-           solutions[_solutionId].ratingSum -= solutions[_solutionId].oldRating[msg.sender];
+        if (solutionCounter < _solutionId) revert invalidID();
+        if (solutions[_solutionId].creator == msg.sender) revert creatorCannotRateOwnProblem();
+        if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
+        if (!solutions[_solutionId].isOpenForRating) revert solutonClosedForRating();
+
+        if (solutions[_solutionId].oldRating[msg.sender] > 0) {
+            solutions[_solutionId].ratingSum -= solutions[_solutionId].oldRating[msg.sender];
         } else {
-           solutions[_solutionId].numberOfRaters++;
+            solutions[_solutionId].numberOfRaters++;
         }
         solutions[_solutionId].oldRating[msg.sender] = _rating;
         solutions[_solutionId].ratingSum += _rating;
@@ -230,7 +229,7 @@ contract Solutions {
     function viewSolutionDetails(
         uint256 _solutionId
     ) external view returns (uint256, uint256, address, string memory, uint256, uint256, bool) {
-        require(_solutionId > 0 && _solutionId <= solutionCounter, "Solution ID is out of range");
+        if (_solutionId <= 0 || _solutionId > solutionCounter) revert IDOutofRange();
 
         Solution storage solution = solutions[_solutionId];
 
@@ -259,7 +258,7 @@ contract Solutions {
     function getCreators(
         uint256 _solutionId
     ) external view returns (address solutionCreator, address problemCreator) {
-        require(_solutionId > 0 && _solutionId <= solutionCounter, "Solution ID is out of range");
+        if (_solutionId <= 0 || _solutionId > solutionCounter) revert IDOutofRange();
 
         Solution storage solution = solutions[_solutionId];
         solutionCreator = solution.creator;
