@@ -57,6 +57,9 @@ contract Tasks {
     uint256 private taskCounter; // Counter for task ID
     uint256 private taskOfferCounter; // Counter for task offer ID
     uint256 private MIN_TASK_VALUE = 100; // Minimal task value
+    uint256 constant MIN_TOTAL_RATERS_COUNT = 4;
+
+    error insufficientTotalRatersForAllOffers();
 
     // Mapping to store tasks
     mapping(uint256 => Task) private tasks;
@@ -256,15 +259,15 @@ contract Tasks {
         require(taskOffers[_offerId].offeror != msg.sender, "Offeror cannot rate their own offer");
         require(taskOffers[_offerId].isOpenForRating, "Offer is not open for rating");
         require(_rating >= 1 && _rating <= 10, "Rating must be between 1 and 10");
-        if((tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] > 0)) {
-            taskOffers[_offerId].ratingSum -= tasks[taskOffers[_offerId].taskId].oldRating[msg.sender];
-        }
-        else {
+        if ((tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] > 0)) {
+            taskOffers[_offerId].ratingSum -= tasks[taskOffers[_offerId].taskId].oldRating[
+                msg.sender
+            ];
+        } else {
             taskOffers[_offerId].numberOfRaters++;
             taskOffers[_offerId].raters[msg.sender] = true;
-
         }
-        tasks[taskOffers[_offerId].taskId].oldRating[msg.sender]  = _rating;
+        tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] = _rating;
         taskOffers[_offerId].ratingSum += _rating;
         emit OfferRated(_offerId, _rating);
     }
@@ -280,6 +283,7 @@ contract Tasks {
         // Initialize the variables to track the highest rating and the corresponding task offer ID.
         uint256 highestRating = 0;
         uint256 highestRatedOfferId = 0;
+        uint256 totalRatersForAllOffers = 0;
 
         // Loop through all task offers for this task.
         for (uint256 i = 0; i < taskToTaskOffer[_taskId].length; i++) {
@@ -297,6 +301,11 @@ contract Tasks {
                     highestRatedOfferId = offerId;
                 }
             }
+            totalRatersForAllOffers += offer.numberOfRaters;
+        }
+
+        if (totalRatersForAllOffers < MIN_TOTAL_RATERS_COUNT) {
+            revert insufficientTotalRatersForAllOffers();
         }
 
         // Check if a suitable task offer (average rating of at least 7) was found.
@@ -335,15 +344,14 @@ contract Tasks {
     // Updates the task's completion rating sum and number of completion raters, and emits a TaskExecutionRated event.
     function rateCompletedTask(uint256 _taskId, uint256 _rating) external validTaskID(_taskId) {
         require(tasks[_taskId].status == TaskStatus.VERIFICATION, "Task is not completed");
-    
+
         require(tasks[_taskId].performer != msg.sender, "Performer cannot rate their own task");
         require(_rating != 0 && _rating <= 10, "Rating must be between 1 to 10");
-        if(verificationRaters[tasks[_taskId].verificationID][msg.sender]) {
-         tasks[_taskId].completionRatingSum -=tasks[_taskId].oldRating[msg.sender];
-        }
-        else {
-        tasks[_taskId].numberOfCompletionRaters++;
-        verificationRaters[tasks[_taskId].verificationID][msg.sender] = true;
+        if (verificationRaters[tasks[_taskId].verificationID][msg.sender]) {
+            tasks[_taskId].completionRatingSum -= tasks[_taskId].oldRating[msg.sender];
+        } else {
+            tasks[_taskId].numberOfCompletionRaters++;
+            verificationRaters[tasks[_taskId].verificationID][msg.sender] = true;
         }
         tasks[_taskId].oldRating[msg.sender] = _rating;
         tasks[_taskId].completionRatingSum += _rating;
