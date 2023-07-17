@@ -207,6 +207,8 @@ describe("Workflow", function () {
     })
 
     it("Should assign the task to the performer if the average rating is above 7", async function () {
+        await tasks.connect(accounts[2]).rateTaskOffer(offerId2, 9)
+
         const performer0 = await tasks.getTaskDetails(taskId)[4]
         const taskDetails0 = await tasks.getTaskDetails(taskId)
         await tasks.assignTask(taskId)
