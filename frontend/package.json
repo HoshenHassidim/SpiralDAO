@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@apollo/client": "^3.7.17",
     "@rainbow-me/rainbowkit": "^1.0.5",
     "@types/node": "20.4.1",
     "@types/react": "18.2.14",
@@ -20,6 +21,7 @@
     "eslint": "8.44.0",
     "eslint-config-next": "13.4.9",
     "fs": "^0.0.1-security",
+    "graphql": "^16.7.1",
     "i": "^0.3.7",
     "next": "13.4.9",
     "npm": "^9.8.0",
