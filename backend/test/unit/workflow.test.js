@@ -107,6 +107,8 @@ describe("Workflow", function () {
         await projects.connect(projectManagerAccount).proposeOffer(1)
 
         offerId = await projects.getOfferCounter()
+        offerId2 = await projects.getOfferCounter()
+
         const offerDetails = await projects.viewOfferDetails(offerId)
 
         expect(offerDetails[0]).to.equal(offerId)
@@ -136,14 +138,26 @@ describe("Workflow", function () {
 
         expect(offerDetails[3]).to.equal(24) // Total rating
         expect(offerDetails[4]).to.equal(3) // Total number of raters
+
+        const address0 = "0x0000000000000000000000000000000000000000"
+        const projectManager0 = await projects.getProjectManager(1)
+        expect(projectManager0).to.equal(address0)
     })
 
     it("Should assign the project manager if the average rating is above 7", async function () {
+        await projects.connect(accounts[4]).rateOffer(offerId2, 8)
         await projects.assignProjectManager(1)
 
         const projectManager = await projects.getProjectManager(1)
         expect(projectManager).to.equal(projectManagerAccount.address)
     })
+
+    // it("Should assign the project manager if the average rating is above 7", async function () {
+    //     await projects.assignProjectManager(1)
+
+    //     const projectManager = await projects.getProjectManager(1)
+    //     expect(projectManager).to.equal(projectManagerAccount.address)
+    // })
 
     it("Token management permission should be allowed for the tasks contract", async function () {
         permission_b = await tokenManagement.isAuthorized(tasks.address)
