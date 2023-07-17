@@ -33,6 +33,18 @@ contract Projects {
     }
 
     error insufficientTotalRatersForAllOffers();
+    error mustBeMember();
+    error IDMustBePositive();
+    error solutionDoesNotMeetCriteria();
+    error invalidSolutionID();
+    error solutionIDMustBePositive();
+    error projectNotOpenForProposals();
+    error userAlreadyProposed();
+    error onlyManager();
+    error notOpenForRating();
+    error projectDoesNotExist();
+    error ratingOutOfRange();
+    error managerCannotRateOwnOffer();
 
     // Project ID to Project mapping (solutionId is used as projectId)
     mapping(uint256 => Project) private projects;
@@ -59,10 +71,7 @@ contract Projects {
 
     // Modifier to ensure only registered members can propose, cancel or rate an offer
     modifier onlyMember() {
-        require(
-            membershipContract.isRegisteredMember(msg.sender),
-            "Only registered members can perform this action"
-        );
+        if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
         _;
     }
 
@@ -79,11 +88,8 @@ contract Projects {
 
     // Private function to create a new project from a solution
     function createProject(uint256 _solutionId) private {
-        require(_solutionId > 0, "Solution ID must be positive");
-        require(
-            solutionsContract.canBecomeProject(_solutionId),
-            "Solution does not meet the criteria to become a project"
-        );
+        if (_solutionId <= 0) revert IDMustBePositive();
+        if (!solutionsContract.canBecomeProject(_solutionId)) revert solutionDoesNotMeetCriteria();
 
         // Retrieve problem and solution creators
         (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
