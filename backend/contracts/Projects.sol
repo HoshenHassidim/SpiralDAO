@@ -11,6 +11,8 @@ contract Projects {
     // State variables
     uint256 private offerCounter;
     uint256 constant MAX_RATING = 10;
+    uint256 constant MIN_TOTAL_RATERS_COUNT = 4;
+    uint256 constant MIN_RAITNGS_PER_OFFER = 3;
 
     // Project structure
     struct Project {
@@ -29,6 +31,8 @@ contract Projects {
         bool isOpenForRating;
         mapping(address => uint) oldRating;
     }
+
+    error insufficientTotalRatersForAllOffers();
 
     // Project ID to Project mapping (solutionId is used as projectId)
     mapping(uint256 => Project) private projects;
@@ -81,19 +85,7 @@ contract Projects {
             "Solution does not meet the criteria to become a project"
         );
 
-        // Retrieve problem and solution creators
-        (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
-            _solutionId
-        );
-
-        // Create a new token contract for the project with problem and solution creators as parameters
-        tokenManagementContract.newProjectToken(
-            _solutionId,
-            "ProjectToken",
-            "PT",
-            problemCreator,
-            solutionCreator
-        );
+        tokenManagementContract.newProjectToken(_solutionId, "ProjectToken", "PT"); // Create a new token contract for the project
 
         // Create new project and store it in the mapping
         projects[_solutionId] = Project(_solutionId, true, address(0));
@@ -162,10 +154,10 @@ contract Projects {
         require(offer.manager != msg.sender, "Offer manager cannot rate their own offer");
         require(offer.isOpenForRating, "Offer is not open for rating");
 
-        if(offer.oldRating[msg.sender] > 0) {
-           offer.ratingSum -= offer.oldRating[msg.sender];
+        if (offer.oldRating[msg.sender] > 0) {
+            offer.ratingSum -= offer.oldRating[msg.sender];
         } else {
-           offer.numberOfRaters++;
+            offer.numberOfRaters++;
         }
         offer.oldRating[msg.sender] = _rating;
         offer.ratingSum += _rating;
@@ -182,12 +174,13 @@ contract Projects {
 
         uint256 bestOfferId = 0;
         uint256 bestRating = 0;
+        uint256 totalRatersForAllOffers = 0;
 
         // Iterate over all offers for the project to find the best one
         for (uint256 i = 0; i < projectToOffers[_projectId].length; i++) {
             Offer storage offer = offers[projectToOffers[_projectId][i]];
 
-            if (offer.numberOfRaters >= 3 && offer.isOpenForRating) {
+            if (offer.numberOfRaters >= MIN_RAITNGS_PER_OFFER && offer.isOpenForRating) {
                 uint256 averageRating = offer.ratingSum / offer.numberOfRaters;
 
                 // If the current offer has a better rating, set it as the best
@@ -196,6 +189,12 @@ contract Projects {
                     bestRating = averageRating;
                 }
             }
+            totalRatersForAllOffers += offer.numberOfRaters;
+        }
+
+        // Check if the total raters meet the requirements
+        if (totalRatersForAllOffers < MIN_TOTAL_RATERS_COUNT) {
+            revert insufficientTotalRatersForAllOffers();
         }
 
         // If the best offer's average rating is above 7, assign the project manager
