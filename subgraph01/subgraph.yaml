@@ -1,0 +1,28 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Membership
+    network: fantom-testnet
+    source:
+      address: "0xdD74D79454306dBd2498811393d198C03aD5558e"
+      abi: Membership
+      startBlock: 18302491
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ActiveMember
+        - MemberRegistered
+        - MemberUnregistered
+      abis:
+        - name: Membership
+          file: ./abis/Membership.json
+      eventHandlers:
+        - event: MemberRegistered(indexed address)
+          handler: handleMemberRegistered
+        - event: MemberUnregistered(indexed address)
+          handler: handleMemberUnregistered
+      file: ./src/membership.ts

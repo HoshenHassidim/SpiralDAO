@@ -1,0 +1,20 @@
+type ActiveMember @entity {
+  id: Bytes!
+  memberAddress: Bytes! # address
+}
+
+type MemberRegistered @entity(immutable: true) {
+  id: Bytes!
+  memberAddress: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type MemberUnregistered @entity(immutable: true) {
+  id: Bytes!
+  memberAddress: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

@@ -1,24 +1,26 @@
-import Providers from './_providers/Providers'
-import './globals.css'
-import { Inter } from 'next/font/google'
+import Providers from "./_providers/Providers";
+import "./globals.css";
+import { Inter } from "next/font/google";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: 'Next13 Web3',
-  description: 'A Web3 Example on using NextJs 13',
-}
+  title: "Next13 Web3",
+  description: "A Web3 Example on using NextJs 13",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}><Providers>{children}</Providers></body>
+      <body className={inter.className}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
-  )
+  );
 }
 
 // import './globals.css'
@@ -44,17 +46,13 @@ export default function RootLayout({
 //   )
 // }
 
-
-
-
-
 // import './globals.css'
 // import type { Metadata } from 'next'
 // import { Inter } from 'next/font/google'
 
 // import { WagmiConfig, createConfig, mainnet } from 'wagmi'
 // import { createPublicClient, http } from 'viem'
- 
+
 // const config = createConfig({
 //   autoConnect: true,
 //   publicClient: createPublicClient({
@@ -62,7 +60,6 @@ export default function RootLayout({
 //     transport: http()
 //   }),
 // })
-
 
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -85,7 +82,6 @@ export default function RootLayout({
 //     </html>
 //   )
 // }
-
 
 // "use client"
 // import './globals.css';
