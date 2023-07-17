@@ -8,6 +8,9 @@ contract Tokens is ERC20 {
     // Variable that stores the administrator address for this contract
     address public admin;
 
+    //Custom Errors
+    error mustBeAdmin();
+
     // The constructor takes three parameters: token name, token symbol, and admin address.
     // It uses the ERC20 constructor to set the name and symbol, and stores the admin address.
     // If no admin address is provided, it defaults to the deployer of the contract.
@@ -21,7 +24,7 @@ contract Tokens is ERC20 {
 
     // Only admin can call the mint function
     modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin can perform this action");
+        if (msg.sender != admin) revert mustBeAdmin();
         _;
     }
 
