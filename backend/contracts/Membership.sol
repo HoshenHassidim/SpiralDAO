@@ -5,6 +5,8 @@ pragma solidity ^0.8.4;
 contract Membership {
     struct Member {
         string username;
+        uint256[] tasksAssigned;
+        mapping(uint256 => uint256) taskAvg;
     }
 
     // Custom Errors
@@ -63,5 +65,15 @@ contract Membership {
         if (bytes(members[_address].username).length == 0) revert NotMember();
 
         return members[_address].username;
+    }
+
+    //when task is assigned to member, will add it to this array to keep track of all tasks worked on
+    function assignTaskToMember(address _address, uint256 _taskId) external {
+        members[_address].tasksAssigned.push(_taskId);
+    }
+
+    //keep track of the average rating a person got for each task, and the total average of all the tasks
+    function addTaskAvg(address _address, uint256 _taskId, uint256 _taskAvg) external {
+        members[_address].taskAvg[_taskId] = _taskAvg;
     }
 }

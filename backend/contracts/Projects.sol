@@ -29,7 +29,7 @@ contract Projects {
         uint256 ratingSum;
         uint256 numberOfRaters;
         bool isOpenForRating;
-        mapping(address => uint) oldRating;
+        mapping(address => uint256) oldRating;
     }
 
     error insufficientTotalRatersForAllOffers();
@@ -113,8 +113,8 @@ contract Projects {
 
     // External function to propose a management offer for a project
     function proposeOffer(uint256 _solutionId) external onlyMember {
-        if(solutionsContract.getSolutionCounter() < _solutionId) revert invalidID(); 
-        if(_solutionId <= 0) revert IDMustBePositive();
+        if (solutionsContract.getSolutionCounter() < _solutionId) revert invalidID();
+        if (_solutionId <= 0) revert IDMustBePositive();
         if (projects[_solutionId].solutionId == 0) {
             createProject(_solutionId); // Check if the solution has a project, if not, create one
         }
@@ -122,12 +122,10 @@ contract Projects {
         uint256 projectId = _solutionId; // The project ID is the same as the solutionId
 
         // Ensuring that the project is open for management proposals
-        if(
-            !projects[projectId].isOpenForManagementProposals,
-        ) revert projectNotOpenForProposals();
+        if (!projects[projectId].isOpenForManagementProposals) revert projectNotOpenForProposals();
 
         // Ensuring the user has not already proposed for this project
-        if(hasProposed[projectId][msg.sender],) revert userAlreadyProposed();
+        if (hasProposed[projectId][msg.sender]) revert userAlreadyProposed();
 
         hasProposed[projectId][msg.sender] = true; // Mark the user as having proposed for this project
 
@@ -149,12 +147,12 @@ contract Projects {
 
     // External function to cancel a management offer
     function cancelOffer(uint256 _offerId) external onlyMember {
-        if(_offerId <= 0 || _offerId > offerCounter) revert invalidID();
+        if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
 
         Offer storage offer = offers[_offerId];
 
-        if(offer.manager != msg.sender) revert onlyManager();
-        if(!offer.isOpenForRating) revert notOpenForRating();
+        if (offer.manager != msg.sender) revert onlyManager();
+        if (!offer.isOpenForRating) revert notOpenForRating();
 
         offer.isOpenForRating = false; // Mark the offer as not open for rating
 
@@ -163,13 +161,13 @@ contract Projects {
 
     // External function to rate a management offer
     function rateOffer(uint256 _offerId, uint256 _rating) external onlyMember {
-        if(_offerId <= 0 || _offerId > offerCounter) revert invalidID();
-        if(_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
+        if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
+        if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
 
         Offer storage offer = offers[_offerId];
 
-        if(offer.manager == msg.sender) revert managerCannotRateOwnOffer();
-        if(!offer.isOpenForRating) revert notOpenForRating();
+        if (offer.manager == msg.sender) revert managerCannotRateOwnOffer();
+        if (!offer.isOpenForRating) revert notOpenForRating();
 
         if (offer.oldRating[msg.sender] > 0) {
             offer.ratingSum -= offer.oldRating[msg.sender];
@@ -184,8 +182,8 @@ contract Projects {
 
     // External function to assign the project manager
     function assignProjectManager(uint256 _projectId) external {
-        if(_projectId <= 0) revert IDMustBePositive();
-        if(projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
+        if (_projectId <= 0) revert IDMustBePositive();
+        if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
 
         Project storage project = projects[_projectId];
 
@@ -225,7 +223,7 @@ contract Projects {
     function viewOfferDetails(
         uint256 _offerId
     ) external view returns (uint256, uint256, address, uint256, uint256, bool) {
-        if(_offerId <= 0 || _offerId > offerCounter) revert invalidID();
+        if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
 
         Offer storage offer = offers[_offerId];
 
@@ -242,8 +240,8 @@ contract Projects {
 
     // Function to view details about a project
     function viewProjectDetails(uint256 _projectId) external view returns (uint256, bool) {
-        if(_projectId <= 0) revert IDMustBePositive();
-        if(projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
+        if (_projectId <= 0) revert IDMustBePositive();
+        if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
 
         Project storage project = projects[_projectId];
 
@@ -253,8 +251,8 @@ contract Projects {
 
     // Function to view the offers for a project
     function viewProjectOffers(uint256 _projectId) external view returns (uint256[] memory) {
-        if(_projectId <= 0) revert IDMustBePositive();
-        if(projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
+        if (_projectId <= 0) revert IDMustBePositive();
+        if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
 
         // Return the array of offer IDs for the project
         return projectToOffers[_projectId];
@@ -262,8 +260,8 @@ contract Projects {
 
     // Function to view the manager of a specific project
     function getProjectManager(uint256 _projectId) external view returns (address) {
-        if(_projectId <= 0) revert IDMustBePositive();
-        if(projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
+        if (_projectId <= 0) revert IDMustBePositive();
+        if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
 
         // Return the project manager
         return projects[_projectId].projectManager;
