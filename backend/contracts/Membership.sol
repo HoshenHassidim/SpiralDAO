@@ -7,6 +7,7 @@ contract Membership {
         string username;
         uint256 tasksAssigned;
         uint256[] taskAvgs;
+        uint256 tasksAvg;
         uint256 projectsManaged;
         uint256 problemsAccepted;
         uint256 solutionsAccepted;
@@ -64,10 +65,18 @@ contract Membership {
     }
 
     // View function to access members mapping
-    function getMember(address _address) public view returns (string memory) {
+    function viewMemberDetails(
+        address _address
+    ) external view returns (string memory, uint256, uint256, uint256, uint256, uint256) {
         if (bytes(members[_address].username).length == 0) revert NotMember();
-
-        return members[_address].username;
+        return (
+            members[_address].username,
+            members[_address].tasksAssigned,
+            members[_address].tasksAvg,
+            members[_address].projectsManaged,
+            members[_address].problemsAccepted,
+            members[_address].solutionsAccepted
+        );
     }
 
     //when task is assigned to member, will add it to this array to keep track of all tasks worked on
@@ -78,6 +87,11 @@ contract Membership {
     //keep track of the average rating a person got for each task, and the total average of all the tasks
     function addTaskAvg(address _address, uint256 _taskAvg) external {
         members[_address].taskAvgs.push(_taskAvg);
+        uint x = 0;
+        for (uint i = 0; i < members[_address].taskAvgs.length; i++) {
+            x += members[_address].taskAvgs[i];
+        }
+        members[_address].tasksAvg = x;
     }
 
     function proposedSolutionAccepted(address _address) external {
