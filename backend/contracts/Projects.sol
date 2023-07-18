@@ -105,6 +105,9 @@ contract Projects {
             solutionCreator
         );
 
+        membershipContract.proposedProblemAccepted(problemCreator);
+        membershipContract.proposedSolutionAccepted(solutionCreator);
+
         // Create new project and store it in the mapping
         projects[_solutionId] = Project(_solutionId, true, address(0));
 
@@ -217,6 +220,8 @@ contract Projects {
             project.isOpenForManagementProposals = false;
             projects[_projectId].projectManager = offers[bestOfferId].manager;
         }
+
+        membershipContract.managedProject(projects[_projectId].projectManager);
     }
 
     // Function to view details about an offer
