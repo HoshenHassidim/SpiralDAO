@@ -314,7 +314,7 @@ contract Tasks {
         // If a suitable offer was found, update the task status, assign the task to the member, and save the task offer ID.
         tasks[_taskId].status = TaskStatus.IN_PROGRESS;
         tasks[_taskId].performer = taskOffers[highestRatedOfferId].offeror;
-        membershipContract.assignTaskToMember(taskOffers[highestRatedOfferId].offeror, _taskId);
+        membershipContract.assignTaskToMember(taskOffers[highestRatedOfferId].offeror);
         tasks[_taskId].assignedOfferId = highestRatedOfferId;
 
         // Emit the TaskAssigned event.
@@ -359,7 +359,6 @@ contract Tasks {
 
         membershipContract.addTaskAvg(
             tasks[_taskId].performer,
-            _taskId,
             tasks[_taskId].completionRatingSum / tasks[_taskId].numberOfCompletionRaters
         );
 
