@@ -316,6 +316,12 @@ contract Projects {
             project.isOpenForManagmentRemovalProposal = false;
             project.projectManager = address(0);
             project.isOpenForManagementProposals = true;
+
+            uint256 projectId = removalOffer.projectId;
+            for (uint256 i = 0; i < projectToOffers[projectId].length; i++) {
+                address proposer = offers[projectToOffers[projectId][i]].manager;
+                hasProposed[projectId][proposer] = false;
+            }
         }
     }
 
