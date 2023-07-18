@@ -53,6 +53,8 @@ contract Projects {
     error invalidID();
     error onlyManager();
     error notOpenForRating();
+    error ratingOutOfRange();
+    error managerCannotRateAgainstThemselves();
 
     // Project ID to Project mapping (solutionId is used as projectId)
     mapping(uint256 => Project) private projects;
@@ -80,7 +82,8 @@ contract Projects {
     event NewRemovalOffer(uint256 removalOfferId, uint256 projectId, address proposer);
     event OfferCancelled(uint256 offerId);
     event RemovalOfferCancelled(uint256 removalOfferId);
-    event OfferRated(uint256 offerId, address voter, uint256 rating);
+    event OfferRated(uint256 offerId, address rater, uint256 rating);
+    event RemovalOfferRated(uint256 removalOfferId, address rater, uint256 rating);
 
     // Modifier to ensure only registered members can propose, cancel or rate an offer
     modifier onlyMember() {
@@ -276,7 +279,46 @@ contract Projects {
 
         emit OfferCancelled(_removalOfferId); // Emit the event
     }
-    
+
+    // External function to rate a managment removal offer
+    function rateRemovalOffer(uint256 _removalOfferId, uint256 _rating) external onlyMember {
+        if (_removalOfferId < 0 || _removalOfferId > removalOfferCounter) revert invalidID();
+        if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
+
+        RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
+
+        if (projects[removalOffers[_removalOfferId].projectId].projectManager == msg.sender) revert managerCannotRateAgainstThemselves();
+        if (!removalOffer.isOpenForRemovalRating) revert notOpenForRating();
+
+        if (removalOffer.oldRemovalRating[msg.sender] > 0) {
+            removalOffer.removalRatingSum -= removalOffer.oldRemovalRating[msg.sender];
+        } else {
+            removalOffer.removalNumberOfRaters++;
+        }
+        removalOffer.oldRemovalRating[msg.sender] = _rating;
+        removalOffer.removalRatingSum += _rating;
+        
+        emit RemovalOfferRated(_removalOfferId, msg.sender, _rating);
+    }
+
+    function removeProjectManager(uint256 _removalOfferId) external {
+        if (removalOffers[_removalOfferId].projectId <= 0) revert IDMustBePositive();
+        if (projects[removalOffers[_removalOfferId].projectId].solutionId <= 0) revert projectDoesNotExist();
+
+        RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
+        Project storage project = projects[removalOffer.projectId];
+
+        // Check if the total raters meet the requirements
+        if (removalOffer.removalNumberOfRaters < MIN_TOTAL_RATERS_COUNT) revert insufficientTotalRatersForAllOffers();
+
+        // If the best offer's average rating is above 7, assign the project manager
+        if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > 7) {
+            project.isOpenForManagmentRemovalProposal = false;
+            project.projectManager = address(0);
+            project.isOpenForManagementProposals = true;
+        }
+    }
+
     // Function to view details about an offer
     function viewOfferDetails(
         uint256 _offerId
