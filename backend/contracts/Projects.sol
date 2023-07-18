@@ -123,11 +123,11 @@ contract Projects {
 
         // Ensuring that the project is open for management proposals
         if(
-            !projects[projectId].isOpenForManagementProposals,
-        ) revert projectNotOpenForProposals();
+            !projects[projectId].isOpenForManagementProposals
+            ) revert projectNotOpenForProposals();
 
         // Ensuring the user has not already proposed for this project
-        if(hasProposed[projectId][msg.sender],) revert userAlreadyProposed();
+        if(hasProposed[projectId][msg.sender]) revert userAlreadyProposed();
 
         hasProposed[projectId][msg.sender] = true; // Mark the user as having proposed for this project
 
