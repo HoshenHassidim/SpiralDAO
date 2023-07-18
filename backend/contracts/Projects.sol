@@ -33,6 +33,18 @@ contract Projects {
     }
 
     error insufficientTotalRatersForAllOffers();
+    error mustBeMember();
+    error IDMustBePositive();
+    error solutionDoesNotMeetCriteria();
+    error invalidID();
+    error solutionIDMustBePositive();
+    error projectNotOpenForProposals();
+    error userAlreadyProposed();
+    error onlyManager();
+    error notOpenForRating();
+    error projectDoesNotExist();
+    error ratingOutOfRange();
+    error managerCannotRateOwnOffer();
 
     // Project ID to Project mapping (solutionId is used as projectId)
     mapping(uint256 => Project) private projects;
@@ -59,10 +71,7 @@ contract Projects {
 
     // Modifier to ensure only registered members can propose, cancel or rate an offer
     modifier onlyMember() {
-        require(
-            membershipContract.isRegisteredMember(msg.sender),
-            "Only registered members can perform this action"
-        );
+        if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
         _;
     }
 
@@ -79,11 +88,8 @@ contract Projects {
 
     // Private function to create a new project from a solution
     function createProject(uint256 _solutionId) private {
-        require(_solutionId > 0, "Solution ID must be positive");
-        require(
-            solutionsContract.canBecomeProject(_solutionId),
-            "Solution does not meet the criteria to become a project"
-        );
+        if (_solutionId <= 0) revert IDMustBePositive();
+        if (!solutionsContract.canBecomeProject(_solutionId)) revert solutionDoesNotMeetCriteria();
 
         // Retrieve problem and solution creators
         (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
@@ -107,8 +113,8 @@ contract Projects {
 
     // External function to propose a management offer for a project
     function proposeOffer(uint256 _solutionId) external onlyMember {
-        require(solutionsContract.getSolutionCounter() >= _solutionId, "Invalid solution ID");
-        require(_solutionId > 0, "Solution ID must be positive");
+        if(solutionsContract.getSolutionCounter() < _solutionId) revert invalidID(); 
+        if(_solutionId <= 0) revert IDMustBePositive();
         if (projects[_solutionId].solutionId == 0) {
             createProject(_solutionId); // Check if the solution has a project, if not, create one
         }
@@ -116,13 +122,12 @@ contract Projects {
         uint256 projectId = _solutionId; // The project ID is the same as the solutionId
 
         // Ensuring that the project is open for management proposals
-        require(
-            projects[projectId].isOpenForManagementProposals,
-            "Project is not open for management proposals"
-        );
+        if(
+            !projects[projectId].isOpenForManagementProposals,
+        ) revert projectNotOpenForProposals();
 
         // Ensuring the user has not already proposed for this project
-        require(!hasProposed[projectId][msg.sender], "User has already proposed for this project");
+        if(hasProposed[projectId][msg.sender],) revert userAlreadyProposed();
 
         hasProposed[projectId][msg.sender] = true; // Mark the user as having proposed for this project
 
@@ -144,12 +149,12 @@ contract Projects {
 
     // External function to cancel a management offer
     function cancelOffer(uint256 _offerId) external onlyMember {
-        require(_offerId > 0 && _offerId <= offerCounter, "Invalid offer ID");
+        if(_offerId <= 0 || _offerId > offerCounter) revert invalidID();
 
         Offer storage offer = offers[_offerId];
 
-        require(offer.manager == msg.sender, "Only the manager can cancel the offer");
-        require(offer.isOpenForRating, "Offer is not open for rating");
+        if(offer.manager != msg.sender) revert onlyManager();
+        if(!offer.isOpenForRating) revert notOpenForRating();
 
         offer.isOpenForRating = false; // Mark the offer as not open for rating
 
@@ -158,13 +163,13 @@ contract Projects {
 
     // External function to rate a management offer
     function rateOffer(uint256 _offerId, uint256 _rating) external onlyMember {
-        require(_offerId > 0 && _offerId <= offerCounter, "Invalid offer ID");
-        require(_rating >= 1 && _rating <= MAX_RATING, "Rating must be between 1 and MAX_RATING");
+        if(_offerId <= 0 || _offerId > offerCounter) revert invalidID();
+        if(_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
 
         Offer storage offer = offers[_offerId];
 
-        require(offer.manager != msg.sender, "Offer manager cannot rate their own offer");
-        require(offer.isOpenForRating, "Offer is not open for rating");
+        if(offer.manager == msg.sender) revert managerCannotRateOwnOffer();
+        if(!offer.isOpenForRating) revert notOpenForRating();
 
         if (offer.oldRating[msg.sender] > 0) {
             offer.ratingSum -= offer.oldRating[msg.sender];
@@ -179,8 +184,8 @@ contract Projects {
 
     // External function to assign the project manager
     function assignProjectManager(uint256 _projectId) external {
-        require(_projectId > 0, "Project ID must be positive");
-        require(projects[_projectId].solutionId > 0, "Project does not exist");
+        if(_projectId <= 0) revert IDMustBePositive();
+        if(projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
 
         Project storage project = projects[_projectId];
 
@@ -220,7 +225,7 @@ contract Projects {
     function viewOfferDetails(
         uint256 _offerId
     ) external view returns (uint256, uint256, address, uint256, uint256, bool) {
-        require(_offerId > 0 && _offerId <= offerCounter, "Invalid offer ID");
+        if(_offerId <= 0 || _offerId > offerCounter) revert invalidID();
 
         Offer storage offer = offers[_offerId];
 
@@ -237,8 +242,8 @@ contract Projects {
 
     // Function to view details about a project
     function viewProjectDetails(uint256 _projectId) external view returns (uint256, bool) {
-        require(_projectId > 0, "Project ID must be positive");
-        require(projects[_projectId].solutionId > 0, "Project does not exist");
+        if(_projectId <= 0) revert IDMustBePositive();
+        if(projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
 
         Project storage project = projects[_projectId];
 
@@ -248,8 +253,8 @@ contract Projects {
 
     // Function to view the offers for a project
     function viewProjectOffers(uint256 _projectId) external view returns (uint256[] memory) {
-        require(_projectId > 0, "Project ID must be positive");
-        require(projects[_projectId].solutionId > 0, "Project does not exist");
+        if(_projectId <= 0) revert IDMustBePositive();
+        if(projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
 
         // Return the array of offer IDs for the project
         return projectToOffers[_projectId];
@@ -257,8 +262,8 @@ contract Projects {
 
     // Function to view the manager of a specific project
     function getProjectManager(uint256 _projectId) external view returns (address) {
-        require(_projectId > 0, "Project ID must be positive");
-        require(projects[_projectId].solutionId > 0, "Project does not exist");
+        if(_projectId <= 0) revert IDMustBePositive();
+        if(projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
 
         // Return the project manager
         return projects[_projectId].projectManager;
