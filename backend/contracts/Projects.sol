@@ -10,6 +10,7 @@ import "./TokenManagement.sol";
 contract Projects {
     // State variables
     uint256 private offerCounter;
+    uint256 private removalOfferCounter;
     uint256 constant MAX_RATING = 10;
     uint256 constant MIN_TOTAL_RATERS_COUNT = 4;
     uint256 constant MIN_RAITNGS_PER_OFFER = 3;
@@ -18,6 +19,7 @@ contract Projects {
     struct Project {
         uint256 solutionId;
         bool isOpenForManagementProposals;
+        bool isOpenForManagmentRemovalProposal;
         address projectManager;
     }
 
@@ -29,10 +31,28 @@ contract Projects {
         uint256 ratingSum;
         uint256 numberOfRaters;
         bool isOpenForRating;
-        mapping(address => uint) oldRating;
+        mapping(address => uint256) oldRating;
     }
 
+    // Removal Offer structure
+    struct RemovalOffer {
+        uint256 remOfferId;
+        uint256 projectId;
+        address proposer;
+        uint256 removalRatingSum;
+        uint256 removalNumberOfRaters;
+        bool isOpenForRemovalRating;
+        mapping(address => uint256) oldRemovalRating;
+    }
+
+    // Errors
     error insufficientTotalRatersForAllOffers();
+    error IDMustBePositive();
+    error projectDoesNotExist();
+    error notOpenForRemovalProposals();
+    error invalidID();
+    error onlyManager();
+    error notOpenForRating();
 
     // Project ID to Project mapping (solutionId is used as projectId)
     mapping(uint256 => Project) private projects;
@@ -42,6 +62,9 @@ contract Projects {
 
     // Offer ID to Offer mapping
     mapping(uint256 => Offer) private offers;
+
+    // Removal Offer ID to Removal Offer mapping
+    mapping(uint256 => RemovalOffer) private removalOffers;
 
     // Mapping to track which addresses have proposed for a project
     mapping(uint256 => mapping(address => bool)) private hasProposed;
@@ -54,7 +77,9 @@ contract Projects {
     // Events
     event NewProject(uint256 projectId);
     event NewOffer(uint256 offerId, uint256 projectId, address proposer);
+    event NewRemovalOffer(uint256 removalOfferId, uint256 projectId, address proposer);
     event OfferCancelled(uint256 offerId);
+    event RemovalOfferCancelled(uint256 removalOfferId);
     event OfferRated(uint256 offerId, address voter, uint256 rating);
 
     // Modifier to ensure only registered members can propose, cancel or rate an offer
@@ -100,7 +125,7 @@ contract Projects {
         );
 
         // Create new project and store it in the mapping
-        projects[_solutionId] = Project(_solutionId, true, address(0));
+        projects[_solutionId] = Project(_solutionId, true, false, address(0));
 
         emit NewProject(_solutionId); // Emit the event
     }
@@ -213,9 +238,45 @@ contract Projects {
         if (bestRating > 7) {
             project.isOpenForManagementProposals = false;
             projects[_projectId].projectManager = offers[bestOfferId].manager;
+            project.isOpenForManagmentRemovalProposal = true;
         }
     }
+    
+    // External function to propose a management removal offer for a project
+    function proposeRemoveManager(uint256 _projectId) external onlyMember{
+        if (_projectId < 0) revert IDMustBePositive();
+        if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
+        
+        if (projects[_projectId].isOpenForManagmentRemovalProposal == false) revert notOpenForRemovalProposals(); 
 
+        removalOfferCounter++;
+
+        RemovalOffer storage newRemovalOffer = removalOffers[removalOfferCounter];
+        newRemovalOffer.remOfferId = removalOfferCounter;
+        newRemovalOffer.projectId = _projectId;
+        newRemovalOffer.proposer = msg.sender;
+        newRemovalOffer.removalRatingSum = 0;
+        newRemovalOffer.removalNumberOfRaters = 0;
+        newRemovalOffer.isOpenForRemovalRating = true;
+
+        emit NewRemovalOffer(offerCounter, _projectId, msg.sender);
+    }
+
+    //!!! CAN PROBABLY BE GENERALIZED MAYBE?
+    // External function to cancel a management removal offer
+    function cancelRemovalOffer(uint256 _removalOfferId) external onlyMember {
+        if (_removalOfferId < 0 || _removalOfferId > removalOfferCounter) revert invalidID();
+
+        RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
+
+        if (removalOffer.proposer != msg.sender) revert onlyManager();
+        if (!removalOffer.isOpenForRemovalRating) revert notOpenForRating();
+
+        removalOffer.isOpenForRemovalRating = false; // Mark the offer as not open for rating
+
+        emit OfferCancelled(_removalOfferId); // Emit the event
+    }
+    
     // Function to view details about an offer
     function viewOfferDetails(
         uint256 _offerId
