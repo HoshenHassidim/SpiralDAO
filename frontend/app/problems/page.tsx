@@ -6,15 +6,31 @@ import Problem from "../../components/Problem"
 import Link from 'next/link'
 import { AiOutlinePlus } from 'react-icons/ai'
 
+//graph
+import type { NextPage } from "next";
+import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
+import { useQuery } from "@apollo/client";
+
 export default function problems () {
+
+  const {
+    loading,
+    error: subgraphQueryError,
+    data,
+  } = useQuery(GET_NEW_PROBLEMS);
+  if (data) {
+    console.log(data.newProblems);
+  }
+
 return (
     <div className="overflow-x-hidden">
       <Navbar />
       <section className="flex flex-col items-center justify-center gap-5 p-5">
-        <Problem />
-        <Problem />
-        <Problem />
-        <Problem />
+      {data &&
+        data.newProblems.map((d) => (
+          <Problem key={d} title={d.name}/>
+        ))}
+        
       </section>
 
       <Link className="fixed sm:bottom-5 sm:right-5 bottom-2 right-2" href="/problems/new">
