@@ -47,7 +47,6 @@ contract Solutions {
     uint256 constant RATING_NUMBER_INDEX = 1; // Index where the number of raters is held
     uint256 constant TOTAL_RATING_INDEX = 0; // Index where the total rating is held
 
-    error mustBeMember();
     error onlySolutionCreatorCanPerform();
     error invalidID();
     error nameCannotBeEmpty();
@@ -64,12 +63,6 @@ contract Solutions {
     event SolutionRated(uint256 solutionId, address rater, uint256 rating);
     event SolutionNameChanged(uint256 solutionId, string newName);
 
-    // Modifier to restrict functions to members only
-    modifier onlyMember() {
-        if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
-        _;
-    }
-
     // Modifier to restrict actions to solution creators
     modifier onlyCreator(uint256 _solutionId) {
         if (msg.sender != solutions[_solutionId].creator) revert onlySolutionCreatorCanPerform();
@@ -83,7 +76,7 @@ contract Solutions {
     }
 
     // Function to propose a solution
-    function proposeSolution(uint256 _problemId, string memory _name) external onlyMember {
+    function proposeSolution(uint256 _problemId, string memory _name) external {
         if (problemsContract.getProblemCounter() < _problemId) revert invalidID();
         if (bytes(_name).length <= 0) revert nameCannotBeEmpty();
         if (solutionNames[_name]) revert nameAlreadyExists();
@@ -144,7 +137,7 @@ contract Solutions {
     }
 
     // Function to rate a solution
-    function rateSolution(uint256 _solutionId, uint256 _rating) external onlyMember {
+    function rateSolution(uint256 _solutionId, uint256 _rating) external {
         if (solutionCounter < _solutionId) revert invalidID();
         if (solutions[_solutionId].creator == msg.sender) revert creatorCannotRateOwnProblem();
         if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
