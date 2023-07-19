@@ -1,5 +1,4 @@
 const { expect } = require('chai');
-const { ethers } = require('hardhat');
 
 describe("removeManager", function () {
   let problems, solutions, membership, tokenManagement, projects, tasks
