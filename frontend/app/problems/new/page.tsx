@@ -2,9 +2,14 @@
 
 import Navbar from "../../../components/Navbar"
 
-import {useState} from "react"
+import {useState, useEffect} from "react"
+import { useRouter } from 'next/navigation';
+
 
 import { useForm, SubmitHandler } from "react-hook-form"
+
+import abi from "../../../constants/Problems.json"
+import { useContractWrite, usePrepareContractWrite, useWaitForTransaction, useAccount, useContractRead } from 'wagmi'
 
 type Inputs = {
     example: string
@@ -13,10 +18,42 @@ type Inputs = {
 
 export default function page() {
   const { register, handleSubmit } = useForm();
+  const [name, setName] = useState();
+  const [description, setDescription] = useState("");
   
-  const onSubmit = data => {
+  useEffect(() => {
+    if (name) {
+      write() 
+    }
+  }, [name])
+  const onSubmit = async (data) => {
     console.log(data);
+    await setName(data.title)
+    // setDescription(data.description)
+    // await write()
+    
   }
+
+  const { data, isLoading, isSuccess, write } = useContractWrite({
+    address: '0x1eD127C2eD0Bfca9D2Ee3d7e8B5A7944A163af35',
+    abi: abi,
+    functionName: 'raiseProblem',
+    args: [name],
+  })
+
+    // Router instance to handle navigation
+    const router = useRouter();
+
+    useEffect(() => {
+      console.log(isSuccess)
+      // Check if the contract write operation was successful
+      if (isSuccess) {
+        // Redirect to the main page when it is successful
+        router.push('/problems'); // Replace '/main' with your desired main page URL
+        router.reload()
+
+      }
+    }, [isSuccess]);
 
     return (
         <div className="overflow-x-hidden">
@@ -32,11 +69,11 @@ export default function page() {
               className="border p-2 w-full mb-4" 
             />
 
-            <textarea 
+            {/* <textarea 
               {...register('description')}
               placeholder="Describe the problem"
               className="border p-2 w-full mb-4 h-32"
-            />
+            /> */}
 
             <button
               type="submit"
