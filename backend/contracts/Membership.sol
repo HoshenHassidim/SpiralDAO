@@ -67,11 +67,12 @@ contract Membership {
     // View function to access members mapping
     function viewMemberDetails(
         address _address
-    ) external view returns (string memory, uint256, uint256, uint256, uint256, uint256) {
+    ) external view returns (string memory, uint256, uint256, uint256, uint256, uint256, uint256) {
         if (bytes(members[_address].username).length == 0) revert NotMember();
         return (
             members[_address].username,
             members[_address].tasksAssigned,
+            members[_address].tasksAvg,
             members[_address].tasksAvg,
             members[_address].projectsManaged,
             members[_address].problemsAccepted,
