@@ -351,6 +351,15 @@ contract Projects {
 
         RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
         
+        // Return the offer details: remofferId, projectId, proposer, removalRatingSum, removalNumberOfRaters, isOpenForRemovalRating
+        return (
+           removalOffer.remOfferId,
+           removalOffer.projectId,
+           removalOffer.proposer,
+           removalOffer.removalRatingSum,
+           removalOffer.removalNumberOfRaters,
+           removalOffer.isOpenForRemovalRating
+        );
     }
 
     // Function to view details about a project
