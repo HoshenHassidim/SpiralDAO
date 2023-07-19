@@ -85,20 +85,8 @@ describe("Membership", function () {
         it("Should return the details of a member", async function () {
             await membership.connect(deployer).registerMember("deployer")
             let userDetails = await membership.viewMemberDetails(deployerAddress)
-            let username = userDetails[0]
-            let tasksAssigned = userDetails[1]
-            let taskAvgs = userDetails[2]
-            let tasksAvg = userDetails[3]
-            let projectsManaged = userDetails[4]
-            let problemsAccepted = userDetails[5]
-            let solutionsAccepted = userDetails[6]
-            expect(username).to.equal("deployer")
-            expect(tasksAssigned).to.equal(0)
-            expect(taskAvgs).to.equal(0)
-            expect(tasksAvg).to.equal(0)
-            expect(projectsManaged).to.equal(0)
-            expect(problemsAccepted).to.equal(0)
-            expect(solutionsAccepted).to.equal(0)
+            expect(userDetails[0]).to.equal("deployer")
+            for (let i = 1; i <= 6; i++) expect(userDetails[i]).to.equal(0)
         })
 
         it("Should revert when attempting to get username of non-member", async function () {
