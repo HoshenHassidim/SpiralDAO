@@ -2,7 +2,7 @@ const { expect } = require('chai');
 
 describe("removeManager", function () {
   let problems, solutions, membership, tokenManagement, projects, tasks
-  let accounts, projectManagerAccount, projectId
+  let accounts, projectManagerAccount, projectId, offerId
 
   beforeEach(async function () {
     const Membership = await ethers.getContractFactory("Membership")
@@ -62,7 +62,13 @@ describe("removeManager", function () {
       await projects.connect(accounts[i]).rateOffer(offerId, 9)
     }
     projectId = solutionId
+    projects.assignProjectManager(projectId)
   })
+
+  it('is it working?', async function () {
+    const manager = await projects.getProjectManager(projectId)
+    expect(manager).to.equal(projectManagerAccount.address)
+  });
 
   it('should remove the project manager if the removal offer is successful', async function () {
     // Propose a removal offer
