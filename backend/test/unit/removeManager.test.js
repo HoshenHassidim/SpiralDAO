@@ -2,7 +2,7 @@ const { expect } = require('chai');
 
 describe("removeManager", function () {
   let problems, solutions, membership, tokenManagement, projects, tasks
-  let accounts, projectManagerAccount, projectId, offerId
+  let accounts, projectManagerAccount, projectId, removalOfferId, removalProposerAccount
 
   beforeEach(async function () {
     const Membership = await ethers.getContractFactory("Membership")
@@ -63,13 +63,43 @@ describe("removeManager", function () {
     }
     projectId = solutionId
     projects.assignProjectManager(projectId)
+    removalProposerAccount = accounts[0]
   })
 
   it('is it working?', async function () {
     const manager = await projects.getProjectManager(projectId)
     expect(manager).to.equal(projectManagerAccount.address)
-  });
+  })
 
+  it('Should allow a member to propose the removal of a project manager', async function (){
+    //!!! Something is very wrong here, proposeRemoveManager should be members only
+    await projects.proposeRemoveManager(projectId);
+
+    removalOfferId = await projects.getRemovalOfferCounter()
+    //!! This should not need to be called from a member     
+    const removalOfferDetails = await projects.connect(removalProposerAccount).viewRemovalOfferDetails(removalOfferId)
+
+    expect(removalOfferDetails[0]).to.equal(removalOfferId)
+    expect(removalOfferDetails[1]).to.equal(projectId)
+    expect(removalOfferDetails[2]).to.equal(removalProposerAccount.address)
+    expect(removalOfferDetails[5]).to.be.true 
+  })
+ 
+  it ("Should allow members to rate the managment removal offer", async function () {
+    for (let i = 0; i < 5; i++) {
+      if (accounts[i] == projectManagerAccount) continue;
+      projects.connect(accounts[i]).rateRemovalOffer(removalOfferId, 9)
+    }
+   
+    // Issue with is line
+    const removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
+    
+    expect(removalOfferDetails[3]).to.equal(36) // Total Ratings
+    expect(removalOfferDetails[4]).to.equal(4) // Total number of raters
+
+    projectManager = await projects.getProjectManager(projectId)
+    expect(projectManager).to.equal(projectManagerAccount.address)
+  })
   it('should remove the project manager if the removal offer is successful', async function () {
     // Propose a removal offer
     await projects.proposeRemoveManager(projectId);
