@@ -2,9 +2,9 @@ const { expect } = require('chai');
 
 describe("removeManager", function () {
   let problems, solutions, membership, tokenManagement, projects, tasks
-  let accounts, projectManagerAccount, offerId
+  let accounts, projectManagerAccount, projectId
 
-  before(async function () {
+  beforeEach(async function () {
     const Membership = await ethers.getContractFactory("Membership")
     const Problems = await ethers.getContractFactory("Problems")
     const Solutions = await ethers.getContractFactory("Solutions")
@@ -42,7 +42,27 @@ describe("removeManager", function () {
     }
 
     await problems.connect(accounts[0]).raiseProblem("Problem 1")
-    })
+    const problemId = await problems.getProblemCounter()
+    for (let i = 1; i < 4; i++) {
+      await problems.connect(accounts[i]).rateProblem(problemId, 9)
+    }
+
+    await solutions.connect(accounts[1]).proposeSolution(problemId, "Solution 1")
+    const solutionId = await solutions.getSolutionCounter()
+    for (let i = 2; i < 6; i++) {
+      await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
+    }
+
+    await tokenManagement.connect(accounts[0]).authorizeContract(projects.address)
+
+    projectManagerAccount = accounts[2]
+    await projects.connect(projectManagerAccount).proposeOffer(1)
+    const offerId = await projects.getOfferCounter()
+    for (let i = 3; i < 7; i++) {
+      await projects.connect(accounts[i]).rateOffer(offerId, 9)
+    }
+    projectId = solutionId
+  })
 
   it('should remove the project manager if the removal offer is successful', async function () {
     // Propose a removal offer
