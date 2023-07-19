@@ -3,10 +3,14 @@
 pragma solidity ^0.8.4;
 
 contract Membership {
+    struct avg {
+        uint256 average;
+        uint256 id;
+    }
     struct Member {
         string username;
         uint256 tasksAssigned;
-        uint256[] taskAvgs;
+        avg[] taskAvgs;
         uint256 tasksAvg;
         uint256 projectsManaged;
         uint256 problemsAccepted;
@@ -85,14 +89,24 @@ contract Membership {
         members[_address].tasksAssigned++;
     }
 
-    //keep track of the average rating a person got for each task, and the total average of all the tasks
-    function addTaskAvg(address _address, uint256 _taskAvg) external {
-        members[_address].taskAvgs.push(_taskAvg);
-        uint x = 0;
+    // Function to add the average rating for a task and update the overall tasksAvg
+    function addTaskAvg(address _address, uint256 _taskAvg, uint256 _taskId) external {
+        bool check = true;
         for (uint i = 0; i < members[_address].taskAvgs.length; i++) {
-            x += members[_address].taskAvgs[i];
+            if ((((members[_address]).taskAvgs[i]).id) == (_taskId)) {
+                members[_address].taskAvgs[i].average = _taskAvg;
+                check = false;
+            }
         }
-        members[_address].tasksAvg = x;
+        if (check) {
+            avg memory newAvg = avg(_taskAvg, _taskId);
+            members[_address].taskAvgs.push(newAvg);
+        }
+        uint256 totalAvg = 0;
+        for (uint i = 0; i < members[_address].taskAvgs.length; i++) {
+            totalAvg += members[_address].taskAvgs[i].average;
+        }
+        members[_address].tasksAvg = totalAvg;
     }
 
     function proposedSolutionAccepted(address _address) external {
