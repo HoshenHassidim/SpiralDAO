@@ -344,6 +344,15 @@ contract Projects {
         );
     }
 
+    function viewRemovalOfferDetails(uint256 _removalOfferId) external view returns(
+        uint256, uint256, address, uint256, uint256, bool
+    ) {
+        if (_removalOfferId <= 0 || _removalOfferId > removalOfferCounter) revert invalidID(); 
+
+        RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
+        
+    }
+
     // Function to view details about a project
     function viewProjectDetails(uint256 _projectId) external view returns (uint256, bool) {
         require(_projectId > 0, "Project ID must be positive");
@@ -376,5 +385,10 @@ contract Projects {
     // Getter function for offerCounter
     function getOfferCounter() external view returns (uint256) {
         return offerCounter;
+    }
+
+    // Getter function for removalOfferCounter
+    function getRemovalOfferCounter() external view returns (uint256) {
+        return removalOfferCounter;
     }
 }
