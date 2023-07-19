@@ -113,8 +113,9 @@ contract Projects {
 
     // External function to propose a management offer for a project
     function proposeOffer(uint256 _solutionId) external onlyMember {
-        if (solutionsContract.getSolutionCounter() < _solutionId) revert invalidID();
-        if (_solutionId <= 0) revert IDMustBePositive();
+        if (solutionsContract.getSolutionCounter() < _solutionId || _solutionId == 0)
+            revert invalidID();
+        if (_solutionId < 0) revert IDMustBePositive();
         if (projects[_solutionId].solutionId == 0) {
             createProject(_solutionId); // Check if the solution has a project, if not, create one
         }
