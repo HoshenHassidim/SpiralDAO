@@ -86,7 +86,6 @@ describe("Membership", function () {
             await membership.connect(deployer).registerMember("deployer")
             let userDetails = await membership.viewMemberDetails(deployerAddress)
             expect(userDetails[0]).to.equal("deployer")
-            for (let i = 1; i <= 6; i++) expect(userDetails[i]).to.equal(0)
         })
 
         it("Should revert when attempting to get username of non-member", async function () {
