@@ -359,7 +359,8 @@ contract Tasks {
 
         membershipContract.addTaskAvg(
             tasks[_taskId].performer,
-            tasks[_taskId].completionRatingSum / tasks[_taskId].numberOfCompletionRaters
+            tasks[_taskId].completionRatingSum / tasks[_taskId].numberOfCompletionRaters,
+            _taskId
         );
 
         // Emit the TaskRated event.
