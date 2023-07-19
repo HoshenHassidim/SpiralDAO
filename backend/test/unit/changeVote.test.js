@@ -41,9 +41,9 @@ describe("changeVote", function () {
             await membership.connect(accounts[i]).registerMember(name)
         }
 
-        await problems.connect(accounts[0]).raiseProblem("Problem 1")        
+        await problems.connect(accounts[0]).raiseProblem("Problem 1")
     })
-      
+
     it("Should allow members to change their vote for problem", async function () {
         const problemId = await problems.getProblemCounter()
         for (let i = 1; i < 4; i++) {
@@ -55,15 +55,14 @@ describe("changeVote", function () {
             await problems.connect(accounts[i]).rateProblem(problemId, 9)
         }
         expect(await problems.meetsRatingCriteria(problemId)).to.be.true
-
-   })
+    })
 
     it("Should allow members to change their vote for solution", async function () {
         const problemId = await problems.getProblemCounter()
         await solutions.connect(accounts[0]).proposeSolution(problemId, "Solution 1")
         const solutionId = await solutions.getSolutionCounter()
         expect((await solutions.viewSolutionDetails(solutionId))[3]).to.equal("Solution 1")
-        
+
         for (let i = 1; i < 6; i++) {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 6)
         }
@@ -84,23 +83,23 @@ describe("changeVote", function () {
         await projects.connect(projectManagerAccount).proposeOffer(1)
 
         offerId = await projects.getOfferCounter()
-        
+
         // Members rating the offer
         for (let i = 3; i < 7; i++) {
             await projects.connect(accounts[i]).rateOffer(offerId, 6)
         }
-       const offerDetails = await projects.viewOfferDetails(offerId)
-       expect(offerDetails[3]).to.equal(24) // Total rating
-       expect(offerDetails[4]).to.equal(4) // Total number of raters
+        const offerDetails = await projects.viewOfferDetails(offerId)
+        expect(offerDetails[3]).to.equal(24) // Total rating
+        expect(offerDetails[4]).to.equal(4) // Total number of raters
 
         for (let i = 3; i < 7; i++) {
             await projects.connect(accounts[i]).rateOffer(offerId, 9)
         }
         const offerDetails1 = await projects.viewOfferDetails(offerId)
-        
+
         expect(offerDetails1[3]).to.equal(36) // Total rating
         expect(offerDetails1[4]).to.equal(4) // Total number of raters
-   })
+    })
 
     let performerAccount, taskId
 
@@ -121,24 +120,26 @@ describe("changeVote", function () {
 
         await tasks.connect(performerAccount).proposeTaskOffer(taskId)
 
-        offerId = await tasks.getTotalTaskOffers() 
-        
+        offerId = await tasks.getTotalTaskOffers()
+
         for (let i = 4; i < 7; i++) {
             await tasks.connect(accounts[i]).rateTaskOffer(offerId, 2)
         }
         const offerDetails = await tasks.getTaskOfferDetails(offerId)
         expect(offerDetails[3]).to.equal(6) // Total rating
         expect(offerDetails[4]).to.equal(3) // Total number of raters
-        
+
         for (let i = 4; i < 7; i++) {
             await tasks.connect(accounts[i]).rateTaskOffer(offerId, 9)
         }
         const offerDetailsNew = await tasks.getTaskOfferDetails(offerId)
         expect(offerDetailsNew[3]).to.equal(27) // Total rating
         expect(offerDetailsNew[4]).to.equal(3) // Total number of raters
-   })
+    })
 
     it("Should allow members to change rating for the completed task", async function () {
+        await tasks.connect(accounts[2]).rateTaskOffer(offerId, 9)
+
         await tasks.assignTask(taskId)
 
         await tasks.connect(performerAccount).completeTask(taskId)
