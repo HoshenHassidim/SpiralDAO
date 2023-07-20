@@ -2,7 +2,7 @@ const { expect } = require('chai');
 
 describe("removeManager", function () {
   let problems, solutions, membership, tokenManagement, projects, tasks
-  let accounts, projectManagerAccount, projectId, removalOfferId, removalProposerAccount
+  let accounts, projectManagerAccount, projectId, removalOfferId, removalProposerAccount, solutionId, offerId
 
   before(async function () {
     const Membership = await ethers.getContractFactory("Membership")
@@ -48,7 +48,7 @@ describe("removeManager", function () {
     }
 
     await solutions.connect(accounts[1]).proposeSolution(problemId, "Solution 1")
-    const solutionId = await solutions.getSolutionCounter()
+    solutionId = await solutions.getSolutionCounter()
     for (let i = 2; i < 6; i++) {
       await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
     }
@@ -56,8 +56,8 @@ describe("removeManager", function () {
     await tokenManagement.connect(accounts[0]).authorizeContract(projects.address)
 
     projectManagerAccount = accounts[2]
-    await projects.connect(projectManagerAccount).proposeOffer(1)
-    const offerId = await projects.getOfferCounter()
+    await projects.connect(projectManagerAccount).proposeOffer(solutionId)
+    offerId = await projects.getOfferCounter()
     for (let i = 3; i < 7; i++) {
       await projects.connect(accounts[i]).rateOffer(offerId, 9)
     }
@@ -113,8 +113,14 @@ describe("removeManager", function () {
     expect(projectDetails[2]).to.equal(false)
     expect(removalOfferDetails[5]).to.equal(false) // isOpenForRemovalRating should be false
   })
-})
 
-describe("cancelRemoveManagerProposal", function () {
+  it("Should cancel proposal to remove manager", async function () {
+    newPM = account[5]
+    await projects.connect(projectManagerAccount).proposeOffer(solutionId)
+    for (let i = 3; i < 7; i++) {
+      await projects.connect(accounts[i]).rateOffer(offerId, 9)
+    }
+    projects.assignProjectManager(projectId)
 
+  })
 })
