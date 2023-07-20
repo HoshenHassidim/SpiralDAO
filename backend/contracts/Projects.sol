@@ -246,7 +246,7 @@ contract Projects {
     }
     
     // External function to propose a management removal offer for a project
-    function proposeRemoveManager(uint256 _projectId) external onlyMember{
+    function proposeRemoveManager(uint256 _projectId) external onlyMember {
         if (_projectId < 0) revert IDMustBePositive();
         if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
         
@@ -265,7 +265,6 @@ contract Projects {
         emit NewRemovalOffer(offerCounter, _projectId, msg.sender);
     }
 
-    //!!! CAN PROBABLY BE GENERALIZED MAYBE?
     // External function to cancel a management removal offer
     function cancelRemovalOffer(uint256 _removalOfferId) external onlyMember {
         if (_removalOfferId < 0 || _removalOfferId > removalOfferCounter) revert invalidID();
@@ -309,11 +308,12 @@ contract Projects {
         Project storage project = projects[removalOffer.projectId];
 
         // Check if the total raters meet the requirements
-        if (removalOffer.removalNumberOfRaters < MIN_TOTAL_RATERS_COUNT) revert insufficientTotalRatersForAllOffers();
+        if (removalOffer.removalNumberOfRaters < MIN_RAITNGS_PER_OFFER) revert insufficientTotalRatersForAllOffers();
 
         // If the best offer's average rating is above 7, assign the project manager
-        if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > 7) {
+        // if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > 7) {
             project.isOpenForManagmentRemovalProposal = false;
+            removalOffer.isOpenForRemovalRating = false;
             project.projectManager = address(0);
             project.isOpenForManagementProposals = true;
 
@@ -322,7 +322,7 @@ contract Projects {
                 address proposer = offers[projectToOffers[projectId][i]].manager;
                 hasProposed[projectId][proposer] = false;
             }
-        }
+        // }
     }
 
     // Function to view details about an offer
@@ -363,14 +363,14 @@ contract Projects {
     }
 
     // Function to view details about a project
-    function viewProjectDetails(uint256 _projectId) external view returns (uint256, bool) {
+    function viewProjectDetails(uint256 _projectId) external view returns (uint256, bool, bool) {
         require(_projectId > 0, "Project ID must be positive");
         require(projects[_projectId].solutionId > 0, "Project does not exist");
 
         Project storage project = projects[_projectId];
 
         // Return the project details: projectId (same as solutionId), isOpenForManagementProposals
-        return (project.solutionId, project.isOpenForManagementProposals);
+        return (project.solutionId, project.isOpenForManagementProposals, project.isOpenForManagmentRemovalProposal);
     }
 
     // Function to view the offers for a project
