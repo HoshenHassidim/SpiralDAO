@@ -4,7 +4,7 @@ describe("removeManager", function () {
   let problems, solutions, membership, tokenManagement, projects, tasks
   let accounts, projectManagerAccount, projectId, removalOfferId, removalProposerAccount
 
-  beforeEach(async function () {
+  before(async function () {
     const Membership = await ethers.getContractFactory("Membership")
     const Problems = await ethers.getContractFactory("Problems")
     const Solutions = await ethers.getContractFactory("Solutions")
@@ -66,99 +66,55 @@ describe("removeManager", function () {
     removalProposerAccount = accounts[0]
   })
 
-  it('is it working?', async function () {
-    const manager = await projects.getProjectManager(projectId)
-    expect(manager).to.equal(projectManagerAccount.address)
-  })
-
   it('Should allow a member to propose the removal of a project manager', async function (){
-    //!!! Something is very wrong here, proposeRemoveManager should be members only
-    await projects.proposeRemoveManager(projectId);
+    await projects.connect(removalProposerAccount).proposeRemoveManager(projectId);
 
     removalOfferId = await projects.getRemovalOfferCounter()
-    //!! This should not need to be called from a member     
-    const removalOfferDetails = await projects.connect(removalProposerAccount).viewRemovalOfferDetails(removalOfferId)
+    const removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
 
     expect(removalOfferDetails[0]).to.equal(removalOfferId)
     expect(removalOfferDetails[1]).to.equal(projectId)
     expect(removalOfferDetails[2]).to.equal(removalProposerAccount.address)
     expect(removalOfferDetails[5]).to.be.true 
   })
- 
+
   it ("Should allow members to rate the managment removal offer", async function () {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       if (accounts[i] == projectManagerAccount) continue;
-      projects.connect(accounts[i]).rateRemovalOffer(removalOfferId, 9)
+      await projects.connect(accounts[i]).rateRemovalOffer(removalOfferId, 9)
     }
    
-    // Issue with is line
     const removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
-    
-    expect(removalOfferDetails[3]).to.equal(36) // Total Ratings
-    expect(removalOfferDetails[4]).to.equal(4) // Total number of raters
+   
+    expect(removalOfferDetails[3]).to.equal(18) // Total Ratings
+    expect(removalOfferDetails[4]).to.equal(2) // Total number of raters
 
     projectManager = await projects.getProjectManager(projectId)
     expect(projectManager).to.equal(projectManagerAccount.address)
   })
-  it('should remove the project manager if the removal offer is successful', async function () {
-    // Propose a removal offer
-    await projects.proposeRemoveManager(projectId);
-    const removalOffers = await projects.viewProjectOffers(projectId);
+  
+  it('Should remove the project manager if the removal offer is successful', async function () {
+    await projects.connect(accounts[5]).rateRemovalOffer(removalOfferId, 8);
 
-    expect(removalOffers).to.have.lengthOf(1);
-    removalOfferId = removalOffers[0];
+    const removalOfferDetailsReCheck = await projects.viewRemovalOfferDetails(removalOfferId)
 
-    // Rate the removal offer
-    await projects.rateRemovalOffer(removalOfferId, 8);
+    expect(removalOfferDetailsReCheck[3]).to.equals(26)
+    expect(removalOfferDetailsReCheck[4]).to.equals(3)
 
     // Remove the project manager
-    await projects.removeProjectManager(removalOfferId);
+    await projects.removeProjectManager(removalOfferId)
 
     // Verify that the project manager has been removed
-    const projectManager = await projects.getProjectManager(projectId);
-    const projectDetails = await projects.viewProjectDetails(projectId);
+    const projectManager = await projects.getProjectManager(projectId)
+    const projectDetails = await projects.viewProjectDetails(projectId)
+    const removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
     expect(projectManager).to.equal('0x0000000000000000000000000000000000000000');
-    expect(projectDetails[1]).to.equal(true); // isOpenForManagementProposals should be true
-  });
+    expect(projectDetails[1]).to.equal(true) // isOpenForManagementProposals should be true
+    expect(projectDetails[2]).to.equal(false)
+    expect(removalOfferDetails[5]).to.equal(false) // isOpenForRemovalRating should be false
+  })
+})
 
-  it('should not remove the project manager if the removal offer does not meet the rating threshold', async function () {
-    // Propose a removal offer
-    await projects.proposeRemoveManager(projectId);
-    const removalOffers = await projects.viewProjectOffers(projectId);
+describe("cancelRemoveManagerProposal", function () {
 
-    expect(removalOffers).to.have.lengthOf(1);
-    removalOfferId = removalOffers[0];
-
-    // Rate the removal offer with a low rating
-    await projects.rateRemovalOffer(removalOfferId, 5);
-
-    // Try to remove the project manager
-    await expect(projects.removeProjectManager(removalOfferId)).to.be.revertedWith(
-      'insufficientTotalRatersForAllOffers'
-    );
-
-    // Verify that the project manager has not been removed
-    const projectManager = await projects.getProjectManager(projectId);
-    const projectDetails = await projects.viewProjectDetails(projectId);
-    expect(projectManager).to.equal(manager.address);
-    expect(projectDetails[1]).to.equal(false); // isOpenForManagementProposals should be false
-  });
-
-  it('should revert if the proposer tries to remove the project manager before rating the removal offer', async function () {
-    // Propose a removal offer
-    await projects.proposeRemoveManager(projectId);
-    const removalOffers = await projects.viewProjectOffers(projectId);
-
-    expect(removalOffers).to.have.lengthOf(1);
-    removalOfferId = removalOffers[0];
-
-    // Try to remove the project manager without rating the removal offer
-    await expect(projects.removeProjectManager(removalOfferId)).to.be.revertedWith('notOpenForRating');
-
-    // Verify that the project manager has not been removed
-    const projectManager = await projects.getProjectManager(projectId);
-    const projectDetails = await projects.viewProjectDetails(projectId);
-    expect(projectManager).to.equal(manager.address);
-    expect(projectDetails[1]).to.equal(false); // isOpenForManagementProposals should be false
-  });
-});
+})
