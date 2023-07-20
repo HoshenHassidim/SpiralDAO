@@ -55,13 +55,13 @@ describe("Solutions", function () {
     it("unregisterMember should revert when not a member", async function () {
         await expect(
             membershipContract.connect(user1).unregisterMember()
-        ).to.be.revertedWith("NotMember");
+        ).to.be.revertedWith("mustBeMember");
     });
 
     it("getMember should revert when not a member", async function () {
         await expect(
             membershipContract.getMember(user1.address)
-        ).to.be.revertedWith("NotMember");
+        ).to.be.revertedWith("mustBeMember");
     });
 
     // Test cases for Problems.sol
