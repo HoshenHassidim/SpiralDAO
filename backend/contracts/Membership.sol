@@ -93,11 +93,13 @@ contract Membership {
 
     //when task is assigned to member, will add it to this array to keep track of all tasks worked on
     function assignTaskToMember(address _address) external {
+        if (bytes(members[_address].username).length == 0) revert NotMember();
         members[_address].tasksAssigned++;
     }
 
     // Function to add the average rating for a task and update the overall tasksAvg
     function addTaskAvg(address _address, uint256 _taskAvg, uint256 _taskId) external {
+        if (bytes(members[_address].username).length == 0) revert NotMember();
         bool check = true;
         for (uint i = 0; i < members[_address].taskAvgs.length; i++) {
             if ((((members[_address]).taskAvgs[i]).taskId) == (_taskId)) {
@@ -117,19 +119,23 @@ contract Membership {
     }
 
     function proposedSolutionAccepted(address _address) external {
+        if (bytes(members[_address].username).length == 0) revert NotMember();
         members[_address].solutionsAccepted++;
     }
 
     function proposedProblemAccepted(address _address) external {
+        if (bytes(members[_address].username).length == 0) revert NotMember();
         members[_address].problemsAccepted++;
     }
 
     function managedProject(address _address) external {
+        if (bytes(members[_address].username).length == 0) revert NotMember();
         members[_address].projectsManaged++;
     }
 
     // Function to calculate the rating of a member on a scale of 1 to 10
     function calculateRating(address _address) external view returns (uint256) {
+        if (bytes(members[_address].username).length == 0) revert NotMember();
         Member memory member = members[_address];
 
         // Calculate a weighted average based on different factors
