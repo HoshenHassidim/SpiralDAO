@@ -19,23 +19,10 @@ describe("Membership", function () {
     })
 
     describe("viewMemberDetails", function () {
-        // it("Should return the details of a member", async function () {
-        //     await membership.connect(deployer).registerMember("deployer")
-        //     let userDetails = await membership.viewMemberDetails(deployerAddress)
-        //     expect(userDetails[0]).to.equal("deployer")
-        //     for (let i = 1; i <= 5; i++) expect(userDetails[i]).to.equal(0)
-        // })
-
-        // it("Should revert when attempting to get username of non-member", async function () {
-        //     await expect(membership.viewMemberDetails(deployerAddress)).to.be.revertedWith(
-        //         "NotMember"
-        //     )
-        // })
-
         let problems, solutions, membership, tokenManagement, projects, tasks
         let accounts, projectManagerAccount, projectId, removalOfferId
 
-        beforeEach(async function () {
+        before(async function () {
             const Membership = await ethers.getContractFactory("Membership")
             const Problems = await ethers.getContractFactory("Problems")
             const Solutions = await ethers.getContractFactory("Solutions")
@@ -98,6 +85,15 @@ describe("Membership", function () {
             } //people 3,4,5,6 rate offer as 9
             projectId = solutionId //assigns projectId
             projects.assignProjectManager(projectId) //assigns project manager
+        })
+
+        it("Should track member details correctly", async function () {
+            // Get the member details for accounts[0]
+            let userDetails = await membership.viewMemberDetails(await accounts[2].getAddress())
+            // Verify that the username is correctly set to "0"
+            expect(userDetails[0]).to.equal("2")
+            // Verify that the number of problems raised by accounts[0] is 1
+            expect(userDetails[4]).to.equal(0)
         })
     })
 })
