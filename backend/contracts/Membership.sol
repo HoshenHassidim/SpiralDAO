@@ -135,6 +135,7 @@ contract Membership {
 
     // Function to calculate the rating of a member on a scale of 1 to 10
     function calculateRating(address _address) external view returns (uint256) {
+        //THIS DOES NOT RLY WORK YET
         if (bytes(members[_address].username).length == 0) revert NotMember();
         Member memory member = members[_address];
 
