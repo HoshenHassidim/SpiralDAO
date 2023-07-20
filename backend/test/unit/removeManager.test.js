@@ -114,13 +114,32 @@ describe("removeManager", function () {
     expect(removalOfferDetails[5]).to.equal(false) // isOpenForRemovalRating should be false
   })
 
-  it("Should cancel proposal to remove manager", async function () {
-    newPM = account[5]
-    await projects.connect(projectManagerAccount).proposeOffer(solutionId)
-    for (let i = 3; i < 7; i++) {
+  it("Should allow new manager to be elected after one is removed", async function () {
+    newPM = accounts[5]
+    newRPA = accounts[3]
+    await projects.connect(newPM).proposeOffer(solutionId)
+    offerId = await projects.getOfferCounter()
+    const offerDetails = projects.viewOfferDetails(offerId)
+
+    // expect(offerDetails[0]).to.equal(offerId)
+    // expect(offerDetails[1]).to.equal(projectId)
+    expect(offerDetails[2]).to.equal(newPM.address)
+    expect(offerDetails[5]).to.be.true
+    
+    for (let i = 0; i < 4; i++) {
       await projects.connect(accounts[i]).rateOffer(offerId, 9)
     }
     projects.assignProjectManager(projectId)
 
+    await projects.connect(newRPA).proposeRemoveManager(projectId);
+    removalOfferId = await projects.getRemovalOfferCounter()
+    const removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
+    const projectManager = await projects.getProjectManager()
+
+    expect(removalOfferDetails[0]).to.equal(removalOfferId)
+    expect(removalOfferDetails[1]).to.equal(projectId)
+    expect(removalOfferDetails[2]).to.equal(newRPA)
+    expect(removalOfferDetails[5]).to.be.true
+    expect(projectManager).to.equal(newPM)
   })
 })
