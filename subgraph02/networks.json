@@ -1,0 +1,20 @@
+{
+  "fantom-testnet": {
+    "TokenManagement": {
+      "address": "0xcE3c197B5a1a5D9E0f29d3C445115A8A661f0C59",
+      "startBlock": 18423258
+    },
+    "Problems": {
+      "address": "0x1eD127C2eD0Bfca9D2Ee3d7e8B5A7944A163af35"
+    },
+    "Solutions": {
+      "address": "0x93F1A258Ac704426B4D815416B7131B45dE6E509"
+    },
+    "Projects": {
+      "address": "0x1D14237BbBDC1219703642e0160617EB32bA48fA"
+    },
+    "Tasks": {
+      "address": "0x6e601EfC90eaC60Fb4997a8674DBb1CD441cc733"
+    }
+  }
+}
