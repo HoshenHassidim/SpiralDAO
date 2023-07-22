@@ -79,10 +79,10 @@ contract Tasks {
     event TaskChanged(uint256 taskId, string newTaskName, uint256 newTaskValue); // Event emitted when a task is changed
     event NewTaskOffer(uint256 offerId, uint256 taskId, address offeror); // Event emitted when a new offer is made
     event TaskOfferCanceled(uint256 taskId, uint256 offerId); // Event emitted when an offer is cancelled
-    event TaskOfferRated(uint256 offerId, uint256 rating); // Event emitted when an offer is rated
+    event TaskOfferRated(uint256 offerId, address rater, uint256 rating); // Event emitted when an offer is rated
     event TaskAssigned(uint256 taskId, uint256 offerId, address performer); // Event emitted when a task is assigned
     event TaskCompleted(uint256 taskId); // Event emitted when a task is completed
-    event TaskExecutionRated(uint256 taskId, uint256 rating); // Event emitted when the execution of a task is rated
+    event TaskExecutionRated(uint256 taskId, address rater, uint256 rating); // Event emitted when the execution of a task is rated
     event TaskVerified(uint256 taskId, bool areVerified); // Event emitted when a task is verified
 
     // References to imported contracts
@@ -260,7 +260,7 @@ contract Tasks {
         }
         tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] = _rating;
         taskOffers[_offerId].ratingSum += _rating;
-        emit TaskOfferRated(_offerId, _rating);
+        emit TaskOfferRated(_offerId, msg.sender, _rating);
     }
 
     // Function to assign the task to a member who has the highest rating on the task offer.
@@ -348,7 +348,7 @@ contract Tasks {
         tasks[_taskId].completionRatingSum += _rating;
 
         // Emit the TaskRated event.
-        emit TaskExecutionRated(_taskId, _rating);
+        emit TaskExecutionRated(_taskId, msg.sender, _rating);
     }
 
     // Function to verify a task.

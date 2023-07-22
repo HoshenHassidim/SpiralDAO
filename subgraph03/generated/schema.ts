@@ -3023,7 +3023,7 @@ export class Task extends Entity {
   }
 }
 
-export class ActiveTasksOffer extends Entity {
+export class ActiveTaskOffer extends Entity {
   constructor(id: Bytes) {
     super();
     this.set("id", Value.fromBytes(id));
@@ -3031,25 +3031,25 @@ export class ActiveTasksOffer extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save ActiveTasksOffer entity without an ID");
+    assert(id != null, "Cannot save ActiveTaskOffer entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.BYTES,
-        `Entities of type ActiveTasksOffer must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type ActiveTaskOffer must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("ActiveTasksOffer", id.toBytes().toHexString(), this);
+      store.set("ActiveTaskOffer", id.toBytes().toHexString(), this);
     }
   }
 
-  static loadInBlock(id: Bytes): ActiveTasksOffer | null {
-    return changetype<ActiveTasksOffer | null>(
-      store.get_in_block("ActiveTasksOffer", id.toHexString())
+  static loadInBlock(id: Bytes): ActiveTaskOffer | null {
+    return changetype<ActiveTaskOffer | null>(
+      store.get_in_block("ActiveTaskOffer", id.toHexString())
     );
   }
 
-  static load(id: Bytes): ActiveTasksOffer | null {
-    return changetype<ActiveTasksOffer | null>(
-      store.get("ActiveTasksOffer", id.toHexString())
+  static load(id: Bytes): ActiveTaskOffer | null {
+    return changetype<ActiveTaskOffer | null>(
+      store.get("ActiveTaskOffer", id.toHexString())
     );
   }
 
@@ -3142,6 +3142,102 @@ export class ActiveTasksOffer extends Entity {
 
   set isOpenForRating(value: boolean) {
     this.set("isOpenForRating", Value.fromBoolean(value));
+  }
+
+  get blockNumber(): BigInt {
+    let value = this.get("blockNumber");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set blockNumber(value: BigInt) {
+    this.set("blockNumber", Value.fromBigInt(value));
+  }
+}
+
+export class UserTaskOfferRating extends Entity {
+  constructor(id: Bytes) {
+    super();
+    this.set("id", Value.fromBytes(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save UserTaskOfferRating entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.BYTES,
+        `Entities of type UserTaskOfferRating must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("UserTaskOfferRating", id.toBytes().toHexString(), this);
+    }
+  }
+
+  static loadInBlock(id: Bytes): UserTaskOfferRating | null {
+    return changetype<UserTaskOfferRating | null>(
+      store.get_in_block("UserTaskOfferRating", id.toHexString())
+    );
+  }
+
+  static load(id: Bytes): UserTaskOfferRating | null {
+    return changetype<UserTaskOfferRating | null>(
+      store.get("UserTaskOfferRating", id.toHexString())
+    );
+  }
+
+  get id(): Bytes {
+    let value = this.get("id");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set id(value: Bytes) {
+    this.set("id", Value.fromBytes(value));
+  }
+
+  get offerId(): BigInt {
+    let value = this.get("offerId");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set offerId(value: BigInt) {
+    this.set("offerId", Value.fromBigInt(value));
+  }
+
+  get rater(): Bytes {
+    let value = this.get("rater");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set rater(value: Bytes) {
+    this.set("rater", Value.fromBytes(value));
+  }
+
+  get rating(): BigInt {
+    let value = this.get("rating");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set rating(value: BigInt) {
+    this.set("rating", Value.fromBigInt(value));
   }
 
   get blockNumber(): BigInt {

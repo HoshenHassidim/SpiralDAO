@@ -66,7 +66,7 @@ contract Projects {
     event NewProject(uint256 projectId);
     event NewManagementOffer(uint256 offerId, uint256 projectId, address proposer);
     event ManagementOfferCancelled(uint256 offerId);
-    event ManagementOfferRated(uint256 offerId, address voter, uint256 rating);
+    event ManagementOfferRated(uint256 offerId, address rater, uint256 rating);
     event ProjectManagerAssigned(uint256 indexed projectId, address projectManager);
 
     // Constructor to initialize the imported contracts
@@ -149,6 +149,8 @@ contract Projects {
         if (!offer.isOpenForRating) revert notOpenForRating();
 
         offer.isOpenForRating = false; // Mark the offer as not open for rating
+
+        hasProposed[offers[_offerId].projectId][msg.sender] = false;
 
         emit ManagementOfferCancelled(_offerId); // Emit the event
     }
