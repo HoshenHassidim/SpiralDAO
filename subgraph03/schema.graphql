@@ -257,7 +257,7 @@ type Task @entity(immutable: true) {
   blockNumber: BigInt!
 }
 
-type ActiveTasksOffer @entity {
+type ActiveTaskOffer @entity {
   id: Bytes!
   offerId: BigInt! # uint256
   taskId: BigInt! # uint256
@@ -265,6 +265,14 @@ type ActiveTasksOffer @entity {
   ratingCount: BigInt!
   ratingSum: BigInt!
   isOpenForRating: Boolean!
+  blockNumber: BigInt!
+}
+
+type UserTaskOfferRating @entity {
+  id: Bytes!
+  offerId: BigInt! # uint256
+  rater: Bytes! # address
+  rating: BigInt! # uint256
   blockNumber: BigInt!
 }
 

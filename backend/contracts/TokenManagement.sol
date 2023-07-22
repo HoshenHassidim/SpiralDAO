@@ -30,6 +30,7 @@ contract TokenManagement {
     error addressesCannotBeZero();
     error taskValueMustBeGreaterThanZero();
     error projectIDCannotBeZero();
+    error contractWasNotAuthorised();
 
     event ProjectTokenCreated(
         uint256 indexed projectId,
@@ -46,6 +47,9 @@ contract TokenManagement {
         uint256 projectTokens,
         uint256 daoTokens
     );
+
+    event AuthorizationGranted(address indexed account);
+    event AuthorizationRevoked(address indexed account);
 
     constructor() {
         // The constructor sets the admin to the sender, and authorizes the sender
@@ -72,12 +76,17 @@ contract TokenManagement {
     function authorizeContract(address contractAddress) external onlyAdmin {
         if (contractAddress == address(0)) revert addressCannotBeZero();
         authorizedContracts[contractAddress] = true;
+
+        emit AuthorizationGranted(contractAddress);
     }
 
     // Function to revoke authorization from a contract, can only be called by the admin
     function revokeContractAuthorization(address contractAddress) external onlyAdmin {
-        if (contractAddress == address(0)) revert addressCannotBeZero();
+        if (!authorizedContracts[contractAddress]) revert contractWasNotAuthorised();
+
         authorizedContracts[contractAddress] = false;
+
+        emit AuthorizationRevoked(contractAddress);
     }
 
     // Function to create a new token for a project, can only be called by an authorized contract
