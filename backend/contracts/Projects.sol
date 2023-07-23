@@ -338,7 +338,7 @@ contract Projects {
     // Function to view details about an offer
     function viewOfferDetails(
         uint256 _offerId
-    ) external view returns (uint256, uint256, address, uint256, uint256, bool) {
+    ) external view returns (uint256, uint256, address, uint256, uint256, bool, bool) {
         require(_offerId > 0 && _offerId <= offerCounter, "Invalid offer ID");
 
         Offer storage offer = offers[_offerId];
@@ -350,7 +350,8 @@ contract Projects {
             offer.manager,
             offer.ratingSum,
             offer.numberOfRaters,
-            offer.isOpenForRating
+            offer.isOpenForRating,
+            offer.isActive
         );
     }
 
