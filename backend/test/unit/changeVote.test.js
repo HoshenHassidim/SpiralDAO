@@ -2,7 +2,7 @@ const { expect } = require("chai")
 
 describe("changeVote", function () {
     let problems, solutions, membership, tokenManagement, projects, tasks
-    let accounts, projectManagerAccount, offerId
+    let accounts, projectManagerAccount, offerId, projectId
 
     before(async function () {
         const Membership = await ethers.getContractFactory("Membership")
@@ -72,6 +72,8 @@ describe("changeVote", function () {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
         }
         expect(await solutions.canBecomeProject(solutionId)).to.be.true
+
+        projectId = solutionId
     })
 
     it("Should allow members to change their rating for the management offer", async function () {
@@ -80,7 +82,7 @@ describe("changeVote", function () {
         permission_a = await tokenManagement.isAuthorized(projects.address)
 
         projectManagerAccount = accounts[2]
-        await projects.connect(projectManagerAccount).proposeOffer(1)
+        await projects.connect(projectManagerAccount).proposeOffer(projectId)
 
         offerId = await projects.getOfferCounter()
 
@@ -104,19 +106,16 @@ describe("changeVote", function () {
     let performerAccount, taskId
 
     it("Should allow members to change their rate for the task offer", async function () {
-        await projects.assignProjectManager(1)
-
-        const projectManager = await projects.getProjectManager(1)
+        await projects.assignProjectManager(projectId)
 
         permission_b = await tokenManagement.isAuthorized(tasks.address)
         await tokenManagement.connect(accounts[0]).authorizeContract(tasks.address)
         permission_a = await tokenManagement.isAuthorized(tasks.address)
 
         performerAccount = accounts[3]
-        await tasks.connect(projectManagerAccount).addTask(1, "Task 1", 1000)
+        await tasks.connect(projectManagerAccount).addTask(projectId, "Task 1", 1000)
 
         taskId = await tasks.getTotalTasks()
-        const taskDetails = await tasks.getTaskDetails(taskId)
 
         await tasks.connect(performerAccount).proposeTaskOffer(taskId)
 
@@ -157,5 +156,27 @@ describe("changeVote", function () {
         const taskDetails1 = await tasks.getTaskDetails(taskId)
         expect(taskDetails1[5]).to.equal(17) // Total rating
         expect(taskDetails1[6]).to.equal(2) // Total number of raters
+    })
+
+    it ("Should allow members to change their rating for the management removal offer", async function () {
+        removalProposer = accounts[7]
+        await projects.connect(removalProposer).proposeRemoveManager(projectId)
+        removalOfferId = projects.getRemovalOfferCounter()
+        
+        // Members rating the offer
+        for (let i = 3; i < 7; i++) {
+            await projects.connect(accounts[i]).rateRemovalOffer(removalOfferId, 6)
+        }
+        const removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
+        expect(removalOfferDetails[3]).to.equal(24) // Total rating
+        expect(removalOfferDetails[4]).to.equal(4) // Total number of raters
+
+        for (let i = 3; i < 7; i++) {
+            await projects.connect(accounts[i]).rateRemovalOffer(removalOfferId, 9)
+        }
+        const removalOfferDetails1 = await projects.viewRemovalOfferDetails(removalOfferId)
+
+        expect(removalOfferDetails1[3]).to.equal(36) // Total rating
+        expect(removalOfferDetails1[4]).to.equal(4) // Total number of raters
     })
 })
