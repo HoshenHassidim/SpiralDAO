@@ -89,7 +89,8 @@ contract Membership {
             //does not return taskAvgs
             members[_address].projectsManaged, //3
             members[_address].problemsAccepted, //4
-            members[_address].solutionsAccepted //5
+            members[_address].solutionsAccepted /*, //5
+            calculateRating(_address)*/
         );
     }
 
@@ -146,38 +147,38 @@ contract Membership {
         members[_address].projectsManaged++;
     }
 
-    // Function to calculate the rating of a member on a scale of 1 to 10
-    function calculateRating(address _address) external view returns (uint256) {
-        //THIS DOES NOT RLY WORK YET
-        if (bytes(members[_address].username).length == 0) revert NotMember();
-        Member memory member = members[_address];
+    // // Function to calculate the rating of a member on a scale of 1 to 10
+    // function calculateRating(address _address) external view returns (uint256) {
+    //     //THIS DOES NOT RLY WORK YET
+    //     if (bytes(members[_address].username).length == 0) revert NotMember();
+    //     Member memory member = members[_address];
 
-        // Calculate a weighted average based on different factors
-        // You can modify these weights based on your specific criteria and requirements
-        uint256 tasksWeight = 3;
-        uint256 projectsWeight = 3;
-        uint256 problemsWeight = 1;
-        uint256 solutionsWeight = 2;
+    //     // Calculate a weighted average based on different factors
+    //     // You can modify these weights based on your specific criteria and requirements
+    //     uint256 tasksWeight = 3;
+    //     uint256 projectsWeight = 3;
+    //     uint256 problemsWeight = 1;
+    //     uint256 solutionsWeight = 2;
 
-        uint256 totalWeight = tasksWeight + projectsWeight + problemsWeight + solutionsWeight;
+    //     uint256 totalWeight = tasksWeight + projectsWeight + problemsWeight + solutionsWeight;
 
-        uint256 tasksAvgScore = (member.tasksAvg * tasksWeight) / totalWeight;
-        uint256 projectsScore = (member.projectsManaged * projectsWeight) / totalWeight;
-        uint256 problemsScore = (member.problemsAccepted * problemsWeight) / totalWeight;
-        uint256 solutionsScore = (member.solutionsAccepted * solutionsWeight) / totalWeight;
+    //     uint256 tasksAvgScore = (member.tasksAvg * tasksWeight) / totalWeight;
+    //     uint256 projectsScore = (member.projectsManaged * projectsWeight) / totalWeight;
+    //     uint256 problemsScore = (member.problemsAccepted * problemsWeight) / totalWeight;
+    //     uint256 solutionsScore = (member.solutionsAccepted * solutionsWeight) / totalWeight;
 
-        uint256 totalScore = tasksAvgScore + projectsScore + problemsScore + solutionsScore;
+    //     uint256 totalScore = tasksAvgScore + projectsScore + problemsScore + solutionsScore;
 
-        // Normalize the score to a scale of 1 to 10
-        uint256 normalizedScore = (totalScore * 10) / totalWeight;
+    //     // Normalize the score to a scale of 1 to 10
+    //     uint256 normalizedScore = (totalScore * 10) / totalWeight;
 
-        // Ensure the rating is within the range of 1 to 10
-        if (normalizedScore > 10) {
-            return 10;
-        } else if (normalizedScore < 1) {
-            return 1;
-        } else {
-            return normalizedScore;
-        }
-    }
+    //     // Ensure the rating is within the range of 1 to 10
+    //     if (normalizedScore > 10) {
+    //         return 10;
+    //     } else if (normalizedScore < 1) {
+    //         return 1;
+    //     } else {
+    //         return normalizedScore;
+    //     }
+    // }
 }
