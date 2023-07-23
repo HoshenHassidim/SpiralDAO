@@ -31,6 +31,7 @@ contract Projects {
         uint256 ratingSum;
         uint256 numberOfRaters;
         bool isOpenForRating;
+        bool isActive;
         mapping(address => uint256) oldRating;
     }
 
@@ -55,6 +56,7 @@ contract Projects {
     error notOpenForRating();
     error ratingOutOfRange();
     error managerCannotRateAgainstThemselves();
+    error offerNotActive();
 
     // Project ID to Project mapping (solutionId is used as projectId)
     mapping(uint256 => Project) private projects;
@@ -164,6 +166,7 @@ contract Projects {
         newOffer.ratingSum = 0;
         newOffer.numberOfRaters = 0;
         newOffer.isOpenForRating = true;
+        newOffer.isActive = true;
 
         projectToOffers[projectId].push(offerCounter); // Update the project to offer mapping
 
@@ -180,6 +183,7 @@ contract Projects {
         require(offer.isOpenForRating, "Offer is not open for rating");
 
         offer.isOpenForRating = false; // Mark the offer as not open for rating
+        offer.isActive = false;
 
         emit OfferCancelled(_offerId); // Emit the event
     }
@@ -191,6 +195,7 @@ contract Projects {
 
         Offer storage offer = offers[_offerId];
 
+        if (!offer.isActive) revert offerNotActive(); 
         require(offer.manager != msg.sender, "Offer manager cannot rate their own offer");
         require(offer.isOpenForRating, "Offer is not open for rating");
 
@@ -219,7 +224,7 @@ contract Projects {
         // Iterate over all offers for the project to find the best one
         for (uint256 i = 0; i < projectToOffers[_projectId].length; i++) {
             Offer storage offer = offers[projectToOffers[_projectId][i]];
-
+            if (!offer.isActive) continue;
             if (offer.numberOfRaters >= MIN_RAITNGS_PER_OFFER && offer.isOpenForRating) {
                 uint256 averageRating = offer.ratingSum / offer.numberOfRaters;
 
@@ -242,6 +247,11 @@ contract Projects {
             project.isOpenForManagementProposals = false;
             projects[_projectId].projectManager = offers[bestOfferId].manager;
             project.isOpenForManagmentRemovalProposal = true;
+            for (uint256 i = 0; i < projectToOffers[_projectId].length; i++) {
+                Offer storage offer = offers[projectToOffers[_projectId][i]];
+                if (!offer.isActive) continue;
+                offer.isActive = false;
+            }
         }
     }
     
@@ -311,7 +321,7 @@ contract Projects {
         if (removalOffer.removalNumberOfRaters < MIN_RAITNGS_PER_OFFER) revert insufficientTotalRatersForAllOffers();
 
         // If the best offer's average rating is above 7, assign the project manager
-        // if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > 7) {
+        if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > 7) {
             project.isOpenForManagmentRemovalProposal = false;
             removalOffer.isOpenForRemovalRating = false;
             project.projectManager = address(0);
@@ -322,7 +332,7 @@ contract Projects {
                 address proposer = offers[projectToOffers[projectId][i]].manager;
                 hasProposed[projectId][proposer] = false;
             }
-        // }
+        }
     }
 
     // Function to view details about an offer
