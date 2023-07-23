@@ -23,7 +23,7 @@ contract Membership {
     error AlreadyMember();
     error UsernameRequired();
     error UsernameAlreadyExists();
-    error NotMember();
+    error mustBeMember();
 
     // Mapping of address to Member - made private
     mapping(address => Member) private members;
@@ -32,7 +32,7 @@ contract Membership {
     mapping(string => bool) private usernames;
 
     // Declare an event for member registration
-    event MemberRegistered(address indexed memberAddress);
+    event MemberRegistered(address indexed memberAddress, string username);
 
     // Declare an event for member unregistration
     event MemberUnregistered(address indexed memberAddress);
@@ -53,13 +53,12 @@ contract Membership {
         newMember.projectsManaged = 0;
         newMember.problemsAccepted = 0;
         newMember.solutionsAccepted = 0;
-
-        emit MemberRegistered(msg.sender); // Emit event after successful registration
+        emit MemberRegistered(msg.sender, _username); // Emit event after successful registration
     }
 
     // Function to unregister a member
     function unregisterMember() external {
-        if (bytes(members[msg.sender].username).length == 0) revert NotMember();
+        if (bytes(members[msg.sender].username).length == 0) revert mustBeMember();
 
         delete usernames[members[msg.sender].username];
         delete members[msg.sender];
@@ -81,7 +80,7 @@ contract Membership {
     function viewMemberDetails(
         address _address
     ) external view returns (string memory, uint256, uint256, uint256, uint256, uint256) {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (bytes(members[_address].username).length == 0) revert mustBeMember();
         return (
             members[_address].username, //0
             members[_address].tasksAssigned, //1
