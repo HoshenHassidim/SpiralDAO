@@ -46,10 +46,11 @@ export default function page() {
       else {
 
         write() 
+        console.log(data)
       }
     }
   }, [name])
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     console.log(data);
     await setName(data.title)
     // setDescription(data.description)
@@ -73,7 +74,7 @@ export default function page() {
       if (isSuccess) {
         // Redirect to the main page when it is successful
         router.push('/problems'); // Replace '/main' with your desired main page URL
-        router.reload()
+        router.refresh()
 
       }
     }, [isSuccess]);

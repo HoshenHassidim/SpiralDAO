@@ -4,6 +4,7 @@ import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 
 import abi from "../constants/Problems.json"
 import { useContractWrite, usePrepareContractWrite, useWaitForTransaction, useAccount, useContractRead } from 'wagmi'
+import { useRouter } from 'next/navigation';
 
 
 export default function Problem({id, title, creator, setError}) {
@@ -13,6 +14,7 @@ export default function Problem({id, title, creator, setError}) {
   const [heartFilled, setHeartFilled] = useState(false); 
 
   const { address, isConnecting, isDisconnected } = useAccount()
+  const router = useRouter();
 
   
   const { data, isLoading, isSuccess, write } = useContractWrite({
@@ -46,7 +48,7 @@ export default function Problem({id, title, creator, setError}) {
 
     return (
       // bg-[#3AB3D7]
-        <div className="bg-gray-700 flex flex-col justify-between gap-5 rounded-lg  p-5 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg">
+        <div onClick={() => {router.push('/problems/'+id)}} className="cursor-pointer bg-gray-700 flex flex-col justify-between gap-5 rounded-lg  p-5 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg">
          <div className="absolute top-5 -right-10 w-10 h-10 rounded-r-full bg-[#3AB3D7] flex items-center">
           {/* <AiFillHeart className="ml-2 text-red-500 text-2xl" />  */}
         <button onClick={() => setHeartFilled(!heartFilled)}>
@@ -79,8 +81,12 @@ export default function Problem({id, title, creator, setError}) {
                   <button
                     type="button" 
                     key={index}
-                    className={`bg-transparent border-none outline-none cursor-pointer ${index <= (hover || rating) ? 'text-yellow-300' : 'text-gray-300'}`}
-                    onClick={() => setRating(index)}
+                    className={`z-20 bg-transparent border-none outline-none cursor-pointer ${index <= (hover || rating) ? 'text-yellow-300' : 'text-gray-300'}`}
+                    onClick={(e) => {
+                      setRating(index)
+                      e.stopPropagation() 
+
+                    }}
                     onMouseEnter={() => setHover(index)} 
                     onMouseLeave={() => setHover(rating)}
                   >
