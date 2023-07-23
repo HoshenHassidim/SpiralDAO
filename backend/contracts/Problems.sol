@@ -24,7 +24,7 @@ contract Problems {
         mapping(address => uint256) oldRating;
     }
     //Errors
-    error mustBeMember();
+
     error nameRequired();
     error nameExists();
     error invalidProblemID();
@@ -58,15 +58,9 @@ contract Problems {
     event ProblemChanged(uint256 id, string name);
 
     // This modifier ensures that only registered members can raise, cancel or rate a problem
-    modifier onlyMember() {
-        if (!membershipContract.isRegisteredMember(msg.sender)) {
-            revert mustBeMember();
-        }
-        _;
-    }
 
     // This function allows a member to raise a problem
-    function raiseProblem(string calldata _name) external onlyMember {
+    function raiseProblem(string calldata _name) external {
         if (bytes(_name).length == 0) revert nameRequired();
         if (problemNames[_name]) revert nameExists();
         problemCounter++;
@@ -85,7 +79,8 @@ contract Problems {
     }
 
     // This function allows the creator of a problem to cancel it
-    function cancelProblem(uint256 _problemId) external onlyMember {
+
+    function cancelProblem(uint256 _problemId) external {
         if (bytes(problems[_problemId].name).length <= 0) revert problemDoesNotExist();
         if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID();
 
@@ -100,7 +95,7 @@ contract Problems {
     }
 
     // This function allows a member to rate a problem
-    function rateProblem(uint256 _problemId, uint256 _rating) external onlyMember {
+    function rateProblem(uint256 _problemId, uint256 _rating) external {
         if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange(); //note check to see if the console prints the value itself. the user will not know the value of MAX_RATING (To solve use string concatination)
 
         Problem storage problem = problems[_problemId];
@@ -140,7 +135,7 @@ contract Problems {
     }
 
     // Function to change the name of a problem
-    function changeProblemName(uint256 _problemId, string calldata _newName) external onlyMember {
+    function changeProblemName(uint256 _problemId, string calldata _newName) external {
         if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID();
         if (bytes(_newName).length == 0) revert nameRequired();
         if (problemNames[_newName]) revert userNameAlreadyExists();
