@@ -16,7 +16,7 @@ contract Solutions {
         uint256 ratingSum; // Sum of ratings the solution has received
         uint256 numberOfRaters; // Number of people who rated the solution
         bool isOpenForRating; // Whether the solution is open for rating
-        mapping(address => uint) oldRating; // Mapping to check if a member has already rated
+        mapping(address => uint256) oldRating; // Mapping to check if a member has already rated
     }
 
     // Membership contract reference
@@ -248,7 +248,7 @@ contract Solutions {
     }
 
     // View functions to get private state variables
-    function getSolutionCounter() external view returns (uint) {
+    function getSolutionCounter() external view returns (uint256) {
         return solutionCounter;
     }
 
