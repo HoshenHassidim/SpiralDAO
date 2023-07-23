@@ -10,26 +10,53 @@ import { AiOutlinePlus } from 'react-icons/ai'
 import type { NextPage } from "next";
 import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
+import {useState, useEffect} from "react"
+//toast
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function problems () {
-
+  const [error, setError] = useState()
   const {
     loading,
     error: subgraphQueryError,
     data,
   } = useQuery(GET_NEW_PROBLEMS);
   if (data) {
-    console.log(data.newProblems);
+    console.log(data.activeProblems);
   }
+  const notify = () => toast.error(error, {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    });
+  useEffect(() => {
+    if (error) {
+
+      notify()
+      setError("")
+    }
+
+  }, [error])
 
 return (
     <div className="overflow-x-hidden">
+      
       <Navbar />
+
+        {/* <ToastContainer /> */}
       <section className="flex flex-col items-center justify-center gap-5 p-5">
       {data &&
-        data.newProblems.map((d) => (
-          <Problem key={d} title={d.name}/>
+        data.activeProblems.map((problem) => (
+          <Problem key={problem.Problems_id} id={problem.Problems_id} title={problem.name} creator={problem.creator} setError={setError}/>
         ))}
+
+        
         
       </section>
 

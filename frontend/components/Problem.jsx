@@ -1,16 +1,48 @@
 // "use client"
-import {useState} from "react"
+import {useState, useEffect} from "react"
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 
+import abi from "../constants/Problems.json"
+import { useContractWrite, usePrepareContractWrite, useWaitForTransaction, useAccount, useContractRead } from 'wagmi'
 
 
-export default function Problem({title}) {
+export default function Problem({id, title, creator, setError}) {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
 
   const [heartFilled, setHeartFilled] = useState(false); 
 
+  const { address, isConnecting, isDisconnected } = useAccount()
 
+  
+  const { data, isLoading, isSuccess, write } = useContractWrite({
+    address: '0x1eD127C2eD0Bfca9D2Ee3d7e8B5A7944A163af35',
+    abi: abi,
+    functionName: 'rateProblem',
+    args: [id, rating],
+    onError(error) {
+      // console.log(JSON.stringify(error).match(/Error: (\w+)/))
+
+      setError(error.metaMessages[0]);
+    },
+  })
+  // console.log(data)
+
+  useEffect(() => {
+    if (rating) {
+      if (!address) {
+        setError("Please connect your wallet to rate");
+  
+      }
+      else {
+
+        console.log(rating)
+        write()
+      }
+
+    }
+
+  }, [rating])
 
     return (
       // bg-[#3AB3D7]
@@ -28,8 +60,8 @@ export default function Problem({title}) {
 
 
 
-          <div className="">
-
+          <div className="flex flex-col">
+            <span className="self-end">{address && address.toLowerCase() == creator ? "Mine" : creator.substr(0, 4) + '...' + creator.substr(creator.length -4)}</span>
             <h2 className="text-lg font-bold mb-5 ">{title}</h2>
             <p className="text-sm line-clamp-6">Booking event venues and spaces as a small business owner or startup founder is frustrating. Sourcing affordable locations from traditional vendors is costly for bootstrapped budgets. Researching multiple venues is also clunky and inefficient when you need to compare pricing and availability. Coordinating all the venue logistics alongside your other event planning takes huge effort. There must be an easier way to book great spaces that fit your budget and needs. Venue discovery and booking for small events should be much simpler for startups trying to make their visions a reality.</p>
           </div>

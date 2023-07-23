@@ -11,6 +11,9 @@ import { useForm, SubmitHandler } from "react-hook-form"
 import abi from "../../../constants/Problems.json"
 import { useContractWrite, usePrepareContractWrite, useWaitForTransaction, useAccount, useContractRead } from 'wagmi'
 
+import { toast } from "react-toastify";
+
+
 type Inputs = {
     example: string
     exampleRequired: string
@@ -21,9 +24,29 @@ export default function page() {
   const [name, setName] = useState();
   const [description, setDescription] = useState("");
   
+  const { address, isConnecting, isDisconnected } = useAccount()
+
+
+  const notify = () => toast.error("Please connect your wallet to post a problem", {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    });
+
   useEffect(() => {
     if (name) {
-      write() 
+      if (!address) {
+        notify();        
+      }
+      else {
+
+        write() 
+      }
     }
   }, [name])
   const onSubmit = async (data) => {
