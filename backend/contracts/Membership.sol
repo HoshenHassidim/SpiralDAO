@@ -11,7 +11,7 @@ contract Membership {
     error AlreadyMember();
     error UsernameRequired();
     error UsernameAlreadyExists();
-    error NotMember();
+    error mustBeMember();
 
     // Mapping of address to Member - made private
     mapping(address => Member) private members;
@@ -40,7 +40,7 @@ contract Membership {
 
     // Function to unregister a member
     function unregisterMember() external {
-        if (bytes(members[msg.sender].username).length == 0) revert NotMember();
+        if (bytes(members[msg.sender].username).length == 0) revert mustBeMember();
 
         delete usernames[members[msg.sender].username];
         delete members[msg.sender];
@@ -60,7 +60,7 @@ contract Membership {
 
     // View function to access members mapping
     function getMember(address _address) public view returns (string memory) {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (bytes(members[_address].username).length == 0) revert mustBeMember();
 
         return members[_address].username;
     }
