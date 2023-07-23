@@ -24,6 +24,8 @@ contract Problems {
         mapping(address => uint256) oldRating;
     }
     //Errors
+
+    error mustBeMember();
     error nameRequired();
     error nameExists();
     error invalidProblemID();
@@ -35,6 +37,7 @@ contract Problems {
     error userNameAlreadyExists();
     error onlyCreatorCanChangeProblemName();
     error cannotChangeNameAfterProblemHasBeenRated();
+    error problemDoesNotExist();
 
     // This is a counter for the problems raised, serving as the unique identifier for each problem
     uint256 private problemCounter;
@@ -54,6 +57,9 @@ contract Problems {
     event ProblemCancelled(uint256 id);
     event ProblemRated(uint256 id, address rater, uint256 rating);
     event ProblemChanged(uint256 id, string name);
+
+
+    // This modifier ensures that only registered members can raise, cancel or rate a problem
 
     // This function allows a member to raise a problem
     function raiseProblem(string calldata _name) external {
@@ -75,8 +81,11 @@ contract Problems {
     }
 
     // This function allows the creator of a problem to cancel it
-    function cancelProblem(uint256 _problemId) external {
+
+    function cancelProblem(uint256 _problemId) external  {
+        if (bytes(problems[_problemId].name).length <= 0) revert problemDoesNotExist();
         if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID();
+
         Problem storage problem = problems[_problemId];
         if (problem.creator != msg.sender) revert onlyCreatorCanCancel();
         if (problem.ratingCount != 0) revert problemAlreadyRated();
@@ -110,6 +119,7 @@ contract Problems {
 
     // This function checks if a problem meets certain rating criteria
     function meetsRatingCriteria(uint256 _problemId) external view returns (bool) {
+        if (bytes(problems[_problemId].name).length <= 0) revert problemDoesNotExist();
         if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID();
         Problem storage problem = problems[_problemId];
 
@@ -177,5 +187,9 @@ contract Problems {
     function getProblemCreator(uint256 _problemId) external view returns (address) {
         if (problems[_problemId].id <= 0) revert invalidProblemID();
         return problems[_problemId].creator;
+    }
+
+    function doesProblemExist(uint256 _problemId) external view returns (bool) {
+        return bytes(problems[_problemId].name).length > 0;
     }
 }
