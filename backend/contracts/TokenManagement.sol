@@ -6,7 +6,7 @@ import "./Tokens.sol";
 // This is the contract for managing tokens, including creating new tokens for projects and minting tokens.
 contract TokenManagement {
     // The admin is the account that has all permissions
-    address public immutable admin;
+    address private immutable admin;
     // A mapping of project IDs to their respective token contracts
     mapping(uint256 => Tokens) private projectTokens;
     // A mapping of authorized contracts that can perform certain actions
@@ -128,8 +128,8 @@ contract TokenManagement {
         uint256 projectId
     ) external onlyAuthorized {
         if (executor == address(0) || manager == address(0)) revert addressesCannotBeZero();
-        else if (taskValue <= 0) revert taskValueMustBeGreaterThanZero();
-        else if (projectId == 0) revert projectIDCannotBeZero();
+        if (taskValue <= 0) revert taskValueMustBeGreaterThanZero();
+        if (projectId == 0) revert projectIDCannotBeZero();
 
         uint256 executorPayment = taskValue;
         uint256 managerPayment = (taskValue * INVERSE_PROJECT_MANAGER_SHARE) / 100;
@@ -165,5 +165,9 @@ contract TokenManagement {
         if (_address == address(0)) revert addressCannotBeZero();
 
         return authorizedContracts[_address];
+    }
+
+    function getAdmin() external view returns (address) {
+        return admin;
     }
 }

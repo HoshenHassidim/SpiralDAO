@@ -339,7 +339,7 @@ describe("Problems", function () {
             await membership.connect(deployer).registerMember("deployer");
             await expect(
                 problems.connect(deployer).cancelProblem(1)
-            ).to.be.revertedWith("invalidProblemID");
+            ).to.be.revertedWith("problemDoesNotExist");
         });
 
         it("Should revert when canceling a problem that has been rated", async function () {
@@ -488,7 +488,7 @@ describe("Problems", function () {
         it("Should revert when checking the rating criteria for a non-existent problem", async function () {
             await expect(
                 problems.meetsRatingCriteria(1)
-            ).to.be.revertedWith("invalidProblemID");
+            ).to.be.revertedWith("problemDoesNotExist");
         });
     });
 
