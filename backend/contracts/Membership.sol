@@ -107,23 +107,6 @@ contract Membership {
         uint256 _taskId
     ) external {
         if (bytes(members[_address].username).length == 0) revert NotMember();
-        // bool check = true;
-        // for (uint i = 0; i < members[_address].taskAvgs.length; i++) {
-        //     if ((((members[_address]).taskAvgs[i]).taskId) == (_taskId)) {
-        //         members[_address].taskAvgs[i].taskAverage = _taskAvg;
-        //         check = false;
-        //     }
-        // }
-        // if (check) {
-        //     avg memory newAvg = avg(_taskAvg, _taskId);
-        //     members[_address].taskAvgs.push(newAvg);
-        // }
-        // uint256 totalAvg = 0;
-        // for (uint i = 0; i < members[_address].taskAvgs.length; i++) {
-        //     totalAvg += members[_address].taskAvgs[i].taskAverage;
-        // }
-        // //totalAvg /= members[_address].taskAvgs.length;
-        // members[_address].tasksAvg = totalAvg;
         bool checker = true;
         uint256 numberOfTasks = 0;
         for (uint i = 0; i < members[_address].ratings.length; i++) {
