@@ -20,7 +20,7 @@ contract Membership {
     mapping(string => bool) private usernames;
 
     // Declare an event for member registration
-    event MemberRegistered(address indexed memberAddress);
+    event MemberRegistered(address indexed memberAddress, string username);
 
     // Declare an event for member unregistration
     event MemberUnregistered(address indexed memberAddress);
@@ -35,7 +35,7 @@ contract Membership {
         newMember.username = _username;
         usernames[_username] = true;
 
-        emit MemberRegistered(msg.sender); // Emit event after successful registration
+        emit MemberRegistered(msg.sender, _username); // Emit event after successful registration
     }
 
     // Function to unregister a member
