@@ -25,7 +25,6 @@ contract Problems {
     }
     //Errors
 
-    error mustBeMember();
     error nameRequired();
     error nameExists();
     error invalidProblemID();
@@ -58,7 +57,6 @@ contract Problems {
     event ProblemRated(uint256 id, address rater, uint256 rating);
     event ProblemChanged(uint256 id, string name);
 
-
     // This modifier ensures that only registered members can raise, cancel or rate a problem
 
     // This function allows a member to raise a problem
@@ -82,7 +80,7 @@ contract Problems {
 
     // This function allows the creator of a problem to cancel it
 
-    function cancelProblem(uint256 _problemId) external  {
+    function cancelProblem(uint256 _problemId) external {
         if (bytes(problems[_problemId].name).length <= 0) revert problemDoesNotExist();
         if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID();
 
