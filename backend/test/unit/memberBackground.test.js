@@ -63,28 +63,37 @@ describe("Membership", function () {
                 await membership.connect(accounts[i]).registerMember(name)
             } //creates 7 members (1-7)
 
-            await problems.connect(accounts[0]).raiseProblem("Problem 1") //person 1 raises problem
+            await problems.connect(accounts[0]).raiseProblem("Problem 1") //person 0 raises problem
             const problemId = await problems.getProblemCounter()
             for (let i = 1; i < 4; i++) {
                 await problems.connect(accounts[i]).rateProblem(problemId, 9)
-            } //people 2,3,4 rate problem as 9
+            } //people 1,2,3 rate problem as 9
 
-            await solutions.connect(accounts[1]).proposeSolution(problemId, "Solution 1") //person 2 raises solution
+            await solutions.connect(accounts[1]).proposeSolution(problemId, "Solution 1") //person 1 raises solution
             const solutionId = await solutions.getSolutionCounter()
             for (let i = 2; i < 6; i++) {
                 await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
-            } //people 3,4,5,6 rate solution as 9
+            } //people 2,3,4,5 rate solution as 9
 
             await tokenManagement.connect(accounts[0]).authorizeContract(projects.address) //authorizes contract
 
-            projectManagerAccount = accounts[2] //person 3 will become proj manager
+            projectManagerAccount = accounts[2] //person 2 will become proj manager
             await projects.connect(projectManagerAccount).proposeOffer(1) //person 3 offers to be manager for project 1
             const offerId = await projects.getOfferCounter() //create offer Id
             for (let i = 3; i < 7; i++) {
                 await projects.connect(accounts[i]).rateOffer(offerId, 9)
-            } //people 4,5,6,7 rate offer as 9
+            } //people 3,4,5,6 rate offer as 9
             projectId = solutionId //assigns projectId
             projects.assignProjectManager(projectId) //assigns project manager
+
+            await tasks.connect(projectManagerAccount).addTask(projectId, "1", 100) //creates new task (randomly chose task value 100)
+            taskProposer = accounts[3] //person 3 will run task
+            taskId = await tasks.getTotalTasks() //i think(?)
+            await tasks.connect(taskProposer).proposeTaskOffer(taskId)
+            for (let i = 0; i < 7; i += 2) {
+                await tasks.connect(accounts[i]).rateTaskOffer(taskId, 9)
+            }
+            //await tasks.assignTask(taskId)
         })
 
         it("Should track member details correctly", async function () {
