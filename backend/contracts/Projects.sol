@@ -33,7 +33,6 @@ contract Projects {
     }
 
     error insufficientTotalRatersForAllOffers();
-    error mustBeMember();
     error IDMustBePositive();
     error solutionDoesNotMeetCriteria();
     error invalidID();
@@ -65,15 +64,10 @@ contract Projects {
 
     // Events
     event NewProject(uint256 projectId);
-    event NewOffer(uint256 offerId, uint256 projectId, address proposer);
-    event OfferCancelled(uint256 offerId);
-    event OfferRated(uint256 offerId, address voter, uint256 rating);
-
-    // Modifier to ensure only registered members can propose, cancel or rate an offer
-    modifier onlyMember() {
-        if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
-        _;
-    }
+    event NewManagementOffer(uint256 offerId, uint256 projectId, address proposer);
+    event ManagementOfferCancelled(uint256 offerId);
+    event ManagementOfferRated(uint256 offerId, address rater, uint256 rating);
+    event ProjectManagerAssigned(uint256 indexed projectId, address projectManager);
 
     // Constructor to initialize the imported contracts
     constructor(
@@ -112,7 +106,9 @@ contract Projects {
     }
 
     // External function to propose a management offer for a project
-    function proposeOffer(uint256 _solutionId) external onlyMember {
+    function proposeOffer(uint256 _solutionId) external {
+        
+
         if (solutionsContract.getSolutionCounter() < _solutionId || _solutionId == 0)
             revert invalidID();
         if (_solutionId < 0) revert IDMustBePositive();
@@ -144,11 +140,12 @@ contract Projects {
 
         projectToOffers[projectId].push(offerCounter); // Update the project to offer mapping
 
-        emit NewOffer(offerCounter, projectId, msg.sender); // Emit the event
+        emit NewManagementOffer(offerCounter, projectId, msg.sender); // Emit the event
     }
 
     // External function to cancel a management offer
-    function cancelOffer(uint256 _offerId) external onlyMember {
+    function cancelOffer(uint256 _offerId) external {
+
         if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
 
         Offer storage offer = offers[_offerId];
@@ -158,11 +155,14 @@ contract Projects {
 
         offer.isOpenForRating = false; // Mark the offer as not open for rating
 
-        emit OfferCancelled(_offerId); // Emit the event
+        hasProposed[offers[_offerId].projectId][msg.sender] = false;
+
+        emit ManagementOfferCancelled(_offerId); // Emit the event
     }
 
     // External function to rate a management offer
-    function rateOffer(uint256 _offerId, uint256 _rating) external onlyMember {
+    function rateOffer(uint256 _offerId, uint256 _rating) external {
+
         if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
         if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
 
@@ -179,7 +179,7 @@ contract Projects {
         offer.oldRating[msg.sender] = _rating;
         offer.ratingSum += _rating;
 
-        emit OfferRated(_offerId, msg.sender, _rating); // Emit the event
+        emit ManagementOfferRated(_offerId, msg.sender, _rating); // Emit the event
     }
 
     // External function to assign the project manager
@@ -218,6 +218,8 @@ contract Projects {
         if (bestRating > 7) {
             project.isOpenForManagementProposals = false;
             projects[_projectId].projectManager = offers[bestOfferId].manager;
+            // Emit the event to track the project manager assignment
+            emit ProjectManagerAssigned(_projectId, offers[bestOfferId].manager);
         }
     }
 

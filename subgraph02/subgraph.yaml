@@ -1,0 +1,165 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: TokenManagement
+    network: fantom-testnet
+    source:
+      address: "0xcE3c197B5a1a5D9E0f29d3C445115A8A661f0C59"
+      abi: TokenManagement
+      startBlock: 18423258
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ProjectTokenCreated
+        - TokensMinted
+      abis:
+        - name: TokenManagement
+          file: ./abis/TokenManagement.json
+      eventHandlers:
+        - event: ProjectTokenCreated(indexed uint256,indexed address,indexed
+            address,uint256,uint256,uint256,uint256)
+          handler: handleProjectTokenCreated
+        - event: TokensMinted(indexed address,uint256,uint256,uint256)
+          handler: handleTokensMinted
+      file: ./src/token-management.ts
+  - kind: ethereum
+    name: Problems
+    network: fantom-testnet
+    source:
+      address: "0x1eD127C2eD0Bfca9D2Ee3d7e8B5A7944A163af35"
+      abi: Problems
+      startBlock: 18424231
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NewProblem
+        - ProblemCancelled
+        - ProblemChanged
+        - ProblemRated
+      abis:
+        - name: Problems
+          file: ./abis/Problems.json
+      eventHandlers:
+        - event: NewProblem(uint256,address,string)
+          handler: handleNewProblem
+        - event: ProblemCancelled(uint256)
+          handler: handleProblemCancelled
+        - event: ProblemChanged(uint256,string)
+          handler: handleProblemChanged
+        - event: ProblemRated(uint256,address,uint256)
+          handler: handleProblemRated
+      file: ./src/problems.ts
+  - kind: ethereum
+    name: Solutions
+    network: fantom-testnet
+    source:
+      address: "0x93F1A258Ac704426B4D815416B7131B45dE6E509"
+      abi: Solutions
+      startBlock: 18424246
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - SolutionCancelled
+        - SolutionNameChanged
+        - SolutionProposed
+        - SolutionRated
+      abis:
+        - name: Solutions
+          file: ./abis/Solutions.json
+      eventHandlers:
+        - event: SolutionCancelled(uint256)
+          handler: handleSolutionCancelled
+        - event: SolutionNameChanged(uint256,string)
+          handler: handleSolutionNameChanged
+        - event: SolutionProposed(uint256,uint256,address,string)
+          handler: handleSolutionProposed
+        - event: SolutionRated(uint256,address,uint256)
+          handler: handleSolutionRated
+      file: ./src/solutions.ts
+  - kind: ethereum
+    name: Projects
+    network: fantom-testnet
+    source:
+      address: "0x1D14237BbBDC1219703642e0160617EB32bA48fA"
+      abi: Projects
+      startBlock: 18424255
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NewOffer
+        - NewProject
+        - OfferCancelled
+        - OfferRated
+        - ProjectManagerAssigned
+      abis:
+        - name: Projects
+          file: ./abis/Projects.json
+      eventHandlers:
+        - event: NewOffer(uint256,uint256,address)
+          handler: handleNewOffer
+        - event: NewProject(uint256)
+          handler: handleNewProject
+        - event: OfferCancelled(uint256)
+          handler: handleOfferCancelled
+        - event: OfferRated(uint256,address,uint256)
+          handler: handleOfferRated
+        - event: ProjectManagerAssigned(indexed uint256,address)
+          handler: handleProjectManagerAssigned
+      file: ./src/projects.ts
+  - kind: ethereum
+    name: Tasks
+    network: fantom-testnet
+    source:
+      address: "0x6e601EfC90eaC60Fb4997a8674DBb1CD441cc733"
+      abi: Tasks
+      startBlock: 18424266
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TasksNewOffer
+        - NewTask
+        - OfferCanceled
+        - TasksOfferRated
+        - TaskAssigned
+        - TaskCanceled
+        - TaskChanged
+        - TaskCompleted
+        - TaskExecutionRated
+        - TaskVerified
+      abis:
+        - name: Tasks
+          file: ./abis/Tasks.json
+      eventHandlers:
+        - event: NewOffer(uint256,uint256,address)
+          handler: handleNewOffer
+        - event: NewTask(uint256,uint256,string,uint256)
+          handler: handleNewTask
+        - event: OfferCanceled(uint256,uint256)
+          handler: handleOfferCanceled
+        - event: OfferRated(uint256,uint256)
+          handler: handleOfferRated
+        - event: TaskAssigned(uint256,uint256,address)
+          handler: handleTaskAssigned
+        - event: TaskCanceled(uint256)
+          handler: handleTaskCanceled
+        - event: TaskChanged(uint256,string,uint256)
+          handler: handleTaskChanged
+        - event: TaskCompleted(uint256)
+          handler: handleTaskCompleted
+        - event: TaskExecutionRated(uint256,uint256)
+          handler: handleTaskExecutionRated
+        - event: TaskVerified(uint256,bool)
+          handler: handleTaskVerified
+      file: ./src/tasks.ts

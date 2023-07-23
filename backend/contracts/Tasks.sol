@@ -100,27 +100,18 @@ contract Tasks {
     event NewTask(uint256 taskId, uint256 projectId, string taskName, uint256 taskValue); // Event emitted when a new task is added
     event TaskCanceled(uint256 taskId); // Event emitted when a task is cancelled
     event TaskChanged(uint256 taskId, string newTaskName, uint256 newTaskValue); // Event emitted when a task is changed
-    event NewOffer(uint256 offerId, uint256 taskId, address offeror); // Event emitted when a new offer is made
-    event OfferCanceled(uint256 taskId, uint256 offerId); // Event emitted when an offer is cancelled
-    event OfferRated(uint256 offerId, uint256 rating); // Event emitted when an offer is rated
+    event NewTaskOffer(uint256 offerId, uint256 taskId, address offeror); // Event emitted when a new offer is made
+    event TaskOfferCanceled(uint256 taskId, uint256 offerId); // Event emitted when an offer is cancelled
+    event TaskOfferRated(uint256 offerId, address rater, uint256 rating); // Event emitted when an offer is rated
     event TaskAssigned(uint256 taskId, uint256 offerId, address performer); // Event emitted when a task is assigned
     event TaskCompleted(uint256 taskId); // Event emitted when a task is completed
-    event TaskExecutionRated(uint256 taskId, uint256 rating); // Event emitted when the execution of a task is rated
+    event TaskExecutionRated(uint256 taskId, address rater, uint256 rating); // Event emitted when the execution of a task is rated
     event TaskVerified(uint256 taskId, bool areVerified); // Event emitted when a task is verified
 
     // References to imported contracts
     Membership private membershipContract; // Reference to the Membership contract
     Projects private projectsContract; // Reference to the Projects contract
     TokenManagement private tokenManagementContract; // Reference to the TokenManagement contract
-
-    // Modifier to restrict access to registered members only
-    modifier onlyMember() {
-        require(
-            membershipContract.isRegisteredMember(msg.sender),
-            "Only registered members can perform this action"
-        );
-        _;
-    }
 
     // Modifier to restrict access to the project manager only
     modifier onlyProjectManager(uint256 _projectId) {
@@ -237,6 +228,7 @@ contract Tasks {
     // Function for a member to propose a task offer. This can only be called by a member
     // The task must be in OPEN status and the member has not already proposed for this task
     // It creates a new TaskOffer instance and stores it in the taskOffers mapping, increments the task offer counter
+
     // Emits a NewOffer event upon successful creation of a new task offer
     function proposeTaskOffer(uint256 _taskId) external {
         if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
@@ -258,21 +250,22 @@ contract Tasks {
         newTaskOffer.offeror = msg.sender;
         newTaskOffer.isOpenForRating = true;
 
-        emit NewOffer(taskOfferCounter, _taskId, msg.sender);
+        emit NewTaskOffer(taskOfferCounter, _taskId, msg.sender);
     }
 
     // Function to cancel a task offer. This can only be called by the member who proposed the offer
     // The task offer must be open for rating
-    // It updates the task offer's isOpenForRating property to false, and emits an OfferCanceled event
+    // It updates the task offer's isOpenForRating property to false, and emits an TaskOfferCanceled event
     function cancelTaskOffer(uint256 _offerId) external {
-        if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
+
+
         require(taskOffers[_offerId].isOpenForRating, "Offer is not open for rating");
         if (taskOffers[_offerId].offeror != msg.sender) revert onlyPerformerCanCancel();
 
         taskOffers[_offerId].isOpenForRating = false;
         tasks[taskOffers[_offerId].taskId].hasProposed[msg.sender] = false;
 
-        emit OfferCanceled(taskOffers[_offerId].taskId, _offerId);
+        emit TaskOfferCanceled(taskOffers[_offerId].taskId, _offerId);
     }
 
     // Function to rate a task offer. This can only be called by a member
@@ -280,7 +273,6 @@ contract Tasks {
     // The member must not have already rated this offer and the rating must be between 1 and 10
     // It updates the offer's rating sum and number of raters, and emits a TaskOfferRated event
     function rateTaskOffer(uint256 _offerId, uint256 _rating) external {
-        if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
 
         require(tasks[taskOffers[_offerId].taskId].status == TaskStatus.OPEN, "Task is not open");
         if (taskOffers[_offerId].offeror == msg.sender) revert performerCannotRateOwnOffer();
@@ -296,7 +288,7 @@ contract Tasks {
         }
         tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] = _rating;
         taskOffers[_offerId].ratingSum += _rating;
-        emit OfferRated(_offerId, _rating);
+        emit TaskOfferRated(_offerId, msg.sender, _rating);
     }
 
     // Function to assign the task to a member who has the highest rating on the task offer.
@@ -353,8 +345,8 @@ contract Tasks {
     // This function can only be called by the performer of the task and only for an assigned task.
     // Updates the task's status to VERIFICATION, and increments the verificationIDCounter.
     // Emits a TaskCompleted event upon successful task completion.
+
     function completeTask(uint256 _taskId) external {
-        if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
         if (tasks[_taskId].assignedOfferId < 1) revert taskNotAssigned(); // I don't think you need this case, but ask Choshen
@@ -394,7 +386,7 @@ contract Tasks {
         tasks[_taskId].completionRatingSum += _rating;
 
         // Emit the TaskRated event.
-        emit TaskExecutionRated(_taskId, _rating);
+        emit TaskExecutionRated(_taskId, msg.sender, _rating);
     }
 
     // Function to verify a task.
