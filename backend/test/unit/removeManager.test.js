@@ -2,7 +2,7 @@ const { expect } = require('chai');
 
 describe("removeManager", function () {
   let problems, solutions, membership, tokenManagement, projects, tasks
-  let accounts, projectManagerAccount, projectId, removalOfferId, removalProposerAccount, solutionId, offerId
+  let accounts, projectManagerAccount, projectId, removalOfferId, removalProposerAccount, solutionId, offerId, newPM
 
   before(async function () {
     const Membership = await ethers.getContractFactory("Membership")
@@ -116,13 +116,20 @@ describe("removeManager", function () {
 
   it("Should allow new manager to be elected after one is removed", async function () {
     newPM = accounts[5]
-    newRPA = accounts[3]
-    await projects.connect(newPM).proposeOffer(solutionId)
+    await projects.connect(newPM).proposeOffer(projectId)
     offerId = await projects.getOfferCounter()
-    const offerDetails = projects.viewOfferDetails(offerId)
+    const offerDetails = await projects.viewOfferDetails(offerId)
+    projectDetails = await projects.viewProjectDetails(projectId)
+    projectManager = await projects.getProjectManager(projectId)
+ 
+    expect(projectDetails[0]).to.equal(solutionId)
+    expect(projectDetails[1]).to.be.true
+    expect(projectDetails[2]).to.be.false
+    
+    expect(projectManager).to.equal("0x0000000000000000000000000000000000000000")
 
-    // expect(offerDetails[0]).to.equal(offerId)
-    // expect(offerDetails[1]).to.equal(projectId)
+    expect(offerDetails[0]).to.equal(offerId)
+    expect(offerDetails[1]).to.equal(projectId)
     expect(offerDetails[2]).to.equal(newPM.address)
     expect(offerDetails[5]).to.be.true
     
@@ -131,15 +138,30 @@ describe("removeManager", function () {
     }
     projects.assignProjectManager(projectId)
 
+    projectDetails = await projects.viewProjectDetails(projectId)
+    projectManager = await projects.getProjectManager(projectId)
+    
+    expect(projectDetails[0]).to.equal(solutionId)
+    expect(projectDetails[1]).to.be.false
+    expect(projectDetails[2]).to.be.true
+
+    expect(projectManager).to.equal(newPM.address)
+ })
+  
+  it ("Should cancel offer for removal of manager", async function () {
+    const newRPA = accounts[3]
+  
     await projects.connect(newRPA).proposeRemoveManager(projectId);
     removalOfferId = await projects.getRemovalOfferCounter()
     const removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
-    const projectManager = await projects.getProjectManager()
+    const projectManager = await projects.getProjectManager(projectId)
 
     expect(removalOfferDetails[0]).to.equal(removalOfferId)
     expect(removalOfferDetails[1]).to.equal(projectId)
-    expect(removalOfferDetails[2]).to.equal(newRPA)
+    expect(removalOfferDetails[2]).to.equal(newRPA.address)
     expect(removalOfferDetails[5]).to.be.true
-    expect(projectManager).to.equal(newPM)
+    expect(projectManager).to.equal(newPM.address)
+   
+    projects.connect(newRPA).cancelRemovalOffer(removalOfferId)
   })
 })
