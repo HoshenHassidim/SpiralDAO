@@ -128,6 +128,7 @@ contract Projects {
         // Ensuring the user has not already proposed for this project
         if (hasProposed[projectId][msg.sender]) revert userAlreadyProposed();
 
+
         hasProposed[projectId][msg.sender] = true; // Mark the user as having proposed for this project
 
         offerCounter++; // Increment the offer counter
