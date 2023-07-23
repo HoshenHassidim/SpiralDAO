@@ -1,7 +1,7 @@
 "use client";
 import type { NextPage } from "next";
 import Navbar from "../../components/Navbar.jsx"
-import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
+import {GET_NEW_PROBLEMS} from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
 
 const GraphExample: NextPage = () => {
