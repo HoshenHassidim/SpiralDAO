@@ -153,7 +153,7 @@ describe("removeManager", function () {
   
     await projects.connect(newRPA).proposeRemoveManager(projectId);
     removalOfferId = await projects.getRemovalOfferCounter()
-    const removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
+    removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
     const projectManager = await projects.getProjectManager(projectId)
 
     expect(removalOfferDetails[0]).to.equal(removalOfferId)
@@ -162,6 +162,10 @@ describe("removeManager", function () {
     expect(removalOfferDetails[5]).to.be.true
     expect(projectManager).to.equal(newPM.address)
    
-    projects.connect(newRPA).cancelRemovalOffer(removalOfferId)
+    await projects.connect(newRPA).cancelRemovalOffer(removalOfferId)
+    removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
+
+    expect(removalOfferDetails[5]).to.be.false
+
   })
 })
