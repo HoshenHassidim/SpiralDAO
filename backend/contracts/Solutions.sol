@@ -58,6 +58,8 @@ contract Solutions {
     error IDOutofRange();
     error creatorCannotRateOwnProblem();
     error ratingOutOfRange();
+    error solutionDoesNotExist();
+    error problemDoesNotExist();
     // Events to log actions happening in the contract
     event SolutionProposed(uint256 solutionId, uint256 problemId, address creator, string name);
     event SolutionCancelled(uint256 solutionId);
@@ -84,8 +86,11 @@ contract Solutions {
 
     // Function to propose a solution
     function proposeSolution(uint256 _problemId, string memory _name) external onlyMember {
-        if (problemsContract.getProblemCounter() < _problemId) revert invalidID();
         if (bytes(_name).length <= 0) revert nameCannotBeEmpty();
+
+        if (!problemsContract.doesProblemExist(_problemId)) revert problemDoesNotExist();
+
+        if (problemsContract.getProblemCounter() < _problemId) revert invalidID();
         if (solutionNames[_name]) revert nameAlreadyExists();
         if (!problemsContract.meetsRatingCriteria(_problemId)) revert problemDoesNotMeetCriteria();
 
@@ -108,7 +113,10 @@ contract Solutions {
     }
 
     // Function to cancel a solution
-    function cancelSolution(uint256 _solutionId) external onlyCreator(_solutionId) {
+    function cancelSolution(uint256 _solutionId) external {
+        if (bytes(solutions[_solutionId].name).length <= 0) revert solutionDoesNotExist();
+        if (msg.sender != solutions[_solutionId].creator) revert onlySolutionCreatorCanPerform();
+
         Solution storage solution = solutions[_solutionId];
         if (solutionCounter < _solutionId) revert invalidID();
         if (!solution.isOpenForRating) revert solutonClosedForRating();
