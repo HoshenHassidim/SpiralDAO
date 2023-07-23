@@ -92,7 +92,7 @@ contract Projects {
         if (!solutionsContract.canBecomeProject(_solutionId)) revert solutionDoesNotMeetCriteria();
 
         // Retrieve problem and solution creators
-        (address solutionCreator, address problemCreator) = solutionsContract.getCreators(
+        (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
             _solutionId
         );
 

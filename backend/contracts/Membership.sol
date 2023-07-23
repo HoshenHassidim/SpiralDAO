@@ -154,7 +154,7 @@ contract Membership {
     ) external onlyAuthorized {
         if (
             (bytes(members[_problem].username).length == 0) ||
-            (bytes(members[_problem].username).length == 0)
+            (bytes(members[_solution].username).length == 0)
         ) revert NotMember();
         members[_problem].problemsAccepted++;
         members[_solution].solutionsAccepted++;
