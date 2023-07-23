@@ -81,6 +81,8 @@ contract Tasks {
     error valueTooLow();
     error taskNotOpenForCancellation();
     error taskNotOpenForChanges();
+    error taskNotOpenForProposals();
+    error taskNotOpenForRating();
     error memberAlreadyProposed();
     error proposalsExist();
     error addressHasNotProposed();
@@ -95,6 +97,9 @@ contract Tasks {
     error performerCannotRateOwnTask();
     error taskNotInVerificationStage();
     error notEnoughRatings();
+    error taskCannotBeChangedProposalsNeedToBeExecuted();
+    error taskNotOpenForAssigning();
+    error taskNotCompleted();
 
     // Events
     event NewTask(uint256 taskId, uint256 projectId, string taskName, uint256 taskValue); // Event emitted when a new task is added
@@ -113,21 +118,10 @@ contract Tasks {
     Projects private projectsContract; // Reference to the Projects contract
     TokenManagement private tokenManagementContract; // Reference to the TokenManagement contract
 
-    // Modifier to restrict access to the project manager only
-    modifier onlyProjectManager(uint256 _projectId) {
-        require(
-            projectsContract.getProjectManager(_projectId) == msg.sender,
-            "Only the project manager can do this"
-        );
-        _;
-    }
-
     // Modifier to ensure that task ID is valid
     modifier validTaskID(uint256 _taskId) {
-        require(
-            _taskId <= taskCounter && _taskId != 0 && tasks[_taskId].status != TaskStatus.DELETED,
-            "Invalid task ID"
-        );
+        if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
+            revert invalidID();
         _;
     }
 
@@ -199,21 +193,14 @@ contract Tasks {
             revert mustBeProjectManager();
 
         if (tasks[_taskId].status != TaskStatus.OPEN) revert taskNotOpenForChanges();
-        require(
-            taskToTaskOffer[_taskId].length == 0,
-            "Task cannot be changed as there are proposals to execute"
-        );
-        require(bytes(_newTaskName).length > 0, "New task name is required");
-        require(
-            _newTaskValue >= MIN_TASK_VALUE,
-            "New task value must be greater than or equal to MIN_TASK_VALUE"
-        );
+        if (taskToTaskOffer[_taskId].length != 0)
+            revert taskCannotBeChangedProposalsNeedToBeExecuted();
+        if (bytes(_newTaskName).length <= 0) revert nameRequired();
+        if (_newTaskValue < MIN_TASK_VALUE) revert valueTooLow();
 
         if (!(compareStrings(_newTaskName, tasks[_taskId].taskName))) {
-            require(
-                !existingTaskNamesByProjectID[tasks[_taskId].projectId][_newTaskName],
-                "Task name already exists"
-            );
+            if (existingTaskNamesByProjectID[tasks[_taskId].projectId][_newTaskName])
+                revert nameAlreadyExists();
             existingTaskNamesByProjectID[tasks[_taskId].projectId][tasks[_taskId].taskName] = false;
             tasks[_taskId].taskName = _newTaskName;
 
@@ -235,7 +222,7 @@ contract Tasks {
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
 
-        require(tasks[_taskId].status == TaskStatus.OPEN, "Task is not open for proposals");
+        if (tasks[_taskId].status != TaskStatus.OPEN) revert taskNotOpenForProposals();
         if (tasks[_taskId].hasProposed[msg.sender] == true) revert memberAlreadyProposed();
 
         taskOfferCounter++;
@@ -257,9 +244,7 @@ contract Tasks {
     // The task offer must be open for rating
     // It updates the task offer's isOpenForRating property to false, and emits an TaskOfferCanceled event
     function cancelTaskOffer(uint256 _offerId) external {
-
-
-        require(taskOffers[_offerId].isOpenForRating, "Offer is not open for rating");
+        if (!taskOffers[_offerId].isOpenForRating) revert taskNotOpenForCancellation();
         if (taskOffers[_offerId].offeror != msg.sender) revert onlyPerformerCanCancel();
 
         taskOffers[_offerId].isOpenForRating = false;
@@ -273,8 +258,8 @@ contract Tasks {
     // The member must not have already rated this offer and the rating must be between 1 and 10
     // It updates the offer's rating sum and number of raters, and emits a TaskOfferRated event
     function rateTaskOffer(uint256 _offerId, uint256 _rating) external {
-
-        require(tasks[taskOffers[_offerId].taskId].status == TaskStatus.OPEN, "Task is not open");
+        if (tasks[taskOffers[_offerId].taskId].status != TaskStatus.OPEN)
+            revert taskNotOpenForRating();
         if (taskOffers[_offerId].offeror == msg.sender) revert performerCannotRateOwnOffer();
         if (!taskOffers[_offerId].isOpenForRating) revert offerNotOpenForRating();
         if (_rating < 1 || _rating > 10) revert ratingOutOfRange();
@@ -299,7 +284,7 @@ contract Tasks {
         // Check if the task is open.
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
-        require(tasks[_taskId].status == TaskStatus.OPEN, "Task is not open");
+        if (tasks[_taskId].status != TaskStatus.OPEN) revert taskNotOpenForAssigning();
 
         // Initialize the variables to track the highest rating and the corresponding task offer ID.
         uint256 highestRating = 0;
@@ -372,10 +357,10 @@ contract Tasks {
     function rateCompletedTask(uint256 _taskId, uint256 _rating) external {
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
-        require(tasks[_taskId].status == TaskStatus.VERIFICATION, "Task is not completed");
+        if (tasks[_taskId].status != TaskStatus.VERIFICATION) revert taskNotCompleted();
 
         if (tasks[_taskId].performer == msg.sender) revert performerCannotRateOwnTask();
-        require(_rating != 0 && _rating <= 10, "Rating must be between 1 to 10");
+        if (_rating == 0 || _rating > 10) revert ratingOutOfRange();
         if (verificationRaters[tasks[_taskId].verificationID][msg.sender]) {
             tasks[_taskId].completionRatingSum -= tasks[_taskId].oldRating[msg.sender];
         } else {
