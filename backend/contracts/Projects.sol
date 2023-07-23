@@ -29,7 +29,7 @@ contract Projects {
         uint256 ratingSum;
         uint256 numberOfRaters;
         bool isOpenForRating;
-        mapping(address => uint) oldRating;
+        mapping(address => uint256) oldRating;
     }
 
     error insufficientTotalRatersForAllOffers();
@@ -86,7 +86,7 @@ contract Projects {
         if (!solutionsContract.canBecomeProject(_solutionId)) revert solutionDoesNotMeetCriteria();
 
         // Retrieve problem and solution creators
-        (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
+        (address solutionCreator, address problemCreator) = solutionsContract.getCreators(
             _solutionId
         );
 
@@ -99,6 +99,9 @@ contract Projects {
             solutionCreator
         );
 
+        membershipContract.proposedProblemAccepted(problemCreator);
+        membershipContract.proposedSolutionAccepted(solutionCreator);
+
         // Create new project and store it in the mapping
         projects[_solutionId] = Project(_solutionId, true, address(0));
 
@@ -106,12 +109,12 @@ contract Projects {
     }
 
     // External function to propose a management offer for a project
-    function proposeOffer(uint256 _solutionId) external {
-        
 
+    function proposeOffer(uint256 _solutionId) external {
         if (solutionsContract.getSolutionCounter() < _solutionId || _solutionId == 0)
             revert invalidID();
         if (_solutionId < 0) revert IDMustBePositive();
+
         if (projects[_solutionId].solutionId == 0) {
             createProject(_solutionId); // Check if the solution has a project, if not, create one
         }
@@ -123,7 +126,6 @@ contract Projects {
 
         // Ensuring the user has not already proposed for this project
         if (hasProposed[projectId][msg.sender]) revert userAlreadyProposed();
-
 
         hasProposed[projectId][msg.sender] = true; // Mark the user as having proposed for this project
 
@@ -144,8 +146,8 @@ contract Projects {
     }
 
     // External function to cancel a management offer
-    function cancelOffer(uint256 _offerId) external {
 
+    function cancelOffer(uint256 _offerId) external {
         if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
 
         Offer storage offer = offers[_offerId];
@@ -161,8 +163,8 @@ contract Projects {
     }
 
     // External function to rate a management offer
-    function rateOffer(uint256 _offerId, uint256 _rating) external {
 
+    function rateOffer(uint256 _offerId, uint256 _rating) external {
         if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
         if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
 
@@ -221,6 +223,8 @@ contract Projects {
             // Emit the event to track the project manager assignment
             emit ProjectManagerAssigned(_projectId, offers[bestOfferId].manager);
         }
+
+        membershipContract.managedProject(projects[_projectId].projectManager);
     }
 
     // Function to view details about an offer
