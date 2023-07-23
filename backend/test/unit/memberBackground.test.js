@@ -20,7 +20,7 @@ describe("Membership", function () {
 
     describe("viewMemberDetails", function () {
         let problems, solutions, membership, tokenManagement, projects, tasks
-        let accounts, projectManagerAccount, projectId, removalOfferId
+        let accounts, projectManagerAccount, projectId, offerId, removalOfferId
 
         before(async function () {
             const Membership = await ethers.getContractFactory("Membership")
@@ -86,14 +86,33 @@ describe("Membership", function () {
             projectId = solutionId //assigns projectId
             projects.assignProjectManager(projectId) //assigns project manager
 
-            await tasks.connect(projectManagerAccount).addTask(projectId, "1", 100) //creates new task (randomly chose task value 100)
-            taskProposer = accounts[3] //person 3 will run task
-            taskId = await tasks.getTotalTasks() //i think(?)
-            await tasks.connect(taskProposer).proposeTaskOffer(taskId)
-            for (let i = 0; i < 7; i += 2) {
+            performerAccount = accounts[3]
+            await tasks.connect(projectManagerAccount).addTask(1, "Task 1", 1000)
+            taskId = await tasks.getTotalTasks()
+            await tasks.connect(performerAccount).proposeTaskOffer(taskId)
+            for (let i = 0; i < 3; i++) {
                 await tasks.connect(accounts[i]).rateTaskOffer(taskId, 9)
             }
-            //await tasks.assignTask(taskId)
+            await tasks.connect(accounts[4]).rateTaskOffer(taskId, 9)
+            await tasks.assignTask(taskId)
+            await tasks.connect(performerAccount).completeTask(taskId)
+            for (let i = 0; i < 3; i++) {
+                await tasks.connect(accounts[i]).rateCompletedTask(taskId, i + 6) //6,7,8
+            }
+
+            await tasks.connect(projectManagerAccount).addTask(1, "Task 2", 1000)
+            taskId = await tasks.getTotalTasks()
+            await tasks.connect(performerAccount).proposeTaskOffer(taskId)
+            for (let i = 0; i < 3; i++) {
+                await tasks.connect(accounts[i]).rateTaskOffer(taskId, 9)
+            }
+            await tasks.connect(accounts[4]).rateTaskOffer(taskId, 9)
+            await tasks.assignTask(taskId)
+            await tasks.connect(performerAccount).completeTask(taskId)
+            for (let i = 0; i < 3; i++) {
+                await tasks.connect(accounts[i]).rateCompletedTask(taskId, i + 1) //1,2,3
+            }
+            await tasks.connect(accounts[4]).rateCompletedTask(taskId, 8)
         })
 
         it("Should track member details correctly", async function () {
@@ -123,8 +142,8 @@ describe("Membership", function () {
 
             let user3Details = await membership.viewMemberDetails(await accounts[3].getAddress())
             expect(user3Details[0]).to.equal("3") //username
-            expect(user3Details[1]).to.equal(0) //tasksAssigned
-            expect(user3Details[2]).to.equal(0) //tasksAvg
+            expect(user3Details[1]).to.equal(2) //tasksAssigned
+            expect(user3Details[2]).to.equal(5) //tasksAvg
             expect(user3Details[3]).to.equal(0) //projectsManaged
             expect(user3Details[4]).to.equal(0) //problemsAccepted
             expect(user3Details[5]).to.equal(0) //solutionsAccepted
