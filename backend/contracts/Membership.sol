@@ -2,8 +2,10 @@
 
 pragma solidity ^0.8.4;
 
+import "./TokenManagement.sol";
+
 contract Membership {
-    struct rating {
+    struct taskRating {
         uint256 taskId;
         address raterId;
         uint256 rating;
@@ -11,7 +13,7 @@ contract Membership {
     struct Member {
         string username;
         uint256 tasksAssigned;
-        rating[] ratings;
+        taskRating[] ratings;
         uint256 numOfTasks;
         uint256 tasksAvg;
         uint256 projectsManaged;
@@ -24,6 +26,7 @@ contract Membership {
     error UsernameRequired();
     error UsernameAlreadyExists();
     error NotMember();
+    error mustBeAuthorised();
 
     // Mapping of address to Member - made private
     mapping(address => Member) private members;
@@ -36,6 +39,19 @@ contract Membership {
 
     // Declare an event for member unregistration
     event MemberUnregistered(address indexed memberAddress);
+
+    TokenManagement private tokenManagementContract; // Reference to the TokenManagement contract
+
+    // Constructor to initialize the imported contracts
+    constructor(TokenManagement _tokenManagementContract) {
+        tokenManagementContract = _tokenManagementContract;
+    }
+
+    // Modifier to allow only authorized contracts to perform certain actions
+    modifier onlyAuthorized() {
+        if (tokenManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
+        _;
+    }
 
     // Function to register a new member
     function registerMember(string memory _username) external {
@@ -95,7 +111,7 @@ contract Membership {
     }
 
     //when task is assigned to member, will add it to this array to keep track of all tasks worked on
-    function assignTaskToMember(address _address) external {
+    function assignTaskToMember(address _address) external onlyAuthorized {
         if (bytes(members[_address].username).length == 0) revert NotMember();
         members[_address].tasksAssigned++;
     }
@@ -106,7 +122,7 @@ contract Membership {
         address _rater,
         uint256 _rating,
         uint256 _taskId
-    ) external {
+    ) external onlyAuthorized {
         if (bytes(members[_address].username).length == 0) revert NotMember();
         bool checker = true;
         uint256 numberOfTasks = 0;
@@ -122,7 +138,7 @@ contract Membership {
                 numberOfTasks = members[_address].ratings[i].taskId;
         }
         if (checker) {
-            rating memory newRating = rating(_taskId, _rater, _rating);
+            taskRating memory newRating = taskRating(_taskId, _rater, _rating);
             members[_address].ratings.push(newRating);
         }
         uint256 ratingsSum = 0;
@@ -132,17 +148,19 @@ contract Membership {
         members[_address].tasksAvg = ratingsSum / members[_address].ratings.length;
     }
 
-    function proposedSolutionAccepted(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
-        members[_address].solutionsAccepted++;
+    function proposedProblemAndSolutionAccepted(
+        address _problem,
+        address _solution
+    ) external onlyAuthorized {
+        if (
+            (bytes(members[_problem].username).length == 0) ||
+            (bytes(members[_problem].username).length == 0)
+        ) revert NotMember();
+        members[_problem].problemsAccepted++;
+        members[_solution].solutionsAccepted++;
     }
 
-    function proposedProblemAccepted(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
-        members[_address].problemsAccepted++;
-    }
-
-    function managedProject(address _address) external {
+    function managedProject(address _address) external onlyAuthorized {
         if (bytes(members[_address].username).length == 0) revert NotMember();
         members[_address].projectsManaged++;
     }

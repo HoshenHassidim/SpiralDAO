@@ -105,8 +105,7 @@ contract Projects {
             solutionCreator
         );
 
-        membershipContract.proposedProblemAccepted(problemCreator);
-        membershipContract.proposedSolutionAccepted(solutionCreator);
+        membershipContract.proposedProblemAndSolutionAccepted(problemCreator, solutionCreator);
 
         // Create new project and store it in the mapping
         projects[_solutionId] = Project(_solutionId, true, address(0));
