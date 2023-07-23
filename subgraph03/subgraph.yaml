@@ -1,0 +1,188 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Membership
+    network: fantom-testnet
+    source:
+      address: "0x0d899FB7e9f00a300B9e8b833500150FDD5b8C72"
+      abi: Membership
+      startBlock: 18423251
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - MemberRegistered
+        - MemberUnregistered
+      abis:
+        - name: Membership
+          file: ./abis/Membership.json
+      eventHandlers:
+        - event: MemberRegistered(indexed address)
+          handler: handleMemberRegistered
+        - event: MemberUnregistered(indexed address)
+          handler: handleMemberUnregistered
+      file: ./src/membership.ts
+  - kind: ethereum
+    name: TokenManagement
+    network: fantom-testnet
+    source:
+      address: "0xcE3c197B5a1a5D9E0f29d3C445115A8A661f0C59"
+      abi: TokenManagement
+      startBlock: 18423258
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ProjectTokenCreated
+        - TokensMinted
+      abis:
+        - name: TokenManagement
+          file: ./abis/TokenManagement.json
+      eventHandlers:
+        - event: ProjectTokenCreated(indexed uint256,indexed address,indexed
+            address,uint256,uint256,uint256,uint256)
+          handler: handleProjectTokenCreated
+        - event: TokensMinted(indexed address,uint256,uint256,uint256)
+          handler: handleTokensMinted
+      file: ./src/token-management.ts
+  - kind: ethereum
+    name: Problems
+    network: fantom-testnet
+    source:
+      address: "0x1eD127C2eD0Bfca9D2Ee3d7e8B5A7944A163af35"
+      abi: Problems
+      startBlock: 18424231
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NewProblem
+        - ProblemCancelled
+        - ProblemChanged
+        - ProblemRated
+      abis:
+        - name: Problems
+          file: ./abis/Problems.json
+      eventHandlers:
+        - event: NewProblem(uint256,address,string)
+          handler: handleNewProblem
+        - event: ProblemCancelled(uint256)
+          handler: handleProblemCancelled
+        - event: ProblemChanged(uint256,string)
+          handler: handleProblemChanged
+        - event: ProblemRated(uint256,address,uint256)
+          handler: handleProblemRated
+      file: ./src/problems.ts
+  - kind: ethereum
+    name: Solutions
+    network: fantom-testnet
+    source:
+      address: "0x93F1A258Ac704426B4D815416B7131B45dE6E509"
+      abi: Solutions
+      startBlock: 18424246
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - SolutionCancelled
+        - SolutionNameChanged
+        - SolutionProposed
+        - SolutionRated
+      abis:
+        - name: Solutions
+          file: ./abis/Solutions.json
+      eventHandlers:
+        - event: SolutionCancelled(uint256)
+          handler: handleSolutionCancelled
+        - event: SolutionNameChanged(uint256,string)
+          handler: handleSolutionNameChanged
+        - event: SolutionProposed(uint256,uint256,address,string)
+          handler: handleSolutionProposed
+        - event: SolutionRated(uint256,address,uint256)
+          handler: handleSolutionRated
+      file: ./src/solutions.ts
+  - kind: ethereum
+    name: Projects
+    network: fantom-testnet
+    source:
+      address: "0x0D04BfeB2a4f61115BfA20160f14659BaB1f9FA6"
+      abi: Projects
+      startBlock: 18460763
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ManagementOfferCancelled
+        - ManagementOfferRated
+        - NewManagementOffer
+        - NewProject
+        - ProjectManagerAssigned
+      abis:
+        - name: Projects
+          file: ./abis/Projects.json
+      eventHandlers:
+        - event: ManagementOfferCancelled(uint256)
+          handler: handleManagementOfferCancelled
+        - event: ManagementOfferRated(uint256,address,uint256)
+          handler: handleManagementOfferRated
+        - event: NewManagementOffer(uint256,uint256,address)
+          handler: handleNewManagementOffer
+        - event: NewProject(uint256)
+          handler: handleNewProject
+        - event: ProjectManagerAssigned(indexed uint256,address)
+          handler: handleProjectManagerAssigned
+      file: ./src/projects.ts
+  - kind: ethereum
+    name: Tasks
+    network: fantom-testnet
+    source:
+      address: "0xA6c8FA2c6BC1a3EE4d9A2Cdf4272f728B4621aB5"
+      abi: Tasks
+      startBlock: 18460793
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NewTask
+        - NewTaskOffer
+        - TaskAssigned
+        - TaskCanceled
+        - TaskChanged
+        - TaskCompleted
+        - TaskExecutionRated
+        - TaskOfferCanceled
+        - TaskOfferRated
+        - TaskVerified
+      abis:
+        - name: Tasks
+          file: ./abis/Tasks.json
+      eventHandlers:
+        - event: NewTask(uint256,uint256,string,uint256)
+          handler: handleNewTask
+        - event: NewTaskOffer(uint256,uint256,address)
+          handler: handleNewTaskOffer
+        - event: TaskAssigned(uint256,uint256,address)
+          handler: handleTaskAssigned
+        - event: TaskCanceled(uint256)
+          handler: handleTaskCanceled
+        - event: TaskChanged(uint256,string,uint256)
+          handler: handleTaskChanged
+        - event: TaskCompleted(uint256)
+          handler: handleTaskCompleted
+        - event: TaskExecutionRated(uint256,uint256)
+          handler: handleTaskExecutionRated
+        - event: TaskOfferCanceled(uint256,uint256)
+          handler: handleTaskOfferCanceled
+        - event: TaskOfferRated(uint256,uint256)
+          handler: handleTaskOfferRated
+        - event: TaskVerified(uint256,bool)
+          handler: handleTaskVerified
+      file: ./src/tasks.ts
