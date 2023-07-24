@@ -115,7 +115,7 @@ describe("TokenManagement", function () {
     })
 
     it("should set the correct admin address", async function () {
-        expect(await tokenManagement.admin()).to.equal(admin.address)
+        expect(await tokenManagement.getAdmin()).to.equal(admin.address)
     })
 
     it("should authorize a contract correctly", async function () {
