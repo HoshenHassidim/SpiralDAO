@@ -73,7 +73,6 @@ contract Tasks {
 
     // Mapping to prevent task name duplication within a project
     mapping(uint256 => mapping(string => bool)) private existingTaskNamesByProjectID;
-    error mustBeMember();
     error invalidID();
     error mustBeProjectManager();
     error nameRequired();
@@ -171,7 +170,7 @@ contract Tasks {
         if (tasks[_taskId].status != TaskStatus.OPEN) revert taskNotOpenForCancellation();
         if (taskToTaskOffer[_taskId].length != 0) revert proposalsExist();
 
-        existingTaskNamesByProjectID[tasks[_taskId].projectId][tasks[_taskId].taskName] = false;
+        delete existingTaskNamesByProjectID[tasks[_taskId].projectId][tasks[_taskId].taskName];
         tasks[_taskId].status = TaskStatus.DELETED;
 
         emit TaskCanceled(_taskId);
@@ -185,6 +184,7 @@ contract Tasks {
     // Function to change the details of a task. This can only be called by the project manager and only if the task is in OPEN status
     // and has no task offers. It updates the task's name and value, and emits a TaskChanged event
     function changeTask(
+        //Jacob - Maybe change this function name??
         uint256 _taskId,
         string memory _newTaskName,
         uint256 _newTaskValue
@@ -201,7 +201,7 @@ contract Tasks {
         if (!(compareStrings(_newTaskName, tasks[_taskId].taskName))) {
             if (existingTaskNamesByProjectID[tasks[_taskId].projectId][_newTaskName])
                 revert nameAlreadyExists();
-            existingTaskNamesByProjectID[tasks[_taskId].projectId][tasks[_taskId].taskName] = false;
+            delete existingTaskNamesByProjectID[tasks[_taskId].projectId][tasks[_taskId].taskName];
             tasks[_taskId].taskName = _newTaskName;
 
             existingTaskNamesByProjectID[tasks[_taskId].projectId][_newTaskName] = true;
@@ -218,7 +218,6 @@ contract Tasks {
 
     // Emits a NewOffer event upon successful creation of a new task offer
     function proposeTaskOffer(uint256 _taskId) external {
-        if (!membershipContract.isRegisteredMember(msg.sender)) revert mustBeMember();
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
 
