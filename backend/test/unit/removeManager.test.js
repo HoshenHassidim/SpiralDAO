@@ -102,7 +102,7 @@ describe("removeManager", function () {
     expect(removalOfferDetailsReCheck[4]).to.equals(3)
 
     // Remove the project manager
-    await projects.removeProjectManager(removalOfferId)
+    await projects.checkRemovalRatings(removalOfferId)
 
     // Verify that the project manager has been removed
     const projectManager = await projects.getProjectManager(projectId)
@@ -166,6 +166,18 @@ describe("removeManager", function () {
     removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
 
     expect(removalOfferDetails[5]).to.be.false
+
+  })
+
+  it ("Should allow manager to resign", async function () {
+    await projects.connect(newPM).managerResign(projectId)
+
+    const projectManager = await projects.getProjectManager(projectId)
+    const projectDetails = await projects.viewProjectDetails(projectId)
+
+    expect(projectManager).to.equal("0x0000000000000000000000000000000000000000")
+    expect(projectDetails[1]).to.be.true
+    expect(projectDetails[2]).to.be.false
 
   })
 })
