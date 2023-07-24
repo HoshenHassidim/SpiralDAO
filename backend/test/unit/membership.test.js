@@ -14,7 +14,13 @@ describe("Membership", function () {
     })
 
     beforeEach(async function () {
-        membership = await Membership.deploy()
+        const TokenManagement = await ethers.getContractFactory("TokenManagement")
+        const Membership = await ethers.getContractFactory("Membership")
+
+        tokenManagement = await TokenManagement.deploy()
+        await tokenManagement.deployed()
+
+        membership = await Membership.deploy(tokenManagement.address)
         await membership.deployed()
     })
 

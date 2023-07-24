@@ -49,7 +49,7 @@ contract Membership {
 
     // Modifier to allow only authorized contracts to perform certain actions
     modifier onlyAuthorized() {
-        if (tokenManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
+        if (!tokenManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
         _;
     }
 
