@@ -90,6 +90,7 @@ contract Problems {
         if (!problem.openForRating) revert problemClosedForRating();
 
         problem.openForRating = false;
+        delete problemNames[problems[_problemId].name];
         // The problem is now closed for rating
         emit ProblemCancelled(_problemId);
     }
@@ -146,7 +147,7 @@ contract Problems {
         if (problem.ratingCount != 0) revert cannotChangeNameAfterProblemHasBeenRated();
 
         // Delete the old name from the problemNames mapping
-        problemNames[problem.name] = false;
+        delete problemNames[problem.name]; //EDIT AFTERWARDS
         // Update the problem's name
         problem.name = _newName;
         // Mark the new name as used in the problemNames mapping
