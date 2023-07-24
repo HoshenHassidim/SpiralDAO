@@ -8,33 +8,22 @@ import {Link} from "next/link"
 import Navbar from "../../../components/Navbar"
 
 
-import {GET_PROBLEM} from "../../../constants/subgraphQueries";
+import {GET_PROBLEM} from "../../../constants/subgraphQueryGetProblem";
 
 export default function ProblemPage({ params }: { params: { slug: string } }) {
     const router = useRouter()
-    // const {
-    //     loading,
-    //     error: subgraphQueryError,
-    //     data,
-    //   } = useQuery(GET_PROBLEM, {
-    //     variables: { id: "4" }
-    //   })
+
     const [problemData, setProblemData] = useState();
-      const { loading, error, data } = useQuery(GET_PROBLEM, {
-        variables: { id: params.slug },
-      });
-			// console.log(data.activeProblems[0].name);
-    //   if (problemData) {
-    //       setProblemData(data)
-    //     }
+    //   const { loading, error, data } = useQuery(GET_PROBLEM, {
+    //     variables: { id: params.slug },
+    //   });
 
+    //   useEffect(() => {
+		// 		if (data) {
 
-      useEffect(() => {
-				if (data) {
-
-					setProblemData(data)
-				}
-      }, [data])
+		// 			setProblemData(data)
+		// 		}
+    //   }, [data])
 
 
     return (<div>
@@ -51,7 +40,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
         	{params.slug}
 					<h2 className="text-lg">
 
-					{problemData && problemData.activeProblems.length == 0 ? "Sorry, this problem does not exist" : !error && problemData && problemData.activeProblems.length > 0 && problemData.activeProblems[0].name}
+					{/* {problemData && problemData.activeProblems.length == 0 ? "Sorry, this problem does not exist" : !error && problemData && problemData.activeProblems.length > 0 && problemData.activeProblems[0].name} */}
         	
 					</h2>
 					</section>
