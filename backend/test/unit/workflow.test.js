@@ -5,14 +5,17 @@ describe("Workflow", function () {
     let accounts, projectManagerAccount, offerId
 
     before(async function () {
+        const TokenManagement = await ethers.getContractFactory("TokenManagement")
         const Membership = await ethers.getContractFactory("Membership")
         const Problems = await ethers.getContractFactory("Problems")
         const Solutions = await ethers.getContractFactory("Solutions")
-        const TokenManagement = await ethers.getContractFactory("TokenManagement")
         const Projects = await ethers.getContractFactory("Projects")
         const Tasks = await ethers.getContractFactory("Tasks")
 
-        membership = await Membership.deploy()
+        tokenManagement = await TokenManagement.deploy()
+        await tokenManagement.deployed()
+
+        membership = await Membership.deploy(tokenManagement.address)
         await membership.deployed()
 
         problems = await Problems.deploy(membership.address)
@@ -20,9 +23,6 @@ describe("Workflow", function () {
 
         solutions = await Solutions.deploy(membership.address, problems.address)
         await solutions.deployed()
-
-        tokenManagement = await TokenManagement.deploy()
-        await tokenManagement.deployed()
 
         projects = await Projects.deploy(
             membership.address,
@@ -75,8 +75,8 @@ describe("Workflow", function () {
 
     it("Test getter for problem and solution creators", async function () {
         const Creators = await solutions.getCreators(1)
-        expect(Creators[0]).to.equal(accounts[1].address)
-        expect(Creators[1]).to.equal(accounts[0].address)
+        expect(Creators[0]).to.equal(accounts[0].address)
+        expect(Creators[1]).to.equal(accounts[1].address)
     })
 
     it("Should rate the solution", async function () {
