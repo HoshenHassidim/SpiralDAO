@@ -12,12 +12,10 @@ import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
 
 import {useState, useEffect} from "react"
-//toast
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
 
 export default function problems () {
-  const [error, setError] = useState()
+  // const [error, setError] = useState()
   const {
     loading,
     error: subgraphQueryError,
@@ -26,24 +24,15 @@ export default function problems () {
   if (data) {
     console.log(data.activeProblems);
   }
-  const notify = () => toast.error(error, {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    });
-  useEffect(() => {
-    if (error) {
 
-      notify()
-      setError("")
-    }
+  // useEffect(() => {
+  //   if (error) {
 
-  }, [error])
+  //     notify()
+  //     setError("")
+  //   }
+
+  // }, [error])
 
 return (
     <div className="overflow-x-hidden">
@@ -54,7 +43,7 @@ return (
       <section className="flex flex-col items-center justify-center gap-5 p-5">
       {data &&
         data.activeProblems.map((problem) => (
-          <Problem key={problem.Problems_id} id={problem.Problems_id} title={problem.name} creator={problem.creator} setError={setError}/>
+          <Problem key={problem.Problems_id} id={problem.Problems_id} title={problem.name} creator={problem.creator}/>
         ))}
 
         
