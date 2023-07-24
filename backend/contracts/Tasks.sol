@@ -30,6 +30,7 @@ contract Tasks {
         uint256 numberOfCompletionRaters; // Number of ratings received upon task completion
         uint256 assignedOfferId; // ID of the assigned offer
         TaskStatus status; // Task status, using the TaskStatus enum defined above
+        mapping(address => uint256) addressToOfferId;
         mapping(address => bool) hasProposed; // Mapping to keep track of who has proposed to the task
         uint256 verificationID; // Unique verification ID
         mapping(address => uint256) oldRating; //Mapping to keep track of user's old rating
@@ -72,17 +73,43 @@ contract Tasks {
 
     // Mapping to prevent task name duplication within a project
     mapping(uint256 => mapping(string => bool)) private existingTaskNamesByProjectID;
+    error invalidID();
+    error mustBeProjectManager();
+    error nameRequired();
+    error nameAlreadyExists();
+    error valueTooLow();
+    error taskNotOpenForCancellation();
+    error taskNotOpenForChanges();
+    error taskNotOpenForProposals();
+    error taskNotOpenForRating();
+    error memberAlreadyProposed();
+    error proposalsExist();
+    error addressHasNotProposed();
+    error offerNotOpenForRating();
+    error onlyPerformerCanCancel();
+    error ratingOutOfRange();
+    error performerCannotRateOwnOffer();
+    error noSuitableOffer();
+    error onlyAssignedPerformerCanComplete();
+    error taskNotAssigned();
+    error userHasNotProposed();
+    error performerCannotRateOwnTask();
+    error taskNotInVerificationStage();
+    error notEnoughRatings();
+    error taskCannotBeChangedProposalsNeedToBeExecuted();
+    error taskNotOpenForAssigning();
+    error taskNotCompleted();
 
     // Events
     event NewTask(uint256 taskId, uint256 projectId, string taskName, uint256 taskValue); // Event emitted when a new task is added
     event TaskCanceled(uint256 taskId); // Event emitted when a task is cancelled
     event TaskChanged(uint256 taskId, string newTaskName, uint256 newTaskValue); // Event emitted when a task is changed
-    event NewOffer(uint256 offerId, uint256 taskId, address offeror); // Event emitted when a new offer is made
-    event OfferCanceled(uint256 taskId, uint256 offerId); // Event emitted when an offer is cancelled
-    event OfferRated(uint256 offerId, uint256 rating); // Event emitted when an offer is rated
+    event NewTaskOffer(uint256 offerId, uint256 taskId, address offeror); // Event emitted when a new offer is made
+    event TaskOfferCanceled(uint256 taskId, uint256 offerId); // Event emitted when an offer is cancelled
+    event TaskOfferRated(uint256 offerId, address rater, uint256 rating); // Event emitted when an offer is rated
     event TaskAssigned(uint256 taskId, uint256 offerId, address performer); // Event emitted when a task is assigned
     event TaskCompleted(uint256 taskId); // Event emitted when a task is completed
-    event TaskExecutionRated(uint256 taskId, uint256 rating); // Event emitted when the execution of a task is rated
+    event TaskExecutionRated(uint256 taskId, address rater, uint256 rating); // Event emitted when the execution of a task is rated
     event TaskVerified(uint256 taskId, bool areVerified); // Event emitted when a task is verified
 
     // References to imported contracts
@@ -90,30 +117,10 @@ contract Tasks {
     Projects private projectsContract; // Reference to the Projects contract
     TokenManagement private tokenManagementContract; // Reference to the TokenManagement contract
 
-    // Modifier to restrict access to registered members only
-    modifier onlyMember() {
-        require(
-            membershipContract.isRegisteredMember(msg.sender),
-            "Only registered members can perform this action"
-        );
-        _;
-    }
-
-    // Modifier to restrict access to the project manager only
-    modifier onlyProjectManager(uint256 _projectId) {
-        require(
-            projectsContract.getProjectManager(_projectId) == msg.sender,
-            "Only the project manager can do this"
-        );
-        _;
-    }
-
     // Modifier to ensure that task ID is valid
     modifier validTaskID(uint256 _taskId) {
-        require(
-            _taskId <= taskCounter && _taskId != 0 && tasks[_taskId].status != TaskStatus.DELETED,
-            "Invalid task ID"
-        );
+        if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
+            revert invalidID();
         _;
     }
 
@@ -132,14 +139,13 @@ contract Tasks {
     // The task name must be unique within the project and the value must be greater than MIN_TASK_VALUE
     // It creates a new Task instance and stores it in the tasks mapping, increments the task counter
     // Emits a NewTask event upon successful creation of a new task
-    function addTask(
-        uint256 _projectId,
-        string memory _taskName,
-        uint256 _taskValue
-    ) external onlyProjectManager(_projectId) {
-        require(bytes(_taskName).length > 0, "Task name is required");
-        require(!existingTaskNamesByProjectID[_projectId][_taskName], "Task name already exists");
-        require(_taskValue >= MIN_TASK_VALUE, "Task value must be greater than MIN_TASK_VALUE");
+    function addTask(uint256 _projectId, string memory _taskName, uint256 _taskValue) external {
+        if (projectsContract.getProjectManager(_projectId) != msg.sender) {
+            revert mustBeProjectManager();
+        }
+        if (bytes(_taskName).length <= 0) revert nameRequired();
+        if (existingTaskNamesByProjectID[_projectId][_taskName]) revert nameAlreadyExists();
+        if (_taskValue < MIN_TASK_VALUE) revert valueTooLow();
 
         taskCounter++;
 
@@ -157,14 +163,14 @@ contract Tasks {
 
     // Function to cancel a task. This can only be called by the project manager and only if the task is in OPEN status
     // and has no task offers. It updates the status to DELETED, and emits a TaskCanceled event
-    function cancelTask(uint256 _taskId) external onlyProjectManager(tasks[_taskId].projectId) {
-        require(tasks[_taskId].status == TaskStatus.OPEN, "Task is not open for cancellation");
-        require(
-            taskToTaskOffer[_taskId].length == 0,
-            "Task cannot be cancelled as there are proposals to execute"
-        );
+    function cancelTask(uint256 _taskId) external {
+        if (projectsContract.getProjectManager(tasks[_taskId].projectId) != msg.sender)
+            revert mustBeProjectManager();
 
-        existingTaskNamesByProjectID[tasks[_taskId].projectId][tasks[_taskId].taskName] = false;
+        if (tasks[_taskId].status != TaskStatus.OPEN) revert taskNotOpenForCancellation();
+        if (taskToTaskOffer[_taskId].length != 0) revert proposalsExist();
+
+        delete existingTaskNamesByProjectID[tasks[_taskId].projectId][tasks[_taskId].taskName];
         tasks[_taskId].status = TaskStatus.DELETED;
 
         emit TaskCanceled(_taskId);
@@ -178,27 +184,24 @@ contract Tasks {
     // Function to change the details of a task. This can only be called by the project manager and only if the task is in OPEN status
     // and has no task offers. It updates the task's name and value, and emits a TaskChanged event
     function changeTask(
+        //Jacob - Maybe change this function name??
         uint256 _taskId,
         string memory _newTaskName,
         uint256 _newTaskValue
-    ) external onlyProjectManager(tasks[_taskId].projectId) {
-        require(tasks[_taskId].status == TaskStatus.OPEN, "Task is not open for changes");
-        require(
-            taskToTaskOffer[_taskId].length == 0,
-            "Task cannot be changed as there are proposals to execute"
-        );
-        require(bytes(_newTaskName).length > 0, "New task name is required");
-        require(
-            _newTaskValue >= MIN_TASK_VALUE,
-            "New task value must be greater than or equal to MIN_TASK_VALUE"
-        );
+    ) external {
+        if (projectsContract.getProjectManager(tasks[_taskId].projectId) != msg.sender)
+            revert mustBeProjectManager();
+
+        if (tasks[_taskId].status != TaskStatus.OPEN) revert taskNotOpenForChanges();
+        if (taskToTaskOffer[_taskId].length != 0)
+            revert taskCannotBeChangedProposalsNeedToBeExecuted();
+        if (bytes(_newTaskName).length <= 0) revert nameRequired();
+        if (_newTaskValue < MIN_TASK_VALUE) revert valueTooLow();
 
         if (!(compareStrings(_newTaskName, tasks[_taskId].taskName))) {
-            require(
-                !existingTaskNamesByProjectID[tasks[_taskId].projectId][_newTaskName],
-                "Task name already exists"
-            );
-            existingTaskNamesByProjectID[tasks[_taskId].projectId][tasks[_taskId].taskName] = false;
+            if (existingTaskNamesByProjectID[tasks[_taskId].projectId][_newTaskName])
+                revert nameAlreadyExists();
+            delete existingTaskNamesByProjectID[tasks[_taskId].projectId][tasks[_taskId].taskName];
             tasks[_taskId].taskName = _newTaskName;
 
             existingTaskNamesByProjectID[tasks[_taskId].projectId][_newTaskName] = true;
@@ -212,17 +215,19 @@ contract Tasks {
     // Function for a member to propose a task offer. This can only be called by a member
     // The task must be in OPEN status and the member has not already proposed for this task
     // It creates a new TaskOffer instance and stores it in the taskOffers mapping, increments the task offer counter
+
     // Emits a NewOffer event upon successful creation of a new task offer
-    function proposeTaskOffer(uint256 _taskId) external onlyMember validTaskID(_taskId) {
-        require(tasks[_taskId].status == TaskStatus.OPEN, "Task is not open for proposals");
-        require(
-            tasks[_taskId].hasProposed[msg.sender] != true,
-            "Member has already proposed for this task"
-        );
+    function proposeTaskOffer(uint256 _taskId) external {
+        if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
+            revert invalidID();
+
+        if (tasks[_taskId].status != TaskStatus.OPEN) revert taskNotOpenForProposals();
+        if (tasks[_taskId].hasProposed[msg.sender] == true) revert memberAlreadyProposed();
 
         taskOfferCounter++;
 
         taskToTaskOffer[_taskId].push(taskOfferCounter);
+        tasks[_taskId].addressToOfferId[msg.sender] = taskOfferCounter;
         tasks[_taskId].hasProposed[msg.sender] = true;
 
         TaskOffer storage newTaskOffer = taskOffers[taskOfferCounter];
@@ -231,34 +236,32 @@ contract Tasks {
         newTaskOffer.offeror = msg.sender;
         newTaskOffer.isOpenForRating = true;
 
-        emit NewOffer(taskOfferCounter, _taskId, msg.sender);
+        emit NewTaskOffer(taskOfferCounter, _taskId, msg.sender);
     }
 
     // Function to cancel a task offer. This can only be called by the member who proposed the offer
     // The task offer must be open for rating
-    // It updates the task offer's isOpenForRating property to false, and emits an OfferCanceled event
-    function cancelTaskOffer(uint256 _offerId) external onlyMember {
-        require(taskOffers[_offerId].isOpenForRating, "Offer is not open for rating");
-        require(
-            taskOffers[_offerId].offeror == msg.sender,
-            "Only the performer can cancel their offer"
-        );
+    // It updates the task offer's isOpenForRating property to false, and emits an TaskOfferCanceled event
+    function cancelTaskOffer(uint256 _offerId) external {
+        if (!taskOffers[_offerId].isOpenForRating) revert taskNotOpenForCancellation();
+        if (taskOffers[_offerId].offeror != msg.sender) revert onlyPerformerCanCancel();
 
         taskOffers[_offerId].isOpenForRating = false;
         tasks[taskOffers[_offerId].taskId].hasProposed[msg.sender] = false;
 
-        emit OfferCanceled(taskOffers[_offerId].taskId, _offerId);
+        emit TaskOfferCanceled(taskOffers[_offerId].taskId, _offerId);
     }
 
     // Function to rate a task offer. This can only be called by a member
     // The task must be open and the offer must be open for rating
     // The member must not have already rated this offer and the rating must be between 1 and 10
     // It updates the offer's rating sum and number of raters, and emits a TaskOfferRated event
-    function rateTaskOffer(uint256 _offerId, uint256 _rating) external onlyMember {
-        require(tasks[taskOffers[_offerId].taskId].status == TaskStatus.OPEN, "Task is not open");
-        require(taskOffers[_offerId].offeror != msg.sender, "Offeror cannot rate their own offer");
-        require(taskOffers[_offerId].isOpenForRating, "Offer is not open for rating");
-        require(_rating >= 1 && _rating <= 10, "Rating must be between 1 and 10");
+    function rateTaskOffer(uint256 _offerId, uint256 _rating) external {
+        if (tasks[taskOffers[_offerId].taskId].status != TaskStatus.OPEN)
+            revert taskNotOpenForRating();
+        if (taskOffers[_offerId].offeror == msg.sender) revert performerCannotRateOwnOffer();
+        if (!taskOffers[_offerId].isOpenForRating) revert offerNotOpenForRating();
+        if (_rating < 1 || _rating > 10) revert ratingOutOfRange();
         if ((tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] > 0)) {
             taskOffers[_offerId].ratingSum -= tasks[taskOffers[_offerId].taskId].oldRating[
                 msg.sender
@@ -269,16 +272,18 @@ contract Tasks {
         }
         tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] = _rating;
         taskOffers[_offerId].ratingSum += _rating;
-        emit OfferRated(_offerId, _rating);
+        emit TaskOfferRated(_offerId, msg.sender, _rating);
     }
 
     // Function to assign the task to a member who has the highest rating on the task offer.
     // The task must be open, and the highest rating must be at least 7.
     // If a suitable offer is found, the task status is updated to IN_PROGRESS, and the task's performer and assignedOfferId are set.
     // Emits a TaskAssigned event upon successful assignment.
-    function assignTask(uint256 _taskId) external validTaskID(_taskId) {
+    function assignTask(uint256 _taskId) external {
         // Check if the task is open.
-        require(tasks[_taskId].status == TaskStatus.OPEN, "Task is not open");
+        if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
+            revert invalidID();
+        if (tasks[_taskId].status != TaskStatus.OPEN) revert taskNotOpenForAssigning();
 
         // Initialize the variables to track the highest rating and the corresponding task offer ID.
         uint256 highestRating = 0;
@@ -309,7 +314,7 @@ contract Tasks {
         }
 
         // Check if a suitable task offer (average rating of at least 7) was found.
-        require(highestRatedOfferId != 0, "No suitable task offer found");
+        if (highestRatedOfferId == 0) revert noSuitableOffer();
 
         // If a suitable offer was found, update the task status, assign the task to the member, and save the task offer ID.
         tasks[_taskId].status = TaskStatus.IN_PROGRESS;
@@ -325,10 +330,16 @@ contract Tasks {
     // This function can only be called by the performer of the task and only for an assigned task.
     // Updates the task's status to VERIFICATION, and increments the verificationIDCounter.
     // Emits a TaskCompleted event upon successful task completion.
-    function completeTask(uint256 _taskId) external onlyMember validTaskID(_taskId) {
-        require(tasks[_taskId].performer == msg.sender, "Only the performer can complete the task");
-        require(tasks[_taskId].status == TaskStatus.IN_PROGRESS, "Task is not assigned");
 
+    function completeTask(uint256 _taskId) external {
+        if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
+            revert invalidID();
+        if (tasks[_taskId].assignedOfferId < 1) revert taskNotAssigned(); // I don't think you need this case, but ask Choshen
+
+        if (tasks[_taskId].performer != msg.sender) revert onlyAssignedPerformerCanComplete();
+        if (!tasks[_taskId].hasProposed[msg.sender]) revert userHasNotProposed();
+        // if (tasks[_taskId].status != TaskStatus.IN_PROGRESS) revert taskNotAssigned();
+        // if (tasks[_taskId].status != TaskStatus.IN_PROGRESS) revert taskNotInProgress(); //DELETE IF TEST WORKS
         // Update the task's status and increment the verification ID counter.
         tasks[_taskId].status = TaskStatus.VERIFICATION;
         verificationIDCounter++;
@@ -343,11 +354,13 @@ contract Tasks {
     // The task must be in VERIFICATION status, and the rater cannot be the performer of the task.
     // The rater must not have already rated this task, and the rating must be between 1 and 10.
     // Updates the task's completion rating sum and number of completion raters, and emits a TaskExecutionRated event.
-    function rateCompletedTask(uint256 _taskId, uint256 _rating) external validTaskID(_taskId) {
-        require(tasks[_taskId].status == TaskStatus.VERIFICATION, "Task is not completed");
+    function rateCompletedTask(uint256 _taskId, uint256 _rating) external {
+        if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
+            revert invalidID();
+        if (tasks[_taskId].status != TaskStatus.VERIFICATION) revert taskNotCompleted();
 
-        require(tasks[_taskId].performer != msg.sender, "Performer cannot rate their own task");
-        require(_rating != 0 && _rating <= 10, "Rating must be between 1 to 10");
+        if (tasks[_taskId].performer == msg.sender) revert performerCannotRateOwnTask();
+        if (_rating == 0 || _rating > 10) revert ratingOutOfRange();
         if (verificationRaters[tasks[_taskId].verificationID][msg.sender]) {
             tasks[_taskId].completionRatingSum -= tasks[_taskId].oldRating[msg.sender];
         } else {
@@ -360,19 +373,18 @@ contract Tasks {
         membershipContract.addTaskAvg(tasks[_taskId].performer, msg.sender, _rating, _taskId);
 
         // Emit the TaskRated event.
-        emit TaskExecutionRated(_taskId, _rating);
+        emit TaskExecutionRated(_taskId, msg.sender, _rating);
     }
 
     // Function to verify a task.
     // The task must be in the VERIFICATION status, and there must be at least two ratings.
     // If the average rating is at least 7, the task status is updated to VERIFIED and the completion process is triggered. Otherwise, it is reset to IN_PROGRESS.
     // Emits a TaskVerified event upon successful task verification.
-    function verifyTask(uint256 _taskId) external validTaskID(_taskId) {
-        require(
-            tasks[_taskId].status == TaskStatus.VERIFICATION,
-            "Task is not in verification stage"
-        );
-        require(tasks[_taskId].numberOfCompletionRaters >= 2, "Not enough ratings");
+    function verifyTask(uint256 _taskId) external {
+        if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
+            revert invalidID();
+        if (tasks[_taskId].status != TaskStatus.VERIFICATION) revert taskNotInVerificationStage();
+        if (tasks[_taskId].numberOfCompletionRaters < 2) revert notEnoughRatings();
 
         if (tasks[_taskId].completionRatingSum / tasks[_taskId].numberOfCompletionRaters >= 7) {
             tasks[_taskId].status = TaskStatus.VERIFIED;
@@ -509,5 +521,11 @@ contract Tasks {
         address _address
     ) external view returns (bool) {
         return verificationRaters[_taskId][_address];
+    }
+
+    function getTaskOfferId(uint256 _taskId) external view returns (uint256) {
+        if (tasks[_taskId].hasProposed[msg.sender])
+            return tasks[_taskId].addressToOfferId[msg.sender];
+        else revert addressHasNotProposed();
     }
 }
