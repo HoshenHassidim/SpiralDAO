@@ -1,7 +1,7 @@
 "use client"
 
 import Navbar from "../../components/Navbar"
-import Problem from "../../components/Problem"
+import Project from "../../components/Project"
 
 import Link from 'next/link'
 import { AiOutlinePlus } from 'react-icons/ai'
@@ -9,21 +9,30 @@ import { AiOutlinePlus } from 'react-icons/ai'
 //graph
 import type { NextPage } from "next";
 import GET_NEW_PROJECTS from "../../constants/subgraphQueryGetProject";
+import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
 import {useState, useEffect} from "react"
 //toast
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-export default function problems () {
+export default function projects () {
   const [error, setError] = useState()
   const {
     loading,
     error: subgraphQueryError,
     data,
   } = useQuery(GET_NEW_PROJECTS);
+
+  const {
+    loading: problemLoading,
+    error: subgraphQueryErrorProblem,
+    data: problemData,
+  } = useQuery(GET_NEW_PROBLEMS);
+
   if (data) {
     console.log(data);
+    console.log(problemData);
   }
   const notify = () => toast.error(error, {
     position: "top-right",
@@ -51,12 +60,14 @@ return (
 
         {/* <ToastContainer /> */}
       <section className="flex flex-col items-center justify-center gap-5 p-5">
-      {data &&
-        data.projects.map((project) => (
+      {problemData && data &&
+        data.projects.map((project) => {
           // <Problem key={project.projectID} id={project.projectID} title={project.name} creator={project.creator} setError={setError}/>
-          project.projectId
-          
-        ))}
+          // project.projectId
+          let solution = problemData.activeSolutions.find(p => p.solutionId == project.projectId);
+          let problem = problemData.activeProblems.find(p => p.Problems_id == project.projectId);
+          return <Project id={solution.solutionId} solutionTitle={solution.name} solutionCreator={solution.creator} problemTitle={problem.name} problemCreator={problem.creator}/>
+})}
 
         
         
