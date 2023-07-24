@@ -83,8 +83,8 @@ export default function Problem({id, title, creator, setError}) {
                     key={index}
                     className={`z-20 bg-transparent border-none outline-none cursor-pointer ${index <= (hover || rating) ? 'text-yellow-300' : 'text-gray-300'}`}
                     onClick={(e) => {
-                      setRating(index)
-                      e.stopPropagation() 
+                      setRating(index*2)
+                      e.stopPropagation()
 
                     }}
                     onMouseEnter={() => setHover(index)} 

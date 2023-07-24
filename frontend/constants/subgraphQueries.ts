@@ -17,21 +17,6 @@ const GET_NEW_PROBLEMS = gql`
     ratingCount
   }
   
-
-
-activeProjectOffers(orderBy :blockNumber orderDirection: desc){
-  offerId
-  projectId
-  proposer
-  ratingCount
-  ratingSum
-  
-}
-projects(orderBy :blockNumber orderDirection: desc){
-  projectId
-  projectManager
-  isOpenForManagementProposals
-}
  userSolutionRatings (orderBy :blockNumber orderDirection: desc){
   solutionId
   rater
@@ -57,15 +42,5 @@ problemRateds (orderBy :blockNumber orderDirection: desc){
 `;
 export default GET_NEW_PROBLEMS;
 
-export const GET_PROBLEM = gql`
-  query ActiveProblem($id: String!) {
-    activeProblems(where: { Problems_id: $id }) {
-      Problems_id
-      name
-      creator
-      ratingSum
-      ratingCount
-    }
-  }
-`;
+
   
