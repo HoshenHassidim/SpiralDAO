@@ -150,18 +150,15 @@ contract Membership {
         members[_address].tasksAvg = ratingsSum / members[_address].ratings.length;
     }
 
-    function proposedSolutionAccepted(address _address) external {
-        if (!members[_address].isMember) {
-            registerMemberWithoutName(_address);
+    function proposedProblemAndSolutionAccepted(address _problem, address _solution) external {
+        if (!members[_problem].isMember) {
+            registerMemberWithoutName(_problem);
         }
-        members[_address].solutionsAccepted++;
-    }
-
-    function proposedProblemAccepted(address _address) external {
-        if (!members[_address].isMember) {
-            registerMemberWithoutName(_address);
+        if (!members[_solution].isMember) {
+            registerMemberWithoutName(_solution);
         }
-        members[_address].problemsAccepted++;
+        members[_problem].problemsAccepted++;
+        members[_solution].solutionsAccepted++;
     }
 
     function managedProject(address _address) external {
