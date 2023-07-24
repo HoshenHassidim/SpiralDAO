@@ -126,8 +126,7 @@ contract Projects {
             solutionCreator
         );
 
-        membershipContract.proposedProblemAccepted(problemCreator);
-        membershipContract.proposedSolutionAccepted(solutionCreator);
+        membershipContract.proposedProblemAndSolutionAccepted(problemCreator, solutionCreator);
 
         // Create new project and store it in the mapping
         projects[_solutionId] = Project(_solutionId, true, false, address(0));
@@ -198,7 +197,7 @@ contract Projects {
 
         Offer storage offer = offers[_offerId];
 
-        if (!offer.isActive) revert offerNotActive(); 
+        if (!offer.isActive) revert offerNotActive();
         if (offer.manager == msg.sender) revert managerCannotRateOwnOffer();
         if (!offer.isOpenForRating) revert notOpenForRating();
 
@@ -249,24 +248,25 @@ contract Projects {
         if (bestRating > 7) {
             project.isOpenForManagementProposals = false;
             projects[_projectId].projectManager = offers[bestOfferId].manager;
-           project.isOpenForManagmentRemovalProposal = true;
+            project.isOpenForManagmentRemovalProposal = true;
             for (uint256 i = 0; i < projectToOffers[_projectId].length; i++) {
                 Offer storage offer = offers[projectToOffers[_projectId][i]];
                 if (!offer.isActive) continue;
                 offer.isActive = false;
             }
-             // Emit the event to track the project manager assignment
+            // Emit the event to track the project manager assignment
             emit ProjectManagerAssigned(_projectId, offers[bestOfferId].manager);
         }
         membershipContract.managedProject(projects[_projectId].projectManager);
     }
-    
+
     // External function to propose a management removal offer for a project
     function proposeRemoveManager(uint256 _projectId) external {
         if (_projectId < 0) revert IDMustBePositive();
         if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
-        
-        if (projects[_projectId].isOpenForManagmentRemovalProposal == false) revert notOpenForRemovalProposals(); 
+
+        if (projects[_projectId].isOpenForManagmentRemovalProposal == false)
+            revert notOpenForRemovalProposals();
 
         removalOfferCounter++;
 
@@ -302,7 +302,8 @@ contract Projects {
 
         RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
 
-        if (projects[removalOffers[_removalOfferId].projectId].projectManager == msg.sender) revert managerCannotRateAgainstThemselves();
+        if (projects[removalOffers[_removalOfferId].projectId].projectManager == msg.sender)
+            revert managerCannotRateAgainstThemselves();
         if (!removalOffer.isOpenForRemovalRating) revert notOpenForRating();
 
         if (removalOffer.oldRemovalRating[msg.sender] > 0) {
@@ -312,19 +313,21 @@ contract Projects {
         }
         removalOffer.oldRemovalRating[msg.sender] = _rating;
         removalOffer.removalRatingSum += _rating;
-        
+
         emit RemovalOfferRated(_removalOfferId, msg.sender, _rating);
     }
 
     function removeProjectManager(uint256 _removalOfferId) external {
         if (removalOffers[_removalOfferId].projectId <= 0) revert IDMustBePositive();
-        if (projects[removalOffers[_removalOfferId].projectId].solutionId <= 0) revert projectDoesNotExist();
+        if (projects[removalOffers[_removalOfferId].projectId].solutionId <= 0)
+            revert projectDoesNotExist();
 
         RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
         Project storage project = projects[removalOffer.projectId];
 
         // Check if the total raters meet the requirements
-        if (removalOffer.removalNumberOfRaters < MIN_RAITNGS_PER_OFFER) revert insufficientTotalRatersForAllOffers();
+        if (removalOffer.removalNumberOfRaters < MIN_RAITNGS_PER_OFFER)
+            revert insufficientTotalRatersForAllOffers();
 
         // If the best offer's average rating is above 7, assign the project manager
         if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > 7) {
@@ -361,33 +364,37 @@ contract Projects {
         );
     }
 
-    function viewRemovalOfferDetails(uint256 _removalOfferId) external view returns(
-        uint256, uint256, address, uint256, uint256, bool
-    ) {
-        if (_removalOfferId <= 0 || _removalOfferId > removalOfferCounter) revert invalidID(); 
+    function viewRemovalOfferDetails(
+        uint256 _removalOfferId
+    ) external view returns (uint256, uint256, address, uint256, uint256, bool) {
+        if (_removalOfferId <= 0 || _removalOfferId > removalOfferCounter) revert invalidID();
 
         RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
-        
+
         // Return the offer details: remofferId, projectId, proposer, removalRatingSum, removalNumberOfRaters, isOpenForRemovalRating
         return (
-           removalOffer.remOfferId,
-           removalOffer.projectId,
-           removalOffer.proposer,
-           removalOffer.removalRatingSum,
-           removalOffer.removalNumberOfRaters,
-           removalOffer.isOpenForRemovalRating
+            removalOffer.remOfferId,
+            removalOffer.projectId,
+            removalOffer.proposer,
+            removalOffer.removalRatingSum,
+            removalOffer.removalNumberOfRaters,
+            removalOffer.isOpenForRemovalRating
         );
     }
 
     // Function to view details about a project
     function viewProjectDetails(uint256 _projectId) external view returns (uint256, bool, bool) {
-        if(_projectId <= 0) revert IDMustBePositive();
-        if(projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
+        if (_projectId <= 0) revert IDMustBePositive();
+        if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
 
         Project storage project = projects[_projectId];
 
         // Return the project details: projectId (same as solutionId), isOpenForManagementProposals
-        return (project.solutionId, project.isOpenForManagementProposals, project.isOpenForManagmentRemovalProposal);
+        return (
+            project.solutionId,
+            project.isOpenForManagementProposals,
+            project.isOpenForManagmentRemovalProposal
+        );
     }
 
     // Function to view the offers for a project
