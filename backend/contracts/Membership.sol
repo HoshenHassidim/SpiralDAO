@@ -38,6 +38,14 @@ contract Membership {
 
     // Declare an event for member unregistration
     event MemberUnregistered(address indexed memberAddress);
+    event TaskAssignedtoMember(address indexed memberAddress, uint256 taskCount);
+    event ProblemAndSolutionAccepted(
+        address indexed problemCreator,
+        uint256 problemAcceptedCount,
+        address indexed solutionCreator,
+        uint256 solutionAcceptedCount
+    );
+    event ProjectManaged(address _member, uint256 ProjectManagedCount);
 
     // Function to register a new member
     function registerMember(string memory _username) external {
@@ -116,6 +124,7 @@ contract Membership {
             registerMemberWithoutName(_address);
         }
         members[_address].tasksAssigned++;
+        emit TaskAssignedtoMember(_address, members[_address].tasksAssigned);
     }
 
     // Function to add the average rating for a task and update the overall tasksAvg
@@ -150,15 +159,24 @@ contract Membership {
         members[_address].tasksAvg = ratingsSum / members[_address].ratings.length;
     }
 
-    function proposedProblemAndSolutionAccepted(address _problem, address _solution) external {
-        if (!members[_problem].isMember) {
-            registerMemberWithoutName(_problem);
+    function proposedProblemAndSolutionAccepted(
+        address _problemCreator,
+        address _solutionCreator
+    ) external {
+        if (!members[_problemCreator].isMember) {
+            registerMemberWithoutName(_problemCreator);
         }
-        if (!members[_solution].isMember) {
-            registerMemberWithoutName(_solution);
+        if (!members[_solutionCreator].isMember) {
+            registerMemberWithoutName(_solutionCreator);
         }
-        members[_problem].problemsAccepted++;
-        members[_solution].solutionsAccepted++;
+        members[_problemCreator].problemsAccepted++;
+        members[_solutionCreator].solutionsAccepted++;
+        emit ProblemAndSolutionAccepted(
+            _problemCreator,
+            members[_problemCreator].problemsAccepted,
+            _solutionCreator,
+            members[_solutionCreator].solutionsAccepted
+        );
     }
 
     function managedProject(address _address) external {
@@ -166,5 +184,6 @@ contract Membership {
             registerMemberWithoutName(_address);
         }
         members[_address].projectsManaged++;
+        emit ProjectManaged(_address, members[_address].projectsManaged);
     }
 }
