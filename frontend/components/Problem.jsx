@@ -51,7 +51,8 @@ export default function Problem({id, title, creator, setError}) {
         <div onClick={() => {router.push('/problems/'+id)}} className="cursor-pointer bg-gray-700 flex flex-col justify-between gap-5 rounded-lg  p-5 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg">
          <div className="absolute top-5 -right-10 w-10 h-10 rounded-r-full bg-[#3AB3D7] flex items-center">
           {/* <AiFillHeart className="ml-2 text-red-500 text-2xl" />  */}
-        <button onClick={() => setHeartFilled(!heartFilled)}>
+        <button onClick={(e) => {e.stopPropagation(); setHeartFilled(!heartFilled);}}>
+
           {heartFilled ? (
             <AiFillHeart style={{fontSize: 30}} />
           ) : (
