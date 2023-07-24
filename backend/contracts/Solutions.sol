@@ -260,7 +260,7 @@ contract Solutions {
     // Function to get the creators of a solution and its corresponding problem
     function getCreators(
         uint256 _solutionId
-    ) external view returns (address solutionCreator, address problemCreator) {
+    ) external view returns (address problemCreator, address solutionCreator) {
         if (_solutionId <= 0 || _solutionId > solutionCounter) revert IDOutofRange();
 
         Solution storage solution = solutions[_solutionId];
