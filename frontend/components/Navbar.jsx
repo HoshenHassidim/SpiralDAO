@@ -75,11 +75,11 @@ export default function Navbar() {
           </Link>
 
           <Link
-            href="/solutions"
+            href="/projects"
             className="w-full text-white opacity-80 font-semibold"
           >
             <li className="hover:bg-gray-500 py-4 px-6 w-full cursor-pointer">
-              Solutions
+              Projects
             </li>
           </Link>
 
@@ -94,8 +94,8 @@ export default function Navbar() {
           Problems
         </Link>
 
-        <Link href="/solutions" className="nav__link">
-          Solutions
+        <Link href="/projects" className="nav__link">
+          Projects
         </Link>
 
 
