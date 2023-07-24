@@ -1,139 +1,126 @@
-const { ethers } = require("hardhat");
-const { expect } = require("chai");
+const { ethers } = require("hardhat")
+const { expect } = require("chai")
 
-describe("Solutions", function () {
-    let membershipContract;
-    let problemsContract;
-    let solutionsContract;
-    let owner;
-    let user1;
-    let user2;
-    let user3;
+describe("Solutions Errors", function () {
+    let problems, solutions, membership, tokenManagement
+    let owner
+    let user1
+    let user2
+    let user3
 
     beforeEach(async function () {
+        ;[owner, user1, user2, user3] = await ethers.getSigners()
+
         // Get the ContractFactory and Signers here.
-        const Membership = await ethers.getContractFactory("Membership");
-        const Problems = await ethers.getContractFactory("Problems");
-        const Solutions = await ethers.getContractFactory("Solutions");
+        const TokenManagement = await ethers.getContractFactory("TokenManagement")
+        const Membership = await ethers.getContractFactory("Membership")
+        const Problems = await ethers.getContractFactory("Problems")
+        const Solutions = await ethers.getContractFactory("Solutions")
 
-        [owner, user1, user2, user3] = await ethers.getSigners();
+        tokenManagement = await TokenManagement.deploy()
+        await tokenManagement.deployed()
 
-        // Deploying Membership contract
-        membershipContract = await Membership.deploy();
-        await membershipContract.deployed();
+        membership = await Membership.deploy(tokenManagement.address)
+        await membership.deployed()
 
         // Deploying Problems contract, passing the Membership contract address in constructor
-        problemsContract = await Problems.deploy(membershipContract.address);
-        await problemsContract.deployed();
+        problems = await Problems.deploy(membership.address)
+        await problems.deployed()
 
         // Deploying Solutions contract, passing the Problems contract address in constructor
-        solutionsContract = await Solutions.deploy(membershipContract.address, problemsContract.address);
-        await solutionsContract.deployed();
-        await problemsContract.connect(user1).raiseProblem("Problem1");
-        await problemsContract.connect(user2).rateProblem(1, 10);
-        await problemsContract.connect(user3).rateProblem(1, 10);
-    });
-
+        solutions = await Solutions.deploy(membership.address, problems.address)
+        await solutions.deployed()
+        await problems.connect(user1).raiseProblem("Problem1")
+        await problems.connect(user2).rateProblem(1, 10)
+        await problems.connect(user3).rateProblem(1, 10)
+    })
 
     // Test cases for Solutions.sol
 
     it("proposeSolution should revert when problem does not exist", async function () {
-        await expect(
-            solutionsContract.connect(user1).proposeSolution(2, "Solution1")
-        ).to.be.revertedWith("problemDoesNotExist");
-    });
+        await expect(solutions.connect(user1).proposeSolution(2, "Solution1")).to.be.revertedWith(
+            "problemDoesNotExist"
+        )
+    })
 
     it("proposeSolution should revert when no name is provided", async function () {
-        await expect(
-            solutionsContract.connect(user1).proposeSolution(1, "")
-        ).to.be.revertedWith("nameCannotBeEmpty");
-    });
+        await expect(solutions.connect(user1).proposeSolution(1, "")).to.be.revertedWith(
+            "nameCannotBeEmpty"
+        )
+    })
 
     it("cancelSolution should revert when solution does not exist", async function () {
-        await expect(
-            solutionsContract.connect(user1).cancelSolution(1)
-        ).to.be.revertedWith("solutionDoesNotExist");
-    });
+        await expect(solutions.connect(user1).cancelSolution(1)).to.be.revertedWith(
+            "solutionDoesNotExist"
+        )
+    })
 
     it("cancelSolution should revert when not the owner of the solution", async function () {
+        await solutions.connect(user1).proposeSolution(1, "Solution1")
 
-
-
-        await solutionsContract.connect(user1).proposeSolution(1, "Solution1");
-
-
-        await expect(
-            solutionsContract.connect(user2).cancelSolution(1)
-        ).to.be.revertedWith("onlySolutionCreatorCanPerform");
-    });
-    //Unit Tests 
+        await expect(solutions.connect(user2).cancelSolution(1)).to.be.revertedWith(
+            "onlySolutionCreatorCanPerform"
+        )
+    })
+    //Unit Tests
     it("Should delete solution name after cancelling solution", async function () {
-
-
-        await solutionsContract.connect(user2).proposeSolution(1, "S1");
-        await solutionsContract.connect(user2).cancelSolution(1);
-        const nameTaken = await solutionsContract.isSolutionNameTaken("S1");
-        expect(nameTaken).to.equal(false);
+        await solutions.connect(user2).proposeSolution(1, "S1")
+        await solutions.connect(user2).cancelSolution(1)
+        const nameTaken = await solutions.isSolutionNameTaken("S1")
+        expect(nameTaken).to.equal(false)
     })
     it("Should delete solution name after changing solution", async function () {
-
-
-        await solutionsContract.connect(user2).proposeSolution(1, "S1");
-        await solutionsContract.connect(user2).changeSolutionName(1, "S2");
-        const nameTaken = await solutionsContract.isSolutionNameTaken("S1");
-        expect(nameTaken).to.equal(false);
+        await solutions.connect(user2).proposeSolution(1, "S1")
+        await solutions.connect(user2).changeSolutionName(1, "S2")
+        const nameTaken = await solutions.isSolutionNameTaken("S1")
+        expect(nameTaken).to.equal(false)
     })
-    it('reverts for invalid solution ID', async () => {
-        await solutionsContract.connect(user1).proposeSolution(1, "S1");
-        await expect(
-            solutionsContract.connect(user1).cancelSolution(0)
-        ).to.be.revertedWith('invalidID');
-    });
+    it("reverts for invalid solution ID", async () => {
+        await solutions.connect(user1).proposeSolution(1, "S1")
+        await expect(solutions.connect(user1).cancelSolution(0)).to.be.revertedWith("invalidID")
+    })
 
-    // Test solution already rated error  
-    it('reverts if solution already rated', async () => {
-        await solutionsContract.connect(user1).proposeSolution(1, 'Sol 1');
+    // Test solution already rated error
+    it("reverts if solution already rated", async () => {
+        await solutions.connect(user1).proposeSolution(1, "Sol 1")
 
-        await solutionsContract.connect(user2).rateSolution(1, 8);
+        await solutions.connect(user2).rateSolution(1, 8)
 
-        await expect(
-            solutionsContract.connect(user1).cancelSolution(1)
-        ).to.be.revertedWith('solutionAlreadyRated');
-    });
+        await expect(solutions.connect(user1).cancelSolution(1)).to.be.revertedWith(
+            "solutionAlreadyRated"
+        )
+    })
 
     // Test solution not open for rating error
-    it('reverts if solution not open for rating', async () => {
-        await solutionsContract.connect(user1).proposeSolution(1, 'Sol 2');
+    it("reverts if solution not open for rating", async () => {
+        await solutions.connect(user1).proposeSolution(1, "Sol 2")
 
-        await solutionsContract.connect(user1).cancelSolution(1);
+        await solutions.connect(user1).cancelSolution(1)
 
-        await expect(
-            solutionsContract.connect(user2).rateSolution(1, 10)
-        ).to.be.revertedWith('solutonClosedForRating');
-    });
+        await expect(solutions.connect(user2).rateSolution(1, 10)).to.be.revertedWith(
+            "solutonClosedForRating"
+        )
+    })
 
     // Test creator rating own solution error
-    it('reverts if creator rates own solution', async () => {
-        await solutionsContract.connect(user1).proposeSolution(1, 'Sol 3');
+    it("reverts if creator rates own solution", async () => {
+        await solutions.connect(user1).proposeSolution(1, "Sol 3")
 
-        await expect(
-            solutionsContract.connect(user1).rateSolution(1, 10)
-        ).to.be.revertedWith('creatorCannotRateOwnProblem');
-    });
+        await expect(solutions.connect(user1).rateSolution(1, 10)).to.be.revertedWith(
+            "creatorCannotRateOwnProblem"
+        )
+    })
 
     // Test invalid rating error
-    it('reverts for invalid rating', async () => {
-        await solutionsContract.connect(user1).proposeSolution(1, 'Sol 4');
+    it("reverts for invalid rating", async () => {
+        await solutions.connect(user1).proposeSolution(1, "Sol 4")
 
-        await expect(
-            solutionsContract.connect(user2).rateSolution(1, 0)
-        ).to.be.revertedWith('ratingOutOfRange');
+        await expect(solutions.connect(user2).rateSolution(1, 0)).to.be.revertedWith(
+            "ratingOutOfRange"
+        )
 
-        await expect(
-            solutionsContract.connect(user2).rateSolution(1, 11)
-        ).to.be.revertedWith('ratingOutOfRange');
-    });
-
-
-
-});
+        await expect(solutions.connect(user2).rateSolution(1, 11)).to.be.revertedWith(
+            "ratingOutOfRange"
+        )
+    })
+})
