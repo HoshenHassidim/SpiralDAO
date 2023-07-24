@@ -168,4 +168,16 @@ describe("removeManager", function () {
     expect(removalOfferDetails[5]).to.be.false
 
   })
+
+  it ("Should allow manager to resign", async function () {
+    await projects.connect(newPM).managerResign()
+
+    const projectManager = await projects.getProjectManager(projectId)
+    const projectDetails = await projects.viewProjectDetails(projectId)
+
+    expect(projectManager).to.equal(newPM)
+    expect(projectDetails[1]).to.be.true
+    expect(projectDetails[2]).to.equal.false
+
+  })
 })
