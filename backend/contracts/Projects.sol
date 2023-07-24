@@ -260,6 +260,17 @@ contract Projects {
         membershipContract.managedProject(projects[_projectId].projectManager);
     }
 
+    // External function to allow a manager to resign
+    function managerResign(uint256 _projectId) external {
+        if (_projectId <= 0) revert IDMustBePositive();
+        if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
+ 
+        if (msg.sender != projects[_projectId].projectManager) revert onlyManager();
+
+        removeProjectManager(_projectId);
+    }
+
+
     // External function to propose a management removal offer for a project
     function proposeRemoveManager(uint256 _projectId) external {
         if (_projectId < 0) revert IDMustBePositive();
@@ -317,13 +328,12 @@ contract Projects {
         emit RemovalOfferRated(_removalOfferId, msg.sender, _rating);
     }
 
-    function removeProjectManager(uint256 _removalOfferId) external {
+    function checkRemovalRatings(uint256 _removalOfferId) external {
         if (removalOffers[_removalOfferId].projectId <= 0) revert IDMustBePositive();
         if (projects[removalOffers[_removalOfferId].projectId].solutionId <= 0)
             revert projectDoesNotExist();
 
         RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
-        Project storage project = projects[removalOffer.projectId];
 
         // Check if the total raters meet the requirements
         if (removalOffer.removalNumberOfRaters < MIN_RAITNGS_PER_OFFER)
@@ -331,16 +341,21 @@ contract Projects {
 
         // If the best offer's average rating is above 7, assign the project manager
         if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > 7) {
-            project.isOpenForManagmentRemovalProposal = false;
             removalOffer.isOpenForRemovalRating = false;
-            project.projectManager = address(0);
-            project.isOpenForManagementProposals = true;
+            removeProjectManager(removalOffer.projectId);
+        }
+    }
 
-            uint256 projectId = removalOffer.projectId;
-            for (uint256 i = 0; i < projectToOffers[projectId].length; i++) {
-                address proposer = offers[projectToOffers[projectId][i]].manager;
-                hasProposed[projectId][proposer] = false;
-            }
+    function removeProjectManager(uint256 _projectId) private {
+        Project storage project = projects[_projectId];
+        
+        project.isOpenForManagmentRemovalProposal = false;
+        project.projectManager = address(0);
+        project.isOpenForManagementProposals = true;
+
+        for (uint256 i = 0; i < projectToOffers[_projectId].length; i++) {
+            address proposer = offers[projectToOffers[_projectId][i]].manager;
+            hasProposed[_projectId][proposer] = false;
         }
     }
 
