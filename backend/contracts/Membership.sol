@@ -9,6 +9,7 @@ contract Membership {
         uint256 rating;
     }
     struct Member {
+        bool isMember;
         string username;
         uint256 tasksAssigned;
         rating[] ratings;
@@ -33,6 +34,7 @@ contract Membership {
 
     // Declare an event for member registration
     event MemberRegistered(address indexed memberAddress, string username);
+    event MemberRegisteredWithoutName(address indexed memberAddress);
 
     // Declare an event for member unregistration
     event MemberUnregistered(address indexed memberAddress);
@@ -44,6 +46,7 @@ contract Membership {
         if (isUsernameTaken(_username)) revert UsernameAlreadyExists();
 
         Member storage newMember = members[msg.sender];
+        newMember.isMember = true;
         newMember.username = _username;
         usernames[_username] = true;
 
@@ -56,9 +59,23 @@ contract Membership {
         emit MemberRegistered(msg.sender, _username); // Emit event after successful registration
     }
 
+    function registerMemberWithoutName(address _address) private {
+        Member storage newMember = members[_address];
+        // newMember.username = _username;
+        newMember.isMember = true;
+
+        newMember.tasksAssigned = 0;
+        newMember.tasksAvg = 0;
+        //newMember.taskAvgs = new avg[](0);
+        newMember.projectsManaged = 0;
+        newMember.problemsAccepted = 0;
+        newMember.solutionsAccepted = 0;
+        emit MemberRegisteredWithoutName(msg.sender); // Emit event after successful registration
+    }
+
     // Function to unregister a member
     function unregisterMember() external {
-        if (bytes(members[msg.sender].username).length == 0) revert mustBeMember();
+        if (!members[msg.sender].isMember) revert mustBeMember();
 
         delete usernames[members[msg.sender].username];
         delete members[msg.sender];
@@ -68,7 +85,7 @@ contract Membership {
 
     // Function to check if an address is a registered member
     function isRegisteredMember(address _address) external view returns (bool) {
-        return bytes(members[_address].username).length > 0;
+        return members[_address].isMember;
     }
 
     // View function to access usernames mapping
@@ -80,7 +97,7 @@ contract Membership {
     function viewMemberDetails(
         address _address
     ) external view returns (string memory, uint256, uint256, uint256, uint256, uint256) {
-        if (bytes(members[_address].username).length == 0) revert mustBeMember();
+        if (!members[_address].isMember) revert mustBeMember();
         return (
             members[_address].username, //0
             members[_address].tasksAssigned, //1
@@ -95,7 +112,9 @@ contract Membership {
 
     //when task is assigned to member, will add it to this array to keep track of all tasks worked on
     function assignTaskToMember(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (!members[_address].isMember) {
+            registerMemberWithoutName(_address);
+        }
         members[_address].tasksAssigned++;
     }
 
@@ -106,7 +125,7 @@ contract Membership {
         uint256 _rating,
         uint256 _taskId
     ) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (!members[_address].isMember) revert mustBeMember();
         bool checker = true;
         uint256 numberOfTasks = 0;
         for (uint i = 0; i < members[_address].ratings.length; i++) {
@@ -132,52 +151,23 @@ contract Membership {
     }
 
     function proposedSolutionAccepted(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (!members[_address].isMember) {
+            registerMemberWithoutName(_address);
+        }
         members[_address].solutionsAccepted++;
     }
 
     function proposedProblemAccepted(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (!members[_address].isMember) {
+            registerMemberWithoutName(_address);
+        }
         members[_address].problemsAccepted++;
     }
 
     function managedProject(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (!members[_address].isMember) {
+            registerMemberWithoutName(_address);
+        }
         members[_address].projectsManaged++;
     }
-
-    // // Function to calculate the rating of a member on a scale of 1 to 10
-    // function calculateRating(address _address) external view returns (uint256) {
-    //     //THIS DOES NOT RLY WORK YET
-    //     if (bytes(members[_address].username).length == 0) revert NotMember();
-    //     Member memory member = members[_address];
-
-    //     // Calculate a weighted average based on different factors
-    //     // You can modify these weights based on your specific criteria and requirements
-    //     uint256 tasksWeight = 3;
-    //     uint256 projectsWeight = 3;
-    //     uint256 problemsWeight = 1;
-    //     uint256 solutionsWeight = 2;
-
-    //     uint256 totalWeight = tasksWeight + projectsWeight + problemsWeight + solutionsWeight;
-
-    //     uint256 tasksAvgScore = (member.tasksAvg * tasksWeight) / totalWeight;
-    //     uint256 projectsScore = (member.projectsManaged * projectsWeight) / totalWeight;
-    //     uint256 problemsScore = (member.problemsAccepted * problemsWeight) / totalWeight;
-    //     uint256 solutionsScore = (member.solutionsAccepted * solutionsWeight) / totalWeight;
-
-    //     uint256 totalScore = tasksAvgScore + projectsScore + problemsScore + solutionsScore;
-
-    //     // Normalize the score to a scale of 1 to 10
-    //     uint256 normalizedScore = (totalScore * 10) / totalWeight;
-
-    //     // Ensure the rating is within the range of 1 to 10
-    //     if (normalizedScore > 10) {
-    //         return 10;
-    //     } else if (normalizedScore < 1) {
-    //         return 1;
-    //     } else {
-    //         return normalizedScore;
-    //     }
-    // }
 }

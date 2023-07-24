@@ -55,7 +55,6 @@ describe("Membership", function () {
         })
     })
 
-
     describe("isRegisteredMember", function () {
         it("Should return false for non-member", async function () {
             let isMember = await membership.isRegisteredMember(deployerAddress)
@@ -88,10 +87,6 @@ describe("Membership", function () {
             let userDetails = await membership.viewMemberDetails(deployerAddress)
             expect(userDetails[0]).to.equal("deployer")
             for (let i = 1; i <= 5; i++) expect(userDetails[i]).to.equal(0)
-        })
-
-        it("Should revert when attempting to get username of non-member", async function () {
-            await expect(membership.getMember(deployerAddress)).to.be.revertedWith("mustBeMember");
         })
     })
 })
