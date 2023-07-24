@@ -56,10 +56,11 @@ describe("Membership", function () {
 
         it("Should not unregister a non-member", async function () {
             await expect(membership.connect(deployer).unregisterMember()).to.be.revertedWith(
-                "NotMember"
+                "mustBeMember"
             )
         })
     })
+
 
     describe("isRegisteredMember", function () {
         it("Should return false for non-member", async function () {
@@ -96,9 +97,7 @@ describe("Membership", function () {
         })
 
         it("Should revert when attempting to get username of non-member", async function () {
-            await expect(membership.viewMemberDetails(deployerAddress)).to.be.revertedWith(
-                "NotMember"
-            )
+            await expect(membership.getMember(deployerAddress)).to.be.revertedWith("mustBeMember");
         })
     })
 })

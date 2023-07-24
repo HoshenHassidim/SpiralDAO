@@ -6,7 +6,7 @@ import "./Tokens.sol";
 // This is the contract for managing tokens, including creating new tokens for projects and minting tokens.
 contract TokenManagement {
     // The admin is the account that has all permissions
-    address public immutable admin;
+    address private immutable admin;
     // A mapping of project IDs to their respective token contracts
     mapping(uint256 => Tokens) private projectTokens;
     // A mapping of authorized contracts that can perform certain actions
@@ -30,6 +30,26 @@ contract TokenManagement {
     error addressesCannotBeZero();
     error taskValueMustBeGreaterThanZero();
     error projectIDCannotBeZero();
+    error contractWasNotAuthorised();
+
+    event ProjectTokenCreated(
+        uint256 indexed projectId,
+        address indexed problemCreator,
+        address indexed solutionCreator,
+        uint256 problemCreatorProjectTokens,
+        uint256 problemCreatorDaoTokens,
+        uint256 solutionCreatorProjectTokens,
+        uint256 solutionCreatorDaoTokens
+    );
+    event TokensMinted(
+        address indexed account,
+        uint256 projectId,
+        uint256 projectTokens,
+        uint256 daoTokens
+    );
+
+    event AuthorizationGranted(address indexed account);
+    event AuthorizationRevoked(address indexed account);
 
     constructor() {
         // The constructor sets the admin to the sender, and authorizes the sender
@@ -56,12 +76,17 @@ contract TokenManagement {
     function authorizeContract(address contractAddress) external onlyAdmin {
         if (contractAddress == address(0)) revert addressCannotBeZero();
         authorizedContracts[contractAddress] = true;
+
+        emit AuthorizationGranted(contractAddress);
     }
 
     // Function to revoke authorization from a contract, can only be called by the admin
     function revokeContractAuthorization(address contractAddress) external onlyAdmin {
-        if (contractAddress == address(0)) revert addressCannotBeZero();
+        if (!authorizedContracts[contractAddress]) revert contractWasNotAuthorised();
+
         authorizedContracts[contractAddress] = false;
+
+        emit AuthorizationRevoked(contractAddress);
     }
 
     // Function to create a new token for a project, can only be called by an authorized contract
@@ -84,6 +109,15 @@ contract TokenManagement {
         Tokens Token = projectTokens[0];
         Token.mint(problemCreator, DAO_TOKEN_PROBLEM_CREATOR);
         Token.mint(solutionCreator, DAO_TOKEN_SOLUTION_CREATOR);
+        emit ProjectTokenCreated(
+            projectId,
+            problemCreator,
+            solutionCreator,
+            PROJECT_TOKEN_PROBLEM_CREATOR,
+            DAO_TOKEN_PROBLEM_CREATOR,
+            PROJECT_TOKEN_SOLUTION_CREATOR,
+            DAO_TOKEN_SOLUTION_CREATOR
+        );
     }
 
     // Function to complete a task and mint tokens, can only be called by an authorized contract
@@ -94,19 +128,24 @@ contract TokenManagement {
         uint256 projectId
     ) external onlyAuthorized {
         if (executor == address(0) || manager == address(0)) revert addressesCannotBeZero();
-        else if (taskValue <= 0) revert taskValueMustBeGreaterThanZero();
-        else if (projectId == 0) revert projectIDCannotBeZero();
+        if (taskValue <= 0) revert taskValueMustBeGreaterThanZero();
+        if (projectId == 0) revert projectIDCannotBeZero();
 
         uint256 executorPayment = taskValue;
         uint256 managerPayment = (taskValue * INVERSE_PROJECT_MANAGER_SHARE) / 100;
+        uint256 executorDaoTokens = (executorPayment * INVERSE_DAO_TOKEN_PAY_RATIO) / 100;
+        uint256 managerDaoTokens = (managerPayment * INVERSE_DAO_TOKEN_PAY_RATIO) / 100;
 
         Tokens projectToken = projectTokens[projectId];
         projectToken.mint(executor, executorPayment);
         projectToken.mint(manager, managerPayment);
 
-        Tokens Token = projectTokens[0];
-        Token.mint(executor, (executorPayment * INVERSE_DAO_TOKEN_PAY_RATIO) / 100);
-        Token.mint(manager, (managerPayment * INVERSE_DAO_TOKEN_PAY_RATIO) / 100);
+        Tokens daoToken = projectTokens[0];
+        daoToken.mint(executor, executorDaoTokens);
+        daoToken.mint(manager, managerDaoTokens);
+
+        emit TokensMinted(executor, projectId, executorPayment, executorDaoTokens);
+        emit TokensMinted(manager, projectId, managerPayment, managerDaoTokens);
     }
 
     // Function to view the balance of an address for a particular project
@@ -126,5 +165,9 @@ contract TokenManagement {
         if (_address == address(0)) revert addressCannotBeZero();
 
         return authorizedContracts[_address];
+    }
+
+    function getAdmin() external view returns (address) {
+        return admin;
     }
 }
