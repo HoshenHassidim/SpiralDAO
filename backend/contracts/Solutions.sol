@@ -79,12 +79,10 @@ contract Solutions {
 
     // Function to propose a solution
     function proposeSolution(uint256 _problemId, string memory _name) external {
-
         if (bytes(_name).length <= 0) revert nameCannotBeEmpty();
-
+        if (_problemId == 0) revert invalidID();
         if (!problemsContract.doesProblemExist(_problemId)) revert problemDoesNotExist();
 
-        if (problemsContract.getProblemCounter() < _problemId) revert invalidID();
         if (solutionNames[_name]) revert nameAlreadyExists();
         if (!problemsContract.meetsRatingCriteria(_problemId)) revert problemDoesNotMeetCriteria();
 
@@ -108,18 +106,21 @@ contract Solutions {
 
     // Function to cancel a solution
     function cancelSolution(uint256 _solutionId) external {
-        if (bytes(solutions[_solutionId].name).length <= 0) revert solutionDoesNotExist();
+        if (_solutionId == 0) revert invalidID();
+
+        if (bytes(solutions[_solutionId].name).length <= 0 || solutionCounter < _solutionId)
+            revert solutionDoesNotExist();
         if (msg.sender != solutions[_solutionId].creator) revert onlySolutionCreatorCanPerform();
 
         Solution storage solution = solutions[_solutionId];
-        if (solutionCounter < _solutionId) revert invalidID();
+
         if (!solution.isOpenForRating) revert solutonClosedForRating();
         if (solution.numberOfRaters != 0) revert solutionAlreadyRated();
 
         // Mark the solution as closed for rating
         solution.isOpenForRating = false;
 
-        solutionNames[solutions[_solutionId].name] = false;
+        delete solutionNames[solutions[_solutionId].name];
 
         // Emit the event
         emit SolutionCancelled(_solutionId);
@@ -130,14 +131,14 @@ contract Solutions {
         uint256 _solutionId,
         string memory _newName
     ) external onlyCreator(_solutionId) {
-        if (solutionCounter < _solutionId) revert invalidID();
+        if (solutionCounter < _solutionId) revert solutionDoesNotExist();
         if (bytes(_newName).length <= 0) revert nameCannotBeEmpty();
         if (solutionNames[_newName]) revert nameAlreadyExists();
 
         Solution storage solution = solutions[_solutionId];
 
         // Update the solution name
-        solutionNames[solution.name] = false;
+        delete solutionNames[solution.name];
         solution.name = _newName;
         solutionNames[_newName] = true;
 
@@ -147,7 +148,7 @@ contract Solutions {
 
     // Function to rate a solution
     function rateSolution(uint256 _solutionId, uint256 _rating) external {
-        if (solutionCounter < _solutionId) revert invalidID();
+        if (solutionCounter < _solutionId) revert solutionDoesNotExist();
         if (solutions[_solutionId].creator == msg.sender) revert creatorCannotRateOwnProblem();
         if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
         if (!solutions[_solutionId].isOpenForRating) revert solutonClosedForRating();

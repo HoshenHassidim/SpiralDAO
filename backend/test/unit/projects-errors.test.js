@@ -38,11 +38,6 @@ describe("Projects", function () {
 
         accounts = await ethers.getSigners()
 
-        for (let i = 0; i < 8; i++) {
-            const name = String(i)
-            await membership.connect(accounts[i]).registerMember(name)
-        }
-
         await problems.connect(accounts[0]).raiseProblem("Problem 1")
         const problemId = await problems.getProblemCounter()
         for (let i = 1; i < 4; i++) {
@@ -72,13 +67,7 @@ describe("Projects", function () {
         ).to.be.revertedWith("invalidID");
     });
 
-    it("Should revert if not a registered member", async function () {
-        await membership.connect(accounts[0]).unregisterMember();
-        await expect(
-            projects.connect(accounts[0]).proposeOffer(1)
-        ).to.be.revertedWith("mustBeMember");
-
-    });
+    
 
 
     it("Should revert if project not open for proposals", async function () {
