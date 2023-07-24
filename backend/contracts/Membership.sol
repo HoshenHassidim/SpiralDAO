@@ -95,7 +95,7 @@ contract Membership {
 
     //when task is assigned to member, will add it to this array to keep track of all tasks worked on
     function assignTaskToMember(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (bytes(members[_address].username).length == 0) revert mustBeMember();
         members[_address].tasksAssigned++;
     }
 
@@ -106,7 +106,7 @@ contract Membership {
         uint256 _rating,
         uint256 _taskId
     ) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (bytes(members[_address].username).length == 0) revert mustBeMember();
         bool checker = true;
         uint256 numberOfTasks = 0;
         for (uint i = 0; i < members[_address].ratings.length; i++) {
@@ -132,17 +132,17 @@ contract Membership {
     }
 
     function proposedSolutionAccepted(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (bytes(members[_address].username).length == 0) revert mustBeMember();
         members[_address].solutionsAccepted++;
     }
 
     function proposedProblemAccepted(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (bytes(members[_address].username).length == 0) revert mustBeMember();
         members[_address].problemsAccepted++;
     }
 
     function managedProject(address _address) external {
-        if (bytes(members[_address].username).length == 0) revert NotMember();
+        if (bytes(members[_address].username).length == 0) revert mustBeMember();
         members[_address].projectsManaged++;
     }
 
