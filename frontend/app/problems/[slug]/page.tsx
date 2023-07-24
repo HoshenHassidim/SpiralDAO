@@ -20,7 +20,7 @@ import abi from "../../../constants/Solutions.json"
 
 import {useState, useEffect} from "react"
 
-import {Link} from "next/link"
+import Link from "next/link"
 
 import Navbar from "../../../components/Navbar"
 
@@ -33,6 +33,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
     const { address, isConnecting, isDisconnected } = useAccount()
 
     const router = useRouter()
+    
 
     // Toast
     const notifyError = (toastError: any) => toast.error(toastError, {
@@ -45,7 +46,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
       progress: undefined,
       theme: "light",
       });
-    const notifyConfirm = (toastError: any) => toast.error(toastError, {
+    const notifySuccess = (toastError: any) => toast.success("Success!", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -75,6 +76,13 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
         abi: abi,
         functionName: 'proposeSolution',
         args: [params.slug, solution],
+        onError(error) {
+          console.log(error.metaMessages[0]);
+          notifyError(error.metaMessages[0])
+        },
+        onSuccess(data) {
+          notifySuccess()
+        },
       })
       // Submitting a solution
       const onSubmit = async (data: any) => {
@@ -105,7 +113,11 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
       
       		<Navbar />
 
+
 					<section className="flex flex-col justify-center items-center">
+          <Link href="/problems" className="w-full mt-5 text-white opacity-80 font-semibold">
+					<button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Back</button>
+					</Link>
 
         	{params.slug}
 					<h2 className="text-lg">
