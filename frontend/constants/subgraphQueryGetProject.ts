@@ -18,7 +18,13 @@ projects(orderBy :blockNumber orderDirection: desc){
   isOpenForManagementProposals
 }
 
-
+tasks {
+    taskId
+    performer
+    status
+    completionRatingSum
+    numberOfCompletionRaters
+  }
 
 
 }

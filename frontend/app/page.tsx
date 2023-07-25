@@ -11,7 +11,7 @@ import Navbar from "../components/Navbar"
 
 import Image from "next/image";
 
-import { useContractWrite, usePrepareContractWrite, useWaitForTransaction, useAccount, useContractRead } from 'wagmi'
+import { useAccount} from 'wagmi'
 
 
 export default function home() {

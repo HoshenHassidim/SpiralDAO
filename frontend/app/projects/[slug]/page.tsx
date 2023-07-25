@@ -2,7 +2,11 @@
 import { useRouter } from 'next/navigation'
 import { useQuery } from "@apollo/client";
 import {useState, useEffect} from "react"
-import { useAccount } from 'wagmi'
+import { useAccount, useContractWrite } from 'wagmi'
+
+import abi from "../../../constants/Problems.json";
+import addresses from '../../../constants/networkMapping.json'
+import createNotification from "../../../createNotification.js";
 
 
 import Link from "next/link"
@@ -18,7 +22,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
     const router = useRouter()
     const { address, isConnecting, isDisconnected } = useAccount()
 
-
+    // Graph to fetch problems and projects
     const {
       loading,
       error: subgraphQueryError,
@@ -33,20 +37,29 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   
     if (data) {
       console.log(data);
-      console.log(problemData);
     }
 
-
+  //Wagmi to propose as a offer (manager)
+  const { proposedOfferData, isLoading, isSuccess, write } = useContractWrite({
+    address: addresses[4002].Projects[0],
+    abi: abi,
+    functionName: "proposeOffer",
+    args: [params.slug],
+    onError(error) {
+      createNotification(error.metaMessages[0], "error");
+    },
+    onSuccess(data) {
+      createNotification("Successfully proposed for a manager role", "success");
+    },
+  });
 
     return (<div>
 			  <div className="overflow-x-hidden">
       
       		<Navbar />
 
-
-
-					<section className="flex flex-col justify-center items-center">
-          <Link href="/projects" className="w-full mt-5 text-white opacity-80 font-semibold">
+					<section className="flex flex-col gap-2 justify-center items-center">
+          <Link href="/projects" className="mt-5 text-white opacity-80 font-semibold">
 					<button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Back</button>
 					</Link>
         	{params.slug}
@@ -75,13 +88,13 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
           )
 })}
 
-
-					<h2 className="text-lg">
-
-					{/* {problemData && problemData.activeProblems.length == 0 ? "Sorry, this problem does not exist" : !error && problemData && problemData.activeProblems.length > 0 && problemData.activeProblems[0].name} */}
-        	
-					</h2>
 					</section>
+          <div className="flex justify-center">
+            {data && data.projects.find(item => item.projectId === params.slug).isOpenForManagementProposals && (
+
+					  <button onClick={() => {write()}} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Apply for Manager</button>
+            )}
+          </div>
 
         </div>
     	</div>)

@@ -7,7 +7,11 @@ import { useRouter } from "next/navigation";
 
 import { useForm, SubmitHandler } from "react-hook-form";
 
+
+
 import abi from "../../../constants/Problems.json";
+import addresses from '../../../constants/networkMapping.json'
+
 import {
   useContractWrite,
   usePrepareContractWrite,
@@ -48,7 +52,7 @@ export default function page() {
   };
 
   const { data, isLoading, isSuccess, write } = useContractWrite({
-    address: "0x1eD127C2eD0Bfca9D2Ee3d7e8B5A7944A163af35",
+    address: addresses[4002].Problems[0],
     abi: abi,
     functionName: "raiseProblem",
     args: [name],
@@ -62,6 +66,9 @@ export default function page() {
     // Check if the contract write operation was successful
     if (isSuccess) {
       // Redirect to the main page when it is successful
+      createNotification("Problem Poster", "success");
+
+
       router.push("/problems"); // Replace '/main' with your desired main page URL
       router.refresh();
     }
