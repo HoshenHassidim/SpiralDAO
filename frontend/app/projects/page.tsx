@@ -13,8 +13,8 @@ import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
 import {useState, useEffect} from "react"
 //toast
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import createNotification from '../../../createNotification.js';
+
 
 export default function projects () {
   const [error, setError] = useState()
@@ -34,20 +34,12 @@ export default function projects () {
     console.log(data);
     console.log(problemData);
   }
-  const notify = () => toast.error(error, {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    });
+
   useEffect(() => {
     if (error) {
 
-      notify()
+      createNotification(error.metaMessages[0], "error")
+
       setError("")
     }
 

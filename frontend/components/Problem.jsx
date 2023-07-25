@@ -7,8 +7,8 @@ import { useContractWrite, usePrepareContractWrite, useWaitForTransaction, useAc
 import { useRouter } from 'next/navigation';
 
 // Toast notification
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import createNotification from '../createNotification.js';
+
 
 export default function Problem({id, title, creator}) {
   const [rating, setRating] = useState(0);
@@ -19,16 +19,7 @@ export default function Problem({id, title, creator}) {
   const { address, isConnecting, isDisconnected } = useAccount()
   const router = useRouter();
 
-  const notifyError = (toastError) => toast.error(toastError, {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    });
+
   
   const { data, isLoading, isSuccess, write } = useContractWrite({
     address: '0x1eD127C2eD0Bfca9D2Ee3d7e8B5A7944A163af35',
@@ -37,14 +28,17 @@ export default function Problem({id, title, creator}) {
     args: [id, rating],
     onError(error) {
 
-      notifyError(error.metaMessages[0])
+      createNotification(error.metaMessages[0], "error")
+    },
+    onSuccess(data) {
+      createNotification("Rated Successfully", "success")
     },
   })
 
   useEffect(() => {
     if (rating) {
       if (!address) {
-        notifyError("Please connect your wallet to rate")
+        createNotification("Please connect your wallet to rate", "error")
       }
       else {
 
@@ -85,14 +79,14 @@ export default function Problem({id, title, creator}) {
                   <button
                     type="button" 
                     key={index}
-                    className={`z-20 bg-transparent border-none outline-none cursor-pointer ${index <= (hover || rating) ? 'text-yellow-300' : 'text-gray-300'}`}
+                    className={`z-20 bg-transparent border-none outline-none cursor-pointer ${index <= (hover || rating/2) ? 'text-yellow-300' : 'text-gray-300'}`}
                     onClick={(e) => {
                       setRating(index*2)
                       e.stopPropagation()
 
                     }}
                     onMouseEnter={() => setHover(index)} 
-                    onMouseLeave={() => setHover(rating)}
+                    onMouseLeave={() => setHover(rating/2)}
                   >
                   <span className="sm:text-5xl text-4xl">&#9733;</span>
                   </button>

@@ -11,8 +11,8 @@ import GET_PROBLEM from "../../../constants/subgraphQueryGetProblem";
 import { useQuery } from "@apollo/client";
 
 // Toast notification
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import createNotification from '../../../createNotification.js';
+
 
 
 
@@ -35,28 +35,6 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
     const router = useRouter()
     
 
-    // Toast
-    const notifyError = (toastError: any) => toast.error(toastError, {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
-      });
-    const notifySuccess = (toastError: any) => toast.success("Success!", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
-      });
-
     // Fetching the problem from id
     const [problemData, setProblemData] = useState();
       const { loading, error, data } = useQuery(GET_PROBLEM, {
@@ -77,17 +55,17 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
         functionName: 'proposeSolution',
         args: [params.slug, solution],
         onError(error) {
-          console.log(error.metaMessages[0]);
-          notifyError(error.metaMessages[0])
+          
+          createNotification(error.metaMessages[0], "error")
         },
         onSuccess(data) {
-          notifySuccess()
+          createNotification("Solution posted", "success")
         },
       })
       // Submitting a solution
       const onSubmit = async (data: any) => {
         if (!address) {
-          notifyError("Please connect wallet to add solution")
+          createNotification("Please connect wallet to add solution", "error")
 
         }
         else {
