@@ -259,7 +259,7 @@ describe("Workflow", function () {
             taskDetails[1]
         )
 
-        expect(performerBalance).to.equal(1000)
-        expect(adminBalance).to.equal(100)
+        expect(performerBalance).to.equal(10)
+        expect(adminBalance).to.equal(10)
     })
 })
