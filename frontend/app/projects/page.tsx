@@ -1,23 +1,22 @@
-"use client"
+"use client";
 
-import Navbar from "../../components/Navbar"
-import Project from "../../components/Project"
+import Navbar from "../../components/Navbar";
+import Project from "../../components/Project";
 
-import Link from 'next/link'
-import { AiOutlinePlus } from 'react-icons/ai'
+import Link from "next/link";
+import { AiOutlinePlus } from "react-icons/ai";
 
 //graph
 import type { NextPage } from "next";
 import GET_NEW_PROJECTS from "../../constants/subgraphQueryGetProject";
 import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
-import {useState, useEffect} from "react"
+import { useState, useEffect } from "react";
 //toast
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import createNotification from "../../createNotification.js";
 
-export default function projects () {
-  const [error, setError] = useState()
+export default function projects() {
+  const [error, setError] = useState();
   const {
     loading,
     error: subgraphQueryError,
@@ -34,43 +33,42 @@ export default function projects () {
     console.log(data);
     console.log(problemData);
   }
-  const notify = () => toast.error(error, {
-    position: "top-right",
-    autoClose: 5000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: true,
-    draggable: true,
-    progress: undefined,
-    theme: "light",
-    });
+
   useEffect(() => {
     if (error) {
+      createNotification(error.metaMessages[0], "error");
 
-      notify()
-      setError("")
+      setError("");
     }
+  }, [error]);
 
-  }, [error])
-
-return (
+  return (
     <div className="overflow-x-hidden">
-      
       <Navbar />
 
-        {/* <ToastContainer /> */}
+      {/* <ToastContainer /> */}
       <section className="flex flex-col items-center justify-center gap-5 p-5">
-      {problemData && data &&
-        data.projects.map((project) => {
-          // <Problem key={project.projectID} id={project.projectID} title={project.name} creator={project.creator} setError={setError}/>
-          // project.projectId
-          let solution = problemData.activeSolutions.find(p => p.solutionId == project.projectId);
-          let problem = problemData.activeProblems.find(p => p.Problems_id == project.projectId);
-          return <Project id={solution.solutionId} solutionTitle={solution.name} solutionCreator={solution.creator} problemTitle={problem.name} problemCreator={problem.creator}/>
-})}
-
-        
-        
+        {problemData &&
+          data &&
+          data.projects.map((project) => {
+            // <Problem key={project.projectID} id={project.projectID} title={project.name} creator={project.creator} setError={setError}/>
+            // project.projectId
+            let solution = problemData.activeSolutions.find(
+              (p) => p.solutionId == project.projectId
+            );
+            let problem = problemData.activeProblems.find(
+              (p) => p.Problems_id == project.projectId
+            );
+            return (
+              <Project
+                id={solution.solutionId}
+                solutionTitle={solution.name}
+                solutionCreator={solution.creator}
+                problemTitle={problem.name}
+                problemCreator={problem.creator}
+              />
+            );
+          })}
       </section>
 
       {/* <Link className="fixed sm:bottom-5 sm:right-5 bottom-2 right-2" href="/problems/new">
@@ -80,7 +78,6 @@ return (
           </button>
         
       </Link> */}
-
     </div>
-)
+  );
 }
