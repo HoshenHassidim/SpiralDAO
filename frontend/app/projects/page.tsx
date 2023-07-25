@@ -13,7 +13,7 @@ import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
 import {useState, useEffect} from "react"
 //toast
-import createNotification from '../../../createNotification.js';
+import createNotification from '../../createNotification.js';
 
 
 export default function projects () {
