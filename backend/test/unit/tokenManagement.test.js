@@ -221,13 +221,6 @@ describe("TokenManagement", function () {
         ).to.be.revertedWith("taskValueMustBeGreaterThanZero")
     })
 
-    it("should not complete task with project id 0", async function () {
-        await expect(
-            tokenManagement
-                .connect(authorized)
-                .completeTask(executor.address, manager.address, 1000, 0)
-        ).to.be.revertedWith("projectIDCannotBeZero")
-    })
 
     it("should not view balance for zero address", async function () {
         await expect(

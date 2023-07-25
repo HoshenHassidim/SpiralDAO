@@ -57,9 +57,61 @@ describe("Projects Errors", function () {
     //     if (membership.connect(accounts[2]).isRegisteredMember(accounts[1].address)) await membership.connect(accounts[2]).unregisterMember();
 
     // })
+    it('Should have DAO Project upon loading, and manager should be the deployer', async function () {
+        const manager = await projects.getProjectManager(0)
+        console.log(manager)
+        expect(manager).to.equal(accounts[0].address)
+    })
+    it('should revert when trying to assign project manager to DAO project, when deployer has not been thrown out', async function () {
+        await expect(projects.assignProjectManager(0)).to.be.revertedWith('managerHasBeenAssigned')
+        // await expect(projects.doesProjectHaveManager(0)).to.be.true;
+        const hasManager = await projects.doesProjectHaveManager(0);
+        expect(hasManager).to.be.true;
+    })
+    it('should revert when there are insufficient raters to throw a manager of DAO out', async function () {
+        await projects.connect(accounts[1]).proposeRemoveManager(0)
+        await projects.connect(accounts[2]).rateRemovalOffer(1, 10);
+        await projects.connect(accounts[3]).rateRemovalOffer(1, 10)
+        await projects.connect(accounts[4]).rateRemovalOffer(1, 10)
+        await expect(projects.removeProjectManager(1)).to.be.revertedWith('insufficientTotalRatersForAllOffers');
 
+    })
+    it('should remove project manager if enough people vote them out of their position', async function () {
+        await projects.connect(accounts[1]).proposeRemoveManager(0)
+        await projects.connect(accounts[2]).rateRemovalOffer(1, 10);
+        await projects.connect(accounts[3]).rateRemovalOffer(1, 10)
+        await projects.connect(accounts[4]).rateRemovalOffer(1, 10)
+        await projects.connect(accounts[5]).rateRemovalOffer(1, 10)
+        await projects.connect(accounts[6]).rateRemovalOffer(1, 10)
+        await projects.removeProjectManager(1);
+        const hasManager = await projects.doesProjectHaveManager(0);
+        expect(hasManager).to.be.false;
+
+
+    })
+    it('should register memeber as spiral DAO member if enough people vote them in', async function () {
+        await projects.connect(accounts[1]).proposeRemoveManager(0)
+        await projects.connect(accounts[2]).rateRemovalOffer(1, 10);
+        await projects.connect(accounts[3]).rateRemovalOffer(1, 10)
+        await projects.connect(accounts[4]).rateRemovalOffer(1, 10)
+        await projects.connect(accounts[5]).rateRemovalOffer(1, 10)
+        await projects.connect(accounts[6]).rateRemovalOffer(1, 10)
+        await projects.removeProjectManager(1);
+        let hasManager = await projects.doesProjectHaveManager(0);
+        expect(hasManager).to.be.false;
+        await projects.connect(accounts[1]).proposeOffer(0);
+        await projects.connect(accounts[2]).rateOffer(1, 10);
+        await projects.connect(accounts[3]).rateOffer(1, 10);
+        await projects.connect(accounts[4]).rateOffer(1, 10);
+        await projects.connect(accounts[5]).rateOffer(1, 10);
+        await projects.assignProjectManager(0);
+        hasManager = await projects.doesProjectHaveManager(0);
+        expect(hasManager).to.be.true;
+
+
+    })
     it("Should revert for invalid solution ID", async function () {
-        await expect(projects.connect(accounts[0]).proposeOffer(0)).to.be.revertedWith("invalidID")
+        await expect(projects.connect(accounts[0]).proposeOffer(2)).to.be.revertedWith("invalidID")
     })
 
     it("Should revert if project not open for proposals", async function () {
