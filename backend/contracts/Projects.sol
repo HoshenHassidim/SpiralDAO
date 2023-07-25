@@ -62,6 +62,7 @@ contract Projects {
     error notOpenForRemovalProposals();
     error managerCannotRateAgainstThemselves();
     error offerNotActive();
+    error cannotCancelOnceVotingBegins();
 
     // Project ID to Project mapping (solutionId is used as projectId)
     mapping(uint256 => Project) private projects;
@@ -85,16 +86,14 @@ contract Projects {
 
     // Events
     event NewProject(uint256 projectId);
-    event NewOffer(uint256 offerId, uint256 projectId, address proposer);
     event NewRemovalOffer(uint256 removalOfferId, uint256 projectId, address proposer);
-    event OfferCancelled(uint256 offerId);
     event RemovalOfferCancelled(uint256 removalOfferId);
-    event OfferRated(uint256 offerId, address rater, uint256 rating);
     event RemovalOfferRated(uint256 removalOfferId, address rater, uint256 rating);
     event NewManagementOffer(uint256 offerId, uint256 projectId, address proposer);
     event ManagementOfferCancelled(uint256 offerId);
     event ManagementOfferRated(uint256 offerId, address rater, uint256 rating);
     event ProjectManagerAssigned(uint256 indexed projectId, address projectManager);
+    event ProjectManagerResigned(uint256 projectId, address projectManager);
 
     // Constructor to initialize the imported contracts
     constructor(
@@ -268,6 +267,8 @@ contract Projects {
         if (msg.sender != projects[_projectId].projectManager) revert onlyManager();
 
         removeProjectManager(_projectId);
+
+        emit ProjectManagerResigned(_projectId, msg.sender);
     }
 
 
@@ -299,11 +300,12 @@ contract Projects {
         RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
 
         if (removalOffer.proposer != msg.sender) revert onlyManager();
+        if (removalOffer.removalNumberOfRaters > 0) revert cannotCancelOnceVotingBegins(); 
         if (!removalOffer.isOpenForRemovalRating) revert notOpenForRating();
 
         removalOffer.isOpenForRemovalRating = false; // Mark the offer as not open for rating
 
-        emit OfferCancelled(_removalOfferId); // Emit the event
+        emit RemovalOfferCancelled(_removalOfferId); // Emit the event
     }
 
     // External function to rate a managment removal offer
@@ -313,7 +315,7 @@ contract Projects {
 
         RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
 
-        if (projects[removalOffers[_removalOfferId].projectId].projectManager == msg.sender)
+        if (projects[removalOffer.projectId].projectManager == msg.sender)
             revert managerCannotRateAgainstThemselves();
         if (!removalOffer.isOpenForRemovalRating) revert notOpenForRating();
 

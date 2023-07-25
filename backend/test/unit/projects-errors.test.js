@@ -125,6 +125,23 @@ describe("Projects Errors", function () {
         )
     })
 
+    it ("Should revert if people have begun to rate removal offer", async function () {
+        await projects.connect(accounts[0]).proposeOffer(1)
+        await projects.connect(accounts[2]).rateOffer(1, 10)
+        await projects.connect(accounts[3]).rateOffer(1, 10)
+        await projects.connect(accounts[4]).rateOffer(1, 10)
+        await projects.connect(accounts[5]).rateOffer(1, 10)
+
+        await projects.assignProjectManager(1)
+
+        await projects.connect(accounts[2]).proposeRemoveManager(1)
+        await projects.connect(accounts[3]).rateRemovalOffer(1, 10)
+
+        await expect(projects.connect(accounts[2]).cancelRemovalOffer(1)).to.be.revertedWith(
+            "cannotCancelOnceVotingBegins"
+        )  
+    })   
+ 
     it("Should revert if insufficient total raters", async function () {
         await projects.connect(accounts[0]).proposeOffer(1)
         await projects.connect(accounts[1]).proposeOffer(1)
@@ -146,6 +163,7 @@ describe("Projects Errors", function () {
         )
     })
 
+   
     // ...
     // Test cases for other errors
 

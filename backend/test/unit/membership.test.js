@@ -46,17 +46,25 @@ describe("Membership", function () {
         })
     })
 
-    describe("unregisterMember", function () {
-        it("Should unregister a member successfully", async function () {
-            await membership.connect(deployer).registerMember("deployer")
-            await membership.connect(deployer).unregisterMember()
-            let isMember = await membership.isRegisteredMember(deployerAddress)
-            expect(isMember).to.equal(false)
+    describe("changeUsername", function () {
+        it("Should change username successfully", async function () {
+            let oldUsername = "deployer"
+            let newUsername = "NewName"
+            await membership.connect(deployer).registerMember(oldUsername)
+            await membership.connect(deployer).changeName(newUsername)
+            let isTaken = await membership.isUsernameTaken(oldUsername)
+            let isName = await membership.isUsernameTaken(newUsername)
+            expect(isTaken).to.be.false
+            expect(isName).to.be.true
         })
 
-        it("Should not unregister a non-member", async function () {
-            await expect(membership.connect(deployer).unregisterMember()).to.be.revertedWith(
-                "mustBeMember"
+        it("Should not change to taken username", async function () {
+            let oldUsername = "deployer"
+            let newUsername = "NewName"
+            await membership.connect(deployer).registerMember(oldUsername)
+            await membership.connect(addr1).registerMember(newUsername)
+            await expect(membership.connect(addr1).changeName(oldUsername)).to.be.revertedWith(
+               "UsernameAlreadyExists" 
             )
         })
     })

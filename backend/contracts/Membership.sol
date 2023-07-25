@@ -41,7 +41,6 @@ contract Membership {
     event MemberRegisteredWithoutName(address indexed memberAddress);
 
     // Declare an event for member unregistration
-    event MemberUnregistered(address indexed memberAddress);
     event TaskAssignedtoMember(address indexed memberAddress, uint256 taskCount);
     event ProblemAndSolutionAccepted(
         address indexed problemCreator,
@@ -51,6 +50,8 @@ contract Membership {
     );
     event ProjectManaged(address _member, uint256 ProjectManagedCount);
 
+    event UsernameChanged(address _member, string _username);
+    
     TokenManagement private tokenManagementContract; // Reference to the TokenManagement contract
 
     // Constructor to initialize the imported contracts
@@ -98,14 +99,18 @@ contract Membership {
         emit MemberRegisteredWithoutName(msg.sender); // Emit event after successful registration
     }
 
-    // Function to unregister a member
-    function unregisterMember() external {
+    function changeName(string memory _username) external {
         if (!members[msg.sender].isMember) revert mustBeMember();
+        if (bytes(_username).length == 0) revert UsernameRequired();
+        if (isUsernameTaken(_username)) revert UsernameAlreadyExists();
 
         delete usernames[members[msg.sender].username];
-        delete members[msg.sender];
 
-        emit MemberUnregistered(msg.sender); // Emit event after successful unregistration
+        Member storage member = members[msg.sender];
+        member.username = _username;
+        usernames[_username] = true;
+
+        emit UsernameChanged(msg.sender, _username); 
     }
 
     // Function to check if an address is a registered member
