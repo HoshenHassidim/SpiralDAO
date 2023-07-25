@@ -154,7 +154,7 @@ describe("MemberBackground", function () {
             let newUser3Details = await membership.viewMemberDetails(await accounts[3].getAddress())
             expect(newUser3Details[0]).to.equal("3") //username
             expect(newUser3Details[1]).to.equal(2) //tasksAssigned //two tasks assigned
-            expect(newUser3Details[2]).to.equal(5) //tasksAvg //average of al ratings: 6+7+8+1+2+3+8 / 7 = 5
+            expect(newUser3Details[2]).to.equal(5) //tasksAvg //average of all ratings: ((6+7+8)/3 + (1+2+3+8)/3 )/2 = 5.25 ≈ 5
             expect(newUser3Details[3]).to.equal(0) //projectsManaged
             expect(newUser3Details[4]).to.equal(0) //problemsAccepted
             expect(newUser3Details[5]).to.equal(0) //solutionsAccepted

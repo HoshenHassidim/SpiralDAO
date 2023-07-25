@@ -7,8 +7,7 @@ import "./TokenManagement.sol";
 contract Membership {
     struct taskRating {
         uint256 taskId;
-        address raterId;
-        uint256 rating;
+        uint256 taskAvgRating;
     }
     struct Member {
         bool isMember;
@@ -146,40 +145,51 @@ contract Membership {
     }
 
     // Function to add the average rating for a task and update the overall tasksAvg
-    function addTaskAvg(
-        address _address,
-        address _rater,
-        uint256 _rating,
-        uint256 _taskId
-    ) external {
-        if (!members[_address].isMember) revert mustBeMember();
+    // function addTaskAvg(
+    //     address _address,
+    //     address _rater,
+    //     uint256 _rating,
+    //     uint256 _taskId
+    // ) external {
+    //     if (!members[_address].isMember) revert mustBeMember();
 
+    //     bool checker = true;
+    //     uint256 numberOfTasks = 0;
+    //     for (uint i = 0; i < members[_address].ratings.length; i++) {
+    //         if (
+    //             (_taskId == members[_address].ratings[i].taskId) &&
+    //             (_rater == members[_address].ratings[i].raterId)
+    //         ) {
+    //             checker = false;
+    //             members[_address].ratings[i].rating = _rating;
+    //         }
+    //         if (members[_address].ratings[i].taskId > numberOfTasks)
+    //             numberOfTasks = members[_address].ratings[i].taskId;
+    //     }
+    //     if (checker) {
+    //         taskRating memory newRating = taskRating(_taskId, _rater, _rating);
+    //         members[_address].ratings.push(newRating);
+    //     }
+    // }
+
+    function updateTasksAvg(address performer, uint256 _taskId, uint256 _taskAvg) external {
+        if (!members[performer].isMember) revert mustBeMember();
         bool checker = true;
-        uint256 numberOfTasks = 0;
-        for (uint i = 0; i < members[_address].ratings.length; i++) {
-            if (
-                (_taskId == members[_address].ratings[i].taskId) &&
-                (_rater == members[_address].ratings[i].raterId)
-            ) {
+        for (uint i = 0; i < members[performer].ratings.length; i++) {
+            if (_taskId == members[performer].ratings[i].taskId) {
                 checker = false;
-                members[_address].ratings[i].rating = _rating;
+                members[performer].ratings[i].taskAvgRating = _taskAvg;
             }
-            if (members[_address].ratings[i].taskId > numberOfTasks)
-                numberOfTasks = members[_address].ratings[i].taskId;
         }
         if (checker) {
-            taskRating memory newRating = taskRating(_taskId, _rater, _rating);
-            members[_address].ratings.push(newRating);
+            taskRating memory newRating = taskRating(_taskId, _taskAvg);
+            members[performer].ratings.push(newRating);
         }
-    }
-
-    function updateTasksAvg(address _address) external {
-        if (!members[_address].isMember) revert mustBeMember();
         uint256 ratingsSum = 0;
-        for (uint i = 0; i < members[_address].ratings.length; i++) {
-            ratingsSum += members[_address].ratings[i].rating;
+        for (uint i = 0; i < members[performer].ratings.length; i++) {
+            ratingsSum += members[performer].ratings[i].taskAvgRating;
         }
-        members[_address].tasksAvg = ratingsSum / members[_address].ratings.length;
+        members[performer].tasksAvg = ratingsSum / members[performer].ratings.length;
     }
 
     function proposedProblemAndSolutionAccepted(
