@@ -386,6 +386,8 @@ contract Tasks {
         if (tasks[_taskId].status != TaskStatus.VERIFICATION) revert taskNotInVerificationStage();
         if (tasks[_taskId].numberOfCompletionRaters < 2) revert notEnoughRatings();
 
+        membershipContract.updateTasksAvg(tasks[_taskId].performer);
+
         if (tasks[_taskId].completionRatingSum / tasks[_taskId].numberOfCompletionRaters >= 7) {
             tasks[_taskId].status = TaskStatus.VERIFIED;
             address _projectManager = projectsContract.getProjectManager(
