@@ -58,6 +58,16 @@ return (
         
       </Link>
 
+      <h1 className="text-xl">Roadmap!!</h1>
+      offer as a manager
+      offer as a task doer
+      manager can add tasks
+      Can rate managers and doers (5 stars)
+      Only doer after being chosen can do the task (like an input box)
+      People can vote on his completion
+      balance (my account with projects, files, balance)
+      Add polybase
+
     </div>
 )
 }

@@ -151,7 +151,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
                 <span className="">
 
                   {/* <RatingStars starRating={starRating} setStarRating={setStarRating} id={solution.problemId}/> */}
-                  <RatingSolutionsStars id={solution.problemId} />
+                  <RatingSolutionsStars id={solution.solutionId} />
                 </span>
               </div>
             ))}

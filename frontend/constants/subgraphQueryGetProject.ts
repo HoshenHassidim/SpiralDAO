@@ -24,6 +24,8 @@ tasks {
     status
     completionRatingSum
     numberOfCompletionRaters
+    taskName
+    projectId
   }
 
 
