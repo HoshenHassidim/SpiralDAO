@@ -1,6 +1,6 @@
 import {useState} from "react"
 
-export default function RatingStars({setStarRating, starRating, id}) {
+export default function RatingStars({setStarRating}) {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
 
@@ -14,7 +14,7 @@ export default function RatingStars({setStarRating, starRating, id}) {
               <button
                 type="button"
                 key={index}
-                className={`z-20 bg-transparent border-none outline-none cursor-pointer ${
+                className={`bg-transparent border-none outline-none cursor-pointer ${
                   index <= (hover || rating / 2)
                     ? "text-yellow-300"
                     : "text-gray-300"

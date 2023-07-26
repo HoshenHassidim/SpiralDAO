@@ -4,23 +4,22 @@ import RatingStars from './RatingStars.jsx'
 import { useContractWrite, useAccount } from "wagmi";
 import addresses from '../constants/networkMapping.json'
 
-import abi from "../constants/Solutions.json";
+import abi from "../constants/Tasks.json";
 
 import createNotification from "../createNotification.js";
 
 
 
-export default function RatingSolutionsStars(id) {
+export default function RatingTaskStars(taskId) {
 
   const [starRating, setStarRating] = useState();
 
-  
-  // Wagmi rate solution
+  // Wagmi rate a task
   const { ratedSolutionData, isLoadingRated, isSuccessRated, write } = useContractWrite({
-      address: addresses[4002].Solutions[0],
+      address: addresses[4002].Tasks[0],
       abi: abi,
-      functionName: "rateSolution",
-      args: [id.id, starRating],
+      functionName: "rateTaskOffer",
+      args: [taskId.taskId, starRating],
       onError(error) {
         createNotification(error.metaMessages[0], "error");
       },
