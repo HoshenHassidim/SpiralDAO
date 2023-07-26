@@ -68,8 +68,27 @@ describe("MemberBackground", function () {
             for (let i = 1; i < 4; i++) {
                 await problems.connect(accounts[i]).rateProblem(problemId, 9)
             } //people 1,2,3 rate problem as 9
+            await problems.connect(accounts[0]).raiseProblem("Problem 2") //person 0 raises another problem
+            const problemId2 = await problems.getProblemCounter()
+            for (let i = 1; i < 4; i++) {
+                await problems.connect(accounts[i]).rateProblem(problemId2, 9)
+            } //people 1,2,3 rate problem as 9
+
+            await tokenManagement.connect(accounts[0]).authorizeContract(projects.address) //authorizes contract
+            projectManagerAccount = accounts[2] //person 2 will become proj manager
+
             await solutions.connect(accounts[1]).proposeSolution(problemId, "Solution 1") //person 1 raises solution
             const solutionId = await solutions.getSolutionCounter()
+            for (let i = 2; i < 6; i++) {
+                await solutions.connect(accounts[i]).rateSolution(solutionId, 5)
+            } //people 2,3,4,5 rate solution as 5
+            expect((await solutions.viewSolutionDetails(solutionId))[6]).to.be.true
+
+            await expect(
+                projects.connect(projectManagerAccount).proposeOffer(solutionId)
+            ).to.be.revertedWith("solutionDoesNotMeetCriteria")
+            expect((await solutions.viewSolutionDetails(solutionId))[6]).to.be.true
+
             for (let i = 2; i < 6; i++) {
                 await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
             } //people 2,3,4,5 rate solution as 9
@@ -80,17 +99,21 @@ describe("MemberBackground", function () {
                 await solutions.connect(accounts[i]).rateSolution(solutionId2, 9)
             } //people 2,3,4,5 rate solution as 9
 
-            await tokenManagement.connect(accounts[0]).authorizeContract(projects.address) //authorizes contract
-
-            projectManagerAccount = accounts[2] //person 2 will become proj manager
+            await solutions.connect(accounts[7]).proposeSolution(problemId2, "Solution A") //person 7 raises solution
+            const solutionId3 = await solutions.getSolutionCounter()
+            for (let i = 2; i < 6; i++) {
+                await solutions.connect(accounts[i]).rateSolution(solutionId3, 9)
+            } //people 2,3,4,5 rate solution as 9
 
             expect((await solutions.viewSolutionDetails(solutionId))[6]).to.be.true
             expect((await solutions.viewSolutionDetails(solutionId2))[6]).to.be.true
+            expect((await solutions.viewSolutionDetails(solutionId3))[6]).to.be.true
 
             await projects.connect(projectManagerAccount).proposeOffer(solutionId) //person 3 offers to be manager for project 1 and creates project
 
             expect((await solutions.viewSolutionDetails(solutionId))[6]).to.be.false
             expect((await solutions.viewSolutionDetails(solutionId2))[6]).to.be.false
+            expect((await solutions.viewSolutionDetails(solutionId3))[6]).to.be.true
 
             const offerId = await projects.getOfferCounter() //create offer Id
             for (let i = 3; i < 7; i++) {
