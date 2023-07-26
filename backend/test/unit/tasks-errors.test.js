@@ -359,4 +359,33 @@ describe("Tasks Errors", function () {
     })
 
     // Add any other additional test cases
-})
+
+    it("Should have transferred the tokens to the performer & administrator", async function () {
+
+        await tasks.connect(accounts[0]).addTask(0, "Task 1", 100)
+        await tasks.connect(accounts[1]).proposeTaskOffer(1)
+        await tasks.connect(accounts[2]).rateTaskOffer(1, 10)
+        await tasks.connect(accounts[3]).rateTaskOffer(1, 10)
+        await tasks.connect(accounts[4]).rateTaskOffer(1, 10)
+        await tasks.connect(accounts[5]).rateTaskOffer(1, 10)
+        await tasks.assignTask(1);
+        await tasks.connect(accounts[1]).completeTask(1);
+        await tasks.connect(accounts[2]).rateCompletedTask(1, 10);
+        await tasks.connect(accounts[3]).rateCompletedTask(1, 10);
+        await tasks.verifyTask(1);
+        const taskDetails = await tasks.getTaskDetails(0)
+        let performerBalance = await tokenManagement.viewBalance(
+            accounts[1].address,
+            taskDetails[1]
+        )
+        let adminBalance = await tokenManagement.viewBalance(
+            accounts[0].address,
+            taskDetails[1]
+        )
+
+        expect(performerBalance).to.equal(110)
+        expect(adminBalance).to.equal(20)
+    })
+
+});
+
