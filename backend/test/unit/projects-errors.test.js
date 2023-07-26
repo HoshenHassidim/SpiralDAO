@@ -73,7 +73,7 @@ describe("Projects Errors", function () {
         await projects.connect(accounts[2]).rateRemovalOffer(1, 10);
         await projects.connect(accounts[3]).rateRemovalOffer(1, 10)
         await projects.connect(accounts[4]).rateRemovalOffer(1, 10)
-        await expect(projects.removeProjectManager(1)).to.be.revertedWith('insufficientTotalRatersForAllOffers');
+        await expect(projects.checkRemovalRatings(1)).to.be.revertedWith('insufficientTotalRatersForAllOffers');
 
     })
     it('should remove project manager if enough people vote them out of their position', async function () {
@@ -83,7 +83,7 @@ describe("Projects Errors", function () {
         await projects.connect(accounts[4]).rateRemovalOffer(1, 10)
         await projects.connect(accounts[5]).rateRemovalOffer(1, 10)
         await projects.connect(accounts[6]).rateRemovalOffer(1, 10)
-        await projects.removeProjectManager(1);
+        await projects.checkRemovalRatings(1);
         const hasManager = await projects.doesProjectHaveManager(0);
         expect(hasManager).to.be.false;
 
@@ -96,7 +96,7 @@ describe("Projects Errors", function () {
         await projects.connect(accounts[4]).rateRemovalOffer(1, 10)
         await projects.connect(accounts[5]).rateRemovalOffer(1, 10)
         await projects.connect(accounts[6]).rateRemovalOffer(1, 10)
-        await projects.removeProjectManager(1);
+        await projects.checkRemovalRatings(1);
         let hasManager = await projects.doesProjectHaveManager(0);
         expect(hasManager).to.be.false;
         await projects.connect(accounts[1]).proposeOffer(0);
