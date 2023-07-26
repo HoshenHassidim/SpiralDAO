@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-License-Identifier identifies the license under which the contract is released.
-
 pragma solidity ^0.8.4;
-// Specifies the minimum Solidity version required for the contract.
 
 import "./TokenManagement.sol";
 
