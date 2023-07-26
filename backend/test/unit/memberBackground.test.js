@@ -74,10 +74,24 @@ describe("MemberBackground", function () {
                 await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
             } //people 2,3,4,5 rate solution as 9
 
+            await solutions.connect(accounts[7]).proposeSolution(problemId, "Solution 2") //person 7 raises solution
+            const solutionId2 = await solutions.getSolutionCounter()
+            for (let i = 2; i < 6; i++) {
+                await solutions.connect(accounts[i]).rateSolution(solutionId2, 9)
+            } //people 2,3,4,5 rate solution as 9
+
             await tokenManagement.connect(accounts[0]).authorizeContract(projects.address) //authorizes contract
 
             projectManagerAccount = accounts[2] //person 2 will become proj manager
-            await projects.connect(projectManagerAccount).proposeOffer(1) //person 3 offers to be manager for project 1
+
+            expect((await solutions.viewSolutionDetails(solutionId))[6]).to.be.true
+            expect((await solutions.viewSolutionDetails(solutionId2))[6]).to.be.true
+
+            await projects.connect(projectManagerAccount).proposeOffer(solutionId) //person 3 offers to be manager for project 1 and creates project
+
+            expect((await solutions.viewSolutionDetails(solutionId))[6]).to.be.false
+            expect((await solutions.viewSolutionDetails(solutionId2))[6]).to.be.false
+
             const offerId = await projects.getOfferCounter() //create offer Id
             for (let i = 3; i < 7; i++) {
                 await projects.connect(accounts[i]).rateOffer(offerId, 9)
