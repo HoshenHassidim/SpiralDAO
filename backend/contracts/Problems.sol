@@ -147,7 +147,8 @@ contract Problems {
         if (problem.ratingCount != 0) revert cannotChangeNameAfterProblemHasBeenRated();
 
         // Delete the old name from the problemNames mapping
-        delete problemNames[problem.name]; //EDIT AFTERWARDS
+        delete problemNames[problem.name];
+        // delete problems[_problemId]; //EDIT AFTERWARDS
         // Update the problem's name
         problem.name = _newName;
         // Mark the new name as used in the problemNames mapping
