@@ -117,8 +117,9 @@ contract Projects {
     // Private function to create a new project from a solution
     function createProject(uint256 _solutionId) private {
         if (_solutionId <= 0) revert IDMustBePositive();
-        if (!solutionsContract.canBecomeProject(_solutionId)) revert solutionDoesNotMeetCriteria();
-
+        if (!solutionsContract.canBecomeProjectView(_solutionId))
+            revert solutionDoesNotMeetCriteria();
+        solutionsContract.canBecomeProject(_solutionId);
         // Retrieve problem and solution creators
         (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
             _solutionId
