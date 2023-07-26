@@ -35,7 +35,8 @@ contract Solutions {
     mapping(uint256 => uint256[]) private problemToSolutions;
 
     // A dynamic list of all solution ids
-    uint256[] private allSolutions;
+    // uint256[] private allSolutions;
+    mapping(uint256 => uint256[]) private allSolutions;
 
     // Constants for the rating system
     uint256 constant MAX_RATING = 10; // Maximum possible rating
@@ -172,7 +173,7 @@ contract Solutions {
         // solutions[_solutionId].indexOfArray = allRatings.length - 1;
         // }
         if (solutions[_solutionId].numberOfRaters > 1) { 
-            allSolutions.push(_solutionId); //Add the current solution id to the allSolutions mapping
+            allSolutions[solutions[_solutionId].problemId].push(_solutionId); //Add the current solution id to the allSolutions mapping
         }
         // Emit the event
         emit SolutionRated(_solutionId, msg.sender, _rating);
@@ -187,7 +188,7 @@ contract Solutions {
         if (
             solution.numberOfRaters < MIN_RATING_COUNT ||
             avgRating < MIN_RATING_AVERAGE ||
-            _solutionId != findSolutionWithHighestRating() //if solution id is not the id that had the highest rating from raters
+            _solutionId != findSolutionWithHighestRating(_solutionId) //if solution id is not the id that had the highest rating from raters
         ) {
             return false;
         }
@@ -221,7 +222,7 @@ contract Solutions {
         if (
             solution.numberOfRaters < MIN_RATING_COUNT ||
             avgRating < MIN_RATING_AVERAGE ||
-            _solutionId != findSolutionWithHighestRating() //if solution id is not the id that had the highest rating from raters
+            _solutionId != findSolutionWithHighestRating(_solutionId) //if solution id is not the id that had the highest rating from raters
         ) {
             return false;
         }
@@ -240,13 +241,13 @@ contract Solutions {
     }
 
     // Function to find the highest rated solution
-    function findSolutionWithHighestRating() private view returns (uint256) {
+    function findSolutionWithHighestRating(uint256 _solutionId) private view returns (uint256) {
         uint256 highestRating = 0;
         uint256 highestRatingSolutionId;
 
         // Iterate over the keys in the mapping
-        for (uint256 i = 0; i < allSolutions.length; i++) {
-            uint256 solutionId = allSolutions[i]; //solution id of current iteration saved to variable
+        for (uint256 i = 0; i < allSolutions[solutions[_solutionId].problemId].length; i++) {
+            uint256 solutionId = allSolutions[solutions[_solutionId].problemId][i]; //solution id of current iteration saved to variable
             Solution storage solution = solutions[solutionId]; //solution of current iteration saved to variable
             // Calculate the rating for the current solution
             uint256 rating = solution.ratingSum / solution.numberOfRaters; //Average calculator
