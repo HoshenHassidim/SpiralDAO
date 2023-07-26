@@ -77,7 +77,7 @@ contract Membership {
         newMember.isMember = true;
         newMember.username = _username;
         usernames[_username] = true;
-        //hey
+
         // Initialize member's details.
         newMember.tasksAssigned = 0;
         newMember.tasksAvg = 0;
