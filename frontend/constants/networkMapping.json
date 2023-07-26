@@ -1,11 +1,10 @@
 {
-
-    "4002": {
-      "Membership": ["0x0d899FB7e9f00a300B9e8b833500150FDD5b8C72"],
-      "Problems": ["0x1eD127C2eD0Bfca9D2Ee3d7e8B5A7944A163af35"],
-      "Solutions": ["0x93F1A258Ac704426B4D815416B7131B45dE6E509"],
-      "TokenManagement": ["0xcE3c197B5a1a5D9E0f29d3C445115A8A661f0C59"],
-      "Projects": ["0x0D04BfeB2a4f61115BfA20160f14659BaB1f9FA6"],
-      "Tasks": ["0xA6c8FA2c6BC1a3EE4d9A2Cdf4272f728B4621aB5"]
-    }
+  "4002": {
+    "Membership": ["0xB687236864d108F2C79Df4193E27C8C6B639C6F8"],
+    "Problems": ["0x24C2ECecE07Ac904FE9F123B0A798421697e0029"],
+    "Solutions": ["0x83dF5c3F14dcB0ee67bfa4cEC25E347A59546Fe1"],
+    "TokenManagement": ["0x96d465dD6CdFC634bc15B8d7feec8172aA0e8F79"],
+    "Projects": ["0x6a496F57ACa4Bc8B75Db4053E7c0D6f782eFA3f6"],
+    "Tasks": ["0x2D8E7355FD4030756887d0dcAa47a5ee56f24359"]
   }
+}

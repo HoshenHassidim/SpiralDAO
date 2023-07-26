@@ -1,0 +1,224 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: TokenManagement
+    network: fantom-testnet
+    source:
+      address: "0x96d465dD6CdFC634bc15B8d7feec8172aA0e8F79"
+      abi: TokenManagement
+      startBlock: 18708435
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AuthorizationGranted
+        - AuthorizationRevoked
+        - ProjectTokenCreated
+        - TokensMinted
+      abis:
+        - name: TokenManagement
+          file: ./abis/TokenManagement.json
+      eventHandlers:
+        - event: AuthorizationGranted(indexed address)
+          handler: handleAuthorizationGranted
+        - event: AuthorizationRevoked(indexed address)
+          handler: handleAuthorizationRevoked
+        - event: ProjectTokenCreated(indexed uint256,indexed address,indexed
+            address,uint256,uint256,uint256,uint256)
+          handler: handleProjectTokenCreated
+        - event: TokensMinted(indexed address,uint256,uint256,uint256)
+          handler: handleTokensMinted
+      file: ./src/token-management.ts
+  - kind: ethereum
+    name: Membership
+    network: fantom-testnet
+    source:
+      address: "0xB687236864d108F2C79Df4193E27C8C6B639C6F8"
+      abi: Membership
+      startBlock: 18710752
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - MemberRegistered
+        - MemberRegisteredWithoutName
+        - MemberUnregistered
+        - ProblemAndSolutionAccepted
+        - ProjectManaged
+        - TaskAssignedtoMember
+      abis:
+        - name: Membership
+          file: ./abis/Membership.json
+      eventHandlers:
+        - event: MemberRegistered(indexed address,string)
+          handler: handleMemberRegistered
+        - event: MemberRegisteredWithoutName(indexed address)
+          handler: handleMemberRegisteredWithoutName
+        - event: MemberUnregistered(indexed address)
+          handler: handleMemberUnregistered
+        - event: ProblemAndSolutionAccepted(indexed address,uint256,indexed address,uint256)
+          handler: handleProblemAndSolutionAccepted
+        - event: ProjectManaged(address,uint256)
+          handler: handleProjectManaged
+        - event: TaskAssignedtoMember(indexed address,uint256)
+          handler: handleTaskAssignedtoMember
+      file: ./src/membership.ts
+  - kind: ethereum
+    name: Problems
+    network: fantom-testnet
+    source:
+      address: "0x24C2ECecE07Ac904FE9F123B0A798421697e0029"
+      abi: Problems
+      startBlock: 18710767
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NewProblem
+        - ProblemCancelled
+        - ProblemChanged
+        - ProblemRated
+      abis:
+        - name: Problems
+          file: ./abis/Problems.json
+      eventHandlers:
+        - event: NewProblem(uint256,address,string)
+          handler: handleNewProblem
+        - event: ProblemCancelled(uint256)
+          handler: handleProblemCancelled
+        - event: ProblemChanged(uint256,string)
+          handler: handleProblemChanged
+        - event: ProblemRated(uint256,address,uint256)
+          handler: handleProblemRated
+      file: ./src/problems.ts
+  - kind: ethereum
+    name: Solutions
+    network: fantom-testnet
+    source:
+      address: "0x83dF5c3F14dcB0ee67bfa4cEC25E347A59546Fe1"
+      abi: Solutions
+      startBlock: 18710778
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - SolutionCancelled
+        - SolutionNameChanged
+        - SolutionProposed
+        - SolutionRated
+      abis:
+        - name: Solutions
+          file: ./abis/Solutions.json
+      eventHandlers:
+        - event: SolutionCancelled(uint256)
+          handler: handleSolutionCancelled
+        - event: SolutionNameChanged(uint256,string)
+          handler: handleSolutionNameChanged
+        - event: SolutionProposed(uint256,uint256,address,string)
+          handler: handleSolutionProposed
+        - event: SolutionRated(uint256,address,uint256)
+          handler: handleSolutionRated
+      file: ./src/solutions.ts
+  - kind: ethereum
+    name: Projects
+    network: fantom-testnet
+    source:
+      address: "0x6a496F57ACa4Bc8B75Db4053E7c0D6f782eFA3f6"
+      abi: Projects
+      startBlock: 18710793
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ManagementOfferCancelled
+        - ManagementOfferRated
+        - NewManagementOffer
+        - NewOffer
+        - NewProject
+        - NewRemovalOffer
+        - OfferCancelled
+        - OfferRated
+        - ProjectManagerAssigned
+        - RemovalOfferCancelled
+        - RemovalOfferRated
+      abis:
+        - name: Projects
+          file: ./abis/Projects.json
+      eventHandlers:
+        - event: ManagementOfferCancelled(uint256)
+          handler: handleManagementOfferCancelled
+        - event: ManagementOfferRated(uint256,address,uint256)
+          handler: handleManagementOfferRated
+        - event: NewManagementOffer(uint256,uint256,address)
+          handler: handleNewManagementOffer
+        - event: NewOffer(uint256,uint256,address)
+          handler: handleNewOffer
+        - event: NewProject(uint256)
+          handler: handleNewProject
+        - event: NewRemovalOffer(uint256,uint256,address)
+          handler: handleNewRemovalOffer
+        - event: OfferCancelled(uint256)
+          handler: handleOfferCancelled
+        - event: OfferRated(uint256,address,uint256)
+          handler: handleOfferRated
+        - event: ProjectManagerAssigned(indexed uint256,address)
+          handler: handleProjectManagerAssigned
+        - event: RemovalOfferCancelled(uint256)
+          handler: handleRemovalOfferCancelled
+        - event: RemovalOfferRated(uint256,address,uint256)
+          handler: handleRemovalOfferRated
+      file: ./src/projects.ts
+  - kind: ethereum
+    name: Tasks
+    network: fantom-testnet
+    source:
+      address: "0x2D8E7355FD4030756887d0dcAa47a5ee56f24359"
+      abi: Tasks
+      startBlock: 18710808
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - NewTask
+        - NewTaskOffer
+        - TaskAssigned
+        - TaskCanceled
+        - TaskChanged
+        - TaskCompleted
+        - TaskExecutionRated
+        - TaskOfferCanceled
+        - TaskOfferRated
+        - TaskVerified
+      abis:
+        - name: Tasks
+          file: ./abis/Tasks.json
+      eventHandlers:
+        - event: NewTask(uint256,uint256,string,uint256)
+          handler: handleNewTask
+        - event: NewTaskOffer(uint256,uint256,address)
+          handler: handleNewTaskOffer
+        - event: TaskAssigned(uint256,uint256,address)
+          handler: handleTaskAssigned
+        - event: TaskCanceled(uint256)
+          handler: handleTaskCanceled
+        - event: TaskChanged(uint256,string,uint256)
+          handler: handleTaskChanged
+        - event: TaskCompleted(uint256)
+          handler: handleTaskCompleted
+        - event: TaskExecutionRated(uint256,address,uint256)
+          handler: handleTaskExecutionRated
+        - event: TaskOfferCanceled(uint256,uint256)
+          handler: handleTaskOfferCanceled
+        - event: TaskOfferRated(uint256,address,uint256)
+          handler: handleTaskOfferRated
+        - event: TaskVerified(uint256,bool)
+          handler: handleTaskVerified
+      file: ./src/tasks.ts

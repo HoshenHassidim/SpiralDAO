@@ -1,36 +1,36 @@
 const { expect } = require("chai")
 const { ethers } = require("hardhat")
 
-describe("Membership", function () {
+describe("MemberBackground", function () {
     let Membership, membership, deployer, addr1
     let deployerAddress, addr1Address
 
-    before(async function () {
-        Membership = await ethers.getContractFactory("Membership")
-        ;[deployer, addr1] = await ethers.getSigners()
+    // before(async function () {
+    //     deployerAddress = await deployer.getAddress()
+    //     addr1Address = await addr1.getAddress()
+    // })
 
-        deployerAddress = await deployer.getAddress()
-        addr1Address = await addr1.getAddress()
-    })
-
-    beforeEach(async function () {
-        membership = await Membership.deploy()
-        await membership.deployed()
-    })
+    // beforeEach(async function () {
+    //     membership = await Membership.deploy()
+    //     await membership.deployed()
+    // })
 
     describe("viewMemberDetails", function () {
         let problems, solutions, membership, tokenManagement, projects, tasks
         let accounts, projectManagerAccount, projectId, offerId, removalOfferId
 
         before(async function () {
+            const TokenManagement = await ethers.getContractFactory("TokenManagement")
             const Membership = await ethers.getContractFactory("Membership")
             const Problems = await ethers.getContractFactory("Problems")
             const Solutions = await ethers.getContractFactory("Solutions")
-            const TokenManagement = await ethers.getContractFactory("TokenManagement")
             const Projects = await ethers.getContractFactory("Projects")
             const Tasks = await ethers.getContractFactory("Tasks")
 
-            membership = await Membership.deploy()
+            tokenManagement = await TokenManagement.deploy()
+            await tokenManagement.deployed()
+
+            membership = await Membership.deploy(tokenManagement.address)
             await membership.deployed()
 
             problems = await Problems.deploy(membership.address)
@@ -38,9 +38,6 @@ describe("Membership", function () {
 
             solutions = await Solutions.deploy(membership.address, problems.address)
             await solutions.deployed()
-
-            tokenManagement = await TokenManagement.deploy()
-            await tokenManagement.deployed()
 
             projects = await Projects.deploy(
                 membership.address,
@@ -55,6 +52,9 @@ describe("Membership", function () {
                 tokenManagement.address
             )
             await tasks.deployed()
+
+            await tokenManagement.authorizeContract(projects.address)
+            await tokenManagement.authorizeContract(tasks.address)
 
             accounts = await ethers.getSigners()
 
@@ -99,6 +99,7 @@ describe("Membership", function () {
             for (let i = 0; i < 3; i++) {
                 await tasks.connect(accounts[i]).rateCompletedTask(taskId, i + 6) //6,7,8
             }
+            await tasks.connect(accounts[3]).verifyTask(taskId)
         })
 
         it("Should track member details correctly", async function () {
@@ -147,11 +148,12 @@ describe("Membership", function () {
                 await tasks.connect(accounts[i]).rateCompletedTask(taskId, i + 1) //1,2,3
             }
             await tasks.connect(accounts[4]).rateCompletedTask(taskId, 8)
+            await tasks.connect(accounts[3]).verifyTask(taskId)
 
             let newUser3Details = await membership.viewMemberDetails(await accounts[3].getAddress())
             expect(newUser3Details[0]).to.equal("3") //username
             expect(newUser3Details[1]).to.equal(2) //tasksAssigned //two tasks assigned
-            expect(newUser3Details[2]).to.equal(5) //tasksAvg //average of al ratings: 6+7+8+1+2+3+8 / 7 = 5
+            expect(newUser3Details[2]).to.equal(5) //tasksAvg //average of all ratings: ((6+7+8)/3 + (1+2+3+8)/4 )/2 = 5.25 ≈ 5
             expect(newUser3Details[3]).to.equal(0) //projectsManaged
             expect(newUser3Details[4]).to.equal(0) //problemsAccepted
             expect(newUser3Details[5]).to.equal(0) //solutionsAccepted

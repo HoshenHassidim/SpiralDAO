@@ -2,17 +2,18 @@
 
 pragma solidity ^0.8.4;
 
+import "./TokenManagement.sol";
+
 contract Membership {
-    struct rating {
+    struct taskRating {
         uint256 taskId;
-        address raterId;
-        uint256 rating;
+        uint256 taskAvgRating;
     }
     struct Member {
         bool isMember;
         string username;
         uint256 tasksAssigned;
-        rating[] ratings;
+        taskRating[] ratings;
         uint256 numOfTasks;
         uint256 tasksAvg;
         uint256 projectsManaged;
@@ -24,6 +25,7 @@ contract Membership {
     error AlreadyMember();
     error UsernameRequired();
     error UsernameAlreadyExists();
+    error mustBeAuthorised();
     error mustBeMember();
 
     // Mapping of address to Member - made private
@@ -46,6 +48,19 @@ contract Membership {
         uint256 solutionAcceptedCount
     );
     event ProjectManaged(address _member, uint256 ProjectManagedCount);
+
+    TokenManagement private tokenManagementContract; // Reference to the TokenManagement contract
+
+    // Constructor to initialize the imported contracts
+    constructor(TokenManagement _tokenManagementContract) {
+        tokenManagementContract = _tokenManagementContract;
+    }
+
+    // Modifier to allow only authorized contracts to perform certain actions
+    modifier onlyAuthorized() {
+        if (!tokenManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
+        _;
+    }
 
     // Function to register a new member
     function registerMember(string memory _username) external {
@@ -119,44 +134,35 @@ contract Membership {
     }
 
     //when task is assigned to member, will add it to this array to keep track of all tasks worked on
+
     function assignTaskToMember(address _address) external {
         if (!members[_address].isMember) {
             registerMemberWithoutName(_address);
         }
+
         members[_address].tasksAssigned++;
         emit TaskAssignedtoMember(_address, members[_address].tasksAssigned);
     }
 
     // Function to add the average rating for a task and update the overall tasksAvg
-    function addTaskAvg(
-        address _address,
-        address _rater,
-        uint256 _rating,
-        uint256 _taskId
-    ) external {
-        if (!members[_address].isMember) revert mustBeMember();
+    function updateTasksAvg(address performer, uint256 _taskId, uint256 _taskAvg) external {
+        if (!members[performer].isMember) revert mustBeMember();
         bool checker = true;
-        uint256 numberOfTasks = 0;
-        for (uint i = 0; i < members[_address].ratings.length; i++) {
-            if (
-                (_taskId == members[_address].ratings[i].taskId) &&
-                (_rater == members[_address].ratings[i].raterId)
-            ) {
+        for (uint i = 0; i < members[performer].ratings.length; i++) {
+            if (_taskId == members[performer].ratings[i].taskId) {
                 checker = false;
-                members[_address].ratings[i].rating = _rating;
+                members[performer].ratings[i].taskAvgRating = _taskAvg;
             }
-            if (members[_address].ratings[i].taskId > numberOfTasks)
-                numberOfTasks = members[_address].ratings[i].taskId;
         }
         if (checker) {
-            rating memory newRating = rating(_taskId, _rater, _rating);
-            members[_address].ratings.push(newRating);
+            taskRating memory newRating = taskRating(_taskId, _taskAvg);
+            members[performer].ratings.push(newRating);
         }
         uint256 ratingsSum = 0;
-        for (uint i = 0; i < members[_address].ratings.length; i++) {
-            ratingsSum += members[_address].ratings[i].rating;
+        for (uint i = 0; i < members[performer].ratings.length; i++) {
+            ratingsSum += members[performer].ratings[i].taskAvgRating;
         }
-        members[_address].tasksAvg = ratingsSum / members[_address].ratings.length;
+        members[performer].tasksAvg = ratingsSum / members[performer].ratings.length;
     }
 
     function proposedProblemAndSolutionAccepted(
@@ -183,6 +189,7 @@ contract Membership {
         if (!members[_address].isMember) {
             registerMemberWithoutName(_address);
         }
+
         members[_address].projectsManaged++;
         emit ProjectManaged(_address, members[_address].projectsManaged);
     }
