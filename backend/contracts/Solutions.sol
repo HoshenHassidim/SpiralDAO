@@ -35,7 +35,8 @@ contract Solutions {
     mapping(uint256 => uint256[]) private problemToSolutions;
 
     // A dynamic list of all solution ids
-    uint256[] private allSolutions;
+    // uint256[] private allSolutions;
+    mapping(uint256 => uint256[]) private allSolutions;
 
     // Constants for the rating system
     uint256 constant MAX_RATING = 10; // Maximum possible rating
@@ -170,11 +171,70 @@ contract Solutions {
         // solutions[_solutionId].indexOfArray = allRatings.length - 1;
         // }
         if (solutions[_solutionId].numberOfRaters > 1) {
-            allSolutions.push(_solutionId);
+            allSolutions[solutions[_solutionId].problemId].push(_solutionId);
         }
         // Emit the event
         emit SolutionRated(_solutionId, msg.sender, _rating);
     }
+
+    // // Function to check if a solution can become a project
+    // function canBecomeProject(uint256 _solutionId) external view returns (bool) {
+    //     Solution storage solution = solutions[_solutionId];
+
+    //     if (solution.numberOfRaters == 0) {
+    //         return false; // Avoid division by zero and ensure there's at least one rater.
+    //     }
+
+    //     uint256 avgRating = (solution.ratingSum * 10) / solution.numberOfRaters;
+
+    //     // Check if the solution meets the rating requirements
+    //     if (solution.numberOfRaters < MIN_RATING_COUNT || (avgRating * 10) < MIN_RATING_AVERAGE) {
+    //         return false;
+    //     }
+
+    //     // Check if the solution has the highest rating
+    //     if (_solutionId != findSolutionWithHighestRating()) {
+    //         return false;
+    //     }
+
+    //     // Calculate the total ratings for the problem the solution addresses
+    //     uint256 totalRatingsForProblem = 0;
+    //     uint256[] storage solutionIds = problemToSolutions[solution.problemId];
+
+    //     for (uint256 i = 0; i < solutionIds.length; i++) {
+    //         totalRatingsForProblem += solutions[solutionIds[i]].numberOfRaters;
+    //     }
+
+    //     // Check if the total ratings meet the requirements
+    //     return totalRatingsForProblem >= MIN_TOTAL_RATE_COUNT;
+    // }
+
+    // // Function to find the highest rated solution
+    // function findSolutionWithHighestRating() private view returns (uint256) {
+    //     uint256 highestRating = 0;
+    //     uint256 highestRatingSolutionId;
+
+    //     // Iterate over the keys in the mapping
+    //     for (uint256 i = 0; i < allSolutions.length; i++) {
+    //         uint256 solutionId = allSolutions[i];
+    //         Solution storage solution = solutions[solutionId];
+
+    //         if (solution.numberOfRaters < MIN_RATING_COUNT) {
+    //             continue; // Avoid division by zero and ensure there's at least one rater.
+    //         }
+
+    //         // Calculate the rating for the current solution
+    //         uint256 rating = solution.ratingSum / solution.numberOfRaters;
+
+    //         // Update highestRating and highestRatingSolutionId if the current rating is higher
+    //         if (rating > highestRating) {
+    //             highestRating = rating;
+    //             highestRatingSolutionId = solutionId;
+    //         }
+    //     }
+
+    //     return highestRatingSolutionId;
+    // }
 
     // Function to check if a solution can become a project
     function canBecomeProject(uint256 _solutionId) external view returns (bool) {
@@ -189,7 +249,7 @@ contract Solutions {
         if (
             solution.numberOfRaters < MIN_RATING_COUNT ||
             avgRating < MIN_RATING_AVERAGE ||
-            _solutionId != findSolutionWithHighestRating()
+            _solutionId != findSolutionWithHighestRating(_solutionId)
         ) {
             return false;
         }
@@ -207,13 +267,13 @@ contract Solutions {
     }
 
     // Function to find the highest rated solution
-    function findSolutionWithHighestRating() private view returns (uint256) {
+    function findSolutionWithHighestRating(uint256 _solutionId) private view returns (uint256) {
         uint256 highestRating = 0;
         uint256 highestRatingSolutionId;
 
         // Iterate over the keys in the mapping
-        for (uint256 i = 0; i < allSolutions.length; i++) {
-            uint256 solutionId = allSolutions[i];
+        for (uint256 i = 0; i < allSolutions[solutions[_solutionId].problemId].length; i++) {
+            uint256 solutionId = allSolutions[solutions[_solutionId].problemId][i];
             Solution storage solution = solutions[solutionId];
             // Calculate the rating for the current solution
             uint256 rating = solution.ratingSum / solution.numberOfRaters;

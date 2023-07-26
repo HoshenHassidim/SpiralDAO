@@ -367,7 +367,7 @@ type RemovalOfferRated @entity(immutable: true) {
 
 # Tasks
 
-type Task @entity(immutable: true) {
+type Task @entity {
   id: Bytes!
   taskId: BigInt! # uint256
   projectId: BigInt! # uint256
