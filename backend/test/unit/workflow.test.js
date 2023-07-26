@@ -85,12 +85,12 @@ describe("Workflow", function () {
         for (let i = 2; i < 3; i++) {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 6)
         }
-        expect(await solutions.canBecomeProject(solutionId)).to.be.false
+        expect(await solutions.canBecomeProjectView(solutionId)).to.be.false
 
         for (let i = 4; i < 7; i++) {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
         }
-        expect(await solutions.canBecomeProject(solutionId)).to.be.true
+        expect(await solutions.canBecomeProjectView(solutionId)).to.be.true
     })
 
     it("Token management permission should be allowed for the project contract", async function () {

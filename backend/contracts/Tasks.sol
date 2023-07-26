@@ -519,7 +519,7 @@ contract Tasks {
         tasks[_taskId].oldRating[msg.sender] = _rating;
         tasks[_taskId].completionRatingSum += _rating;
 
-        membershipContract.addTaskAvg(tasks[_taskId].performer, msg.sender, _rating, _taskId);
+        //membershipContract.addTaskAvg(tasks[_taskId].performer, msg.sender, _rating, _taskId);
 
         // Emit the TaskRated event.
         emit TaskExecutionRated(_taskId, msg.sender, _rating);
@@ -535,7 +535,11 @@ contract Tasks {
         if (tasks[_taskId].status != TaskStatus.VERIFICATION) revert taskNotInVerificationStage();
         if (tasks[_taskId].numberOfCompletionRaters < 2) revert notEnoughRatings();
 
-        if (tasks[_taskId].completionRatingSum / tasks[_taskId].numberOfCompletionRaters >= 7) {
+        uint256 taskAvg = tasks[_taskId].completionRatingSum /
+            tasks[_taskId].numberOfCompletionRaters;
+        membershipContract.updateTasksAvg(tasks[_taskId].performer, _taskId, taskAvg);
+
+        if (taskAvg >= 7) {
             tasks[_taskId].status = TaskStatus.VERIFIED;
             address _projectManager = projectsContract.getProjectManager(
                 (tasks[_taskId].projectId)
