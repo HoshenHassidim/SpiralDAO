@@ -150,7 +150,7 @@ describe("Tasks Errors", function () {
         await tasks.connect(accounts[1]).cancelTaskOffer(offerId)
 
         await expect(tasks.connect(accounts[2]).rateTaskOffer(offerId, 8)).to.be.revertedWith(
-            "offerNotOpenForRating"
+            "offerNotOpenForRating" && "offerNotActive"
         )
     })
 
@@ -180,7 +180,7 @@ describe("Tasks Errors", function () {
         await tasks.connect(accounts[1]).cancelTaskOffer(offerId)
 
         await expect(tasks.connect(accounts[2]).rateTaskOffer(offerId, 10)).to.be.revertedWith(
-            "offerNotOpenForRating"
+            "offerNotOpenForRating" && "offerNotActive"
         )
     })
 
