@@ -100,7 +100,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
 
           {params.slug}
           <h2 className="text-lg">
-            {problemData && problemData.activeProblems.length == 0
+            {problemData?.activeProblems.length == 0
               ? "Sorry, this problem does not exist"
               : !error &&
                 problemData &&

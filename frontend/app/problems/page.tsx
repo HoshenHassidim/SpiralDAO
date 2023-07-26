@@ -4,10 +4,11 @@ import Navbar from "../../components/Navbar"
 import Problem from "../../components/Problem"
 
 import Link from 'next/link'
+
+// Plus icon
 import { AiOutlinePlus } from 'react-icons/ai'
 
 //graph
-import type { NextPage } from "next";
 import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
 
@@ -21,28 +22,14 @@ export default function problems () {
     error: subgraphQueryError,
     data,
   } = useQuery(GET_NEW_PROBLEMS);
-  if (data) {
-    console.log(data.activeProblems);
-  }
-
-  // useEffect(() => {
-  //   if (error) {
-
-  //     notify()
-  //     setError("")
-  //   }
-
-  // }, [error])
 
 return (
     <div className="overflow-x-hidden">
       
       <Navbar />
 
-        {/* <ToastContainer /> */}
       <section className="flex flex-col items-center justify-center gap-5 p-5">
-      {data &&
-        data.activeProblems.map((problem) => (
+      {data?.activeProblems.map((problem) => (
           <Problem key={problem.Problems_id} id={problem.Problems_id} title={problem.name} creator={problem.creator}/>
         ))}
 
@@ -57,16 +44,6 @@ return (
           </button>
         
       </Link>
-
-      <h1 className="text-xl">Roadmap!!</h1>
-      offer as a manager
-      offer as a task doer
-      manager can add tasks
-      Can rate managers and doers (5 stars)
-      Only doer after being chosen can do the task (like an input box)
-      People can vote on his completion
-      balance (my account with projects, files, balance)
-      Add polybase
 
     </div>
 )

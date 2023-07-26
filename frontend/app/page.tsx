@@ -5,7 +5,6 @@ import {useEffect, useState} from "react"
 
 // components
 import GetProblemCounter from "../components/GetProblemCounter";
-import RegisterMember from "../components/RegisterMember"
 import Navbar from "../components/Navbar"
 
 
@@ -29,7 +28,7 @@ export default function home() {
     <div className="h-screen overflow-x-hidden bg-gradient-to-br bg-gradient-135 from-white via-transparent to-[#3AB3D7]">
       <Navbar />
       {/* <div>{address}</div> */}
-      <div className="flex justify-center items-center p-5 md:flex-row flex-col">
+      <div className="flex justify-center items-center p-5 flex-col md:flex-row">
         <div className="flex flex-col gap-4">
           <h1 className="text-5xl text-sky-400 font-bold mw">Welcome to SpiralDAO</h1>
           <p className="max-w-md ">Lorem ipsum dolor sit amet consectetur adipisicing elit. Possimus veniam, sequi eius id voluptates incidunt facilis quidem reiciendis, iste tenetur iusto! Animi quia facilis deleniti. Sit in error impedit fugiat.</p>
@@ -48,8 +47,6 @@ export default function home() {
         />
         </div>
       </div>
-
-          {/* <RegisterMember /> */}
       {/* <GetProblemCounter /> */}
     </div>
   )

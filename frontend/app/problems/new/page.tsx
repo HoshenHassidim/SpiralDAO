@@ -14,10 +14,7 @@ import addresses from '../../../constants/networkMapping.json'
 
 import {
   useContractWrite,
-  usePrepareContractWrite,
-  useWaitForTransaction,
   useAccount,
-  useContractRead,
 } from "wagmi";
 
 import createNotification from "../../../createNotification.js";

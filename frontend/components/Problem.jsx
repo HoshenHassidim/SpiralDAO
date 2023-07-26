@@ -3,12 +3,11 @@ import { useState, useEffect } from "react";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 
 import abi from "../constants/Problems.json";
+import addresses from '../constants/networkMapping.json'
+
 import {
   useContractWrite,
-  usePrepareContractWrite,
-  useWaitForTransaction,
-  useAccount,
-  useContractRead,
+  useAccount
 } from "wagmi";
 import { useRouter } from "next/navigation";
 
@@ -25,7 +24,7 @@ export default function Problem({ id, title, creator }) {
   const router = useRouter();
 
   const { data, isLoading, isSuccess, write } = useContractWrite({
-    address: "0x1eD127C2eD0Bfca9D2Ee3d7e8B5A7944A163af35",
+    address: addresses[4002].Problems[0],
     abi: abi,
     functionName: "rateProblem",
     args: [id, rating],
@@ -42,7 +41,6 @@ export default function Problem({ id, title, creator }) {
       if (!address) {
         createNotification("Please connect your wallet to rate", "error");
       } else {
-        console.log(rating);
         write();
       }
     }
@@ -72,7 +70,7 @@ export default function Problem({ id, title, creator }) {
 
       <div className="flex flex-col">
         <span className="self-end">
-          {address && address.toLowerCase() == creator
+          {address?.toLowerCase() == creator
             ? "Mine"
             : creator.substr(0, 4) + "..." + creator.substr(creator.length - 4)}
         </span>

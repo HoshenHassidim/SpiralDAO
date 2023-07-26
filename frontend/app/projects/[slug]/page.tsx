@@ -9,6 +9,7 @@ import addresses from '../../../constants/networkMapping.json'
 import createNotification from "../../../createNotification.js";
 
 // Components
+import ProjectCompleteTasks from "../../../components/ProjectCompleteTasks"
 import ProjectAddTasks from "../../../components/ProjectAddTasks"
 import RatingTaskStars from "../../../components/RatingTaskStars"
 import RatingManagerOfferStars from "../../../components/RatingManagerOfferStars"
@@ -155,13 +156,13 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
             </section>
           )}
 
-          {address?.toLowerCase() == currentProject.projectManager && (
+          {address?.toLowerCase() == currentProject?.projectManager && (
 
             <ProjectAddTasks address={addresses[4002].Tasks[0]} projectId={params.slug}/>
           )}
 
 					</section>
-
+          {/* <ProjectCompleteTasks /> */}
 
 
         </div>
