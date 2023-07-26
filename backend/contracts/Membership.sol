@@ -40,7 +40,6 @@ contract Membership {
 
     event MemberRegistered(address indexed memberAddress, string username); // Declare an event for member registration.
     event MemberRegisteredWithoutName(address indexed memberAddress); // Declare an event for member registration when a usename was not provided.
-    event MemberUnregistered(address indexed memberAddress); // Declare an event for member unregistration.
     event TaskAssignedtoMember(address indexed memberAddress, uint256 taskCount); // Declare an event for when a task is assigned to a specific member.
     event ProblemAndSolutionAccepted(
         address indexed problemCreator,
@@ -50,6 +49,8 @@ contract Membership {
     ); // Declare an event for when a project was accpeted which marks the creators of the problem and solution linked to that project
     event ProjectManaged(address _member, uint256 ProjectManagedCount); // Declare an event for when a project manager has been assigned as a specific member.
 
+    event UsernameChanged(address _member, string _username);
+    
     TokenManagement private tokenManagementContract; // Reference to the TokenManagement contract
 
     // Constructor to initialize the imported contracts.
@@ -103,16 +104,19 @@ contract Membership {
         emit MemberRegisteredWithoutName(msg.sender); // Emit event after successful registration.
     }
 
-    // Function to unregister a member.
-    function unregisterMember() external {
-        // Check if the sender is a member.
+    function changeName(string memory _username) external {
         if (!members[msg.sender].isMember) revert mustBeMember();
+        if (bytes(_username).length == 0) revert UsernameRequired();
+        if (isUsernameTaken(_username)) revert UsernameAlreadyExists();
 
         // Remove the member from the contract.
         delete usernames[members[msg.sender].username];
-        delete members[msg.sender];
 
-        emit MemberUnregistered(msg.sender); // Emit event after successful unregistration.
+        Member storage member = members[msg.sender];
+        member.username = _username;
+        usernames[_username] = true;
+
+        emit UsernameChanged(msg.sender, _username); 
     }
 
     // View function to check if an address is registered as a member.
