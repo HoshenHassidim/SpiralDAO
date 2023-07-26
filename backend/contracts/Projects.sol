@@ -14,6 +14,7 @@ contract Projects {
     uint256 constant MAX_RATING = 10;
     uint256 constant MIN_TOTAL_RATERS_COUNT = 4;
     uint256 constant MIN_RAITNGS_PER_OFFER = 3;
+    uint256 constant MIN_AVG_RATING = 7;
 
     // Project structure
     struct Project {
@@ -95,6 +96,8 @@ contract Projects {
     event ManagementOfferCancelled(uint256 offerId);
     event ManagementOfferRated(uint256 offerId, address rater, uint256 rating);
     event ProjectManagerAssigned(uint256 indexed projectId, address projectManager);
+    event ProjectManagerVotedOut(uint256 removalOfferId);
+    event ProjectManagerResigned(uint256 projectId);
 
     // Constructor to initialize the imported contracts
     constructor(
@@ -268,6 +271,7 @@ contract Projects {
         if (msg.sender != projects[_projectId].projectManager) revert onlyManager();
 
         removeProjectManager(_projectId);
+        emit ProjectManagerResigned(_projectId);
     }
 
 
@@ -340,9 +344,10 @@ contract Projects {
             revert insufficientTotalRatersForAllOffers();
 
         // If the best offer's average rating is above 7, assign the project manager
-        if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > 7) {
+        if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > MIN_AVG_RATING) {
             removalOffer.isOpenForRemovalRating = false;
             removeProjectManager(removalOffer.projectId);
+            emit ProjectManagerVotedOut(_removalOfferId);
         }
     }
 
