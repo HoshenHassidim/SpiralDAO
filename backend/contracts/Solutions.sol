@@ -209,8 +209,7 @@ contract Solutions {
 
         // Close the rating for all solutions associated with the same problem
         for (uint256 i = 0; i < solutionIds.length; i++) {
-            Solution storage otherSolution = solutions[solutionIds[i]];
-            otherSolution.isOpenForRating = false; // Changed: Close the rating for all other solutions
+            solutions[solutionIds[i]].isOpenForRating = false; // Changed: Close the rating for all other solutions
         }
 
         return true;
