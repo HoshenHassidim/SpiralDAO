@@ -85,7 +85,8 @@ export default function Navbar() {
 
         </ul>
       </div>
-
+      
+      {/* Desktop navigation links  */}
       <div className="items-center gap-4 hidden sm:flex p-3">
       <Link href="/" className="nav__link">
           Home
@@ -97,7 +98,6 @@ export default function Navbar() {
         <Link href="/projects" className="nav__link">
           Projects
         </Link>
-
 
         <Web3Button /> 
 
