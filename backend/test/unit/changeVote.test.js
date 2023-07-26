@@ -66,12 +66,12 @@ describe("changeVote", function () {
         for (let i = 1; i < 6; i++) {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 6)
         }
-        expect(await solutions.canBecomeProject(solutionId)).to.be.false
+        expect(await solutions.canBecomeProjectView(solutionId)).to.be.false
 
         for (let i = 1; i < 6; i++) {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
         }
-        expect(await solutions.canBecomeProject(solutionId)).to.be.true
+        expect(await solutions.canBecomeProjectView(solutionId)).to.be.true
 
         projectId = solutionId
     })
@@ -158,11 +158,11 @@ describe("changeVote", function () {
         expect(taskDetails1[6]).to.equal(2) // Total number of raters
     })
 
-    it ("Should allow members to change their rating for the management removal offer", async function () {
+    it("Should allow members to change their rating for the management removal offer", async function () {
         removalProposer = accounts[7]
         await projects.connect(removalProposer).proposeRemoveManager(projectId)
         removalOfferId = projects.getRemovalOfferCounter()
-        
+
         // Members rating the offer
         for (let i = 3; i < 7; i++) {
             await projects.connect(accounts[i]).rateRemovalOffer(removalOfferId, 6)

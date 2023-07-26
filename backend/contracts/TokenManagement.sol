@@ -31,6 +31,7 @@ contract TokenManagement {
     error taskValueMustBeGreaterThanZero();
     error projectIDCannotBeZero();
     error contractWasNotAuthorised();
+    error IDMustBePostive();
 
     event ProjectTokenCreated(
         uint256 indexed projectId,
@@ -129,22 +130,22 @@ contract TokenManagement {
     ) external onlyAuthorized {
         if (executor == address(0) || manager == address(0)) revert addressesCannotBeZero();
         if (taskValue <= 0) revert taskValueMustBeGreaterThanZero();
-        if (projectId == 0) revert projectIDCannotBeZero();
+        if (projectId < 0) revert IDMustBePostive();
 
         uint256 executorPayment = taskValue;
         uint256 managerPayment = (taskValue * INVERSE_PROJECT_MANAGER_SHARE) / 100;
         uint256 executorDaoTokens = (executorPayment * INVERSE_DAO_TOKEN_PAY_RATIO) / 100;
         uint256 managerDaoTokens = (managerPayment * INVERSE_DAO_TOKEN_PAY_RATIO) / 100;
-
         Tokens projectToken = projectTokens[projectId];
         projectToken.mint(executor, executorPayment);
         projectToken.mint(manager, managerPayment);
-
-        Tokens daoToken = projectTokens[0];
-        daoToken.mint(executor, executorDaoTokens);
-        daoToken.mint(manager, managerDaoTokens);
-
-        emit TokensMinted(executor, projectId, executorPayment, executorDaoTokens);
+        if (projectId != 0) {
+            Tokens daoToken = projectTokens[0];
+            daoToken.mint(executor, executorDaoTokens);
+            daoToken.mint(manager, managerDaoTokens);
+        }
+        if (projectId > 0)
+            emit TokensMinted(executor, projectId, executorPayment, executorDaoTokens);
         emit TokensMinted(manager, projectId, managerPayment, managerDaoTokens);
     }
 

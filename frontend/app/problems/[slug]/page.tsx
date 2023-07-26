@@ -2,8 +2,13 @@
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 
+// Stars
+import RatingSolutionsStars from '../../../components/RatingSolutionsStars.jsx'
+
+
 // Wagmi write
 import { useContractWrite, useAccount } from "wagmi";
+import addresses from '../../../constants/networkMapping.json'
 
 // Graph reading
 import GET_NEW_PROBLEMS from "../../../constants/subgraphQueries";
@@ -25,6 +30,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   const [solution, setSolution] = useState();
   const { register, handleSubmit } = useForm();
 
+
   const { address, isConnecting, isDisconnected } = useAccount();
 
   const router = useRouter();
@@ -43,7 +49,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
 
   // Wagmi propose a solution
   const { raisedSolutionData, isLoading, isSuccess, write } = useContractWrite({
-    address: "0x93F1A258Ac704426B4D815416B7131B45dE6E509",
+    address: addresses[4002].Solutions[0],
     abi: abi,
     functionName: "proposeSolution",
     args: [params.slug, solution],
@@ -75,9 +81,11 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   } = useQuery(GET_NEW_PROBLEMS);
 
   console.log(readSolutionsData);
+
   return (
     <div>
-      <div className="overflow-x-hidden">
+
+      <div className="overflow-x-hidden overflow-y-scroll h-screen">
         <Navbar />
 
         <section className="flex flex-col justify-center items-center">
@@ -127,15 +135,24 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
           {readSolutionsData?.activeSolutions
             ?.filter((s) => s.problemId === params.slug)
             ?.map((solution) => (
-              <div className="flex flex-col items-center">
-                <p>
-                  {address && address.toLowerCase() == solution.creator
-                    ? "Mine"
-                    : solution.creator.substr(0, 4) +
-                      "..." +
-                      solution.creator.substr(solution.creator.length - 4)}
-                </p>
-                <p>{solution.name}</p>
+              <div className="">
+                <div className="flex flex-col">
+
+                  <p>
+                    {address && address.toLowerCase() == solution.creator
+                      ? "Mine"
+                      : solution.creator.substr(0, 4) +
+                        "..." +
+                        solution.creator.substr(solution.creator.length - 4)}
+                  </p>
+                  <p>{solution.name}</p>
+                </div>
+
+                <span className="">
+
+                  {/* <RatingStars starRating={starRating} setStarRating={setStarRating} id={solution.problemId}/> */}
+                  <RatingSolutionsStars id={solution.solutionId} />
+                </span>
               </div>
             ))}
         </section>

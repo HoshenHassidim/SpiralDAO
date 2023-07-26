@@ -37,6 +37,12 @@ problemRateds (orderBy :blockNumber orderDirection: desc){
   rating
 }
 
+tokenBalances(first: 5) {
+    member
+    projectId
+    balance
+  }
+
 
 }
 `;
