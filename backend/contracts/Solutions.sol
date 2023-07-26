@@ -237,44 +237,14 @@ contract Solutions {
     // }
 
     // Function to check if a solution can become a project
-    function canBecomeProject(uint256 _solutionId) external returns (bool) {
+    function canBecomeProject(uint256 _solutionId) external view returns (bool) {
         Solution storage solution = solutions[_solutionId];
+
         uint256 avgRating = solution.ratingSum / solution.numberOfRaters;
 
-        // Check if the solution meets the rating requirements
-        if (
-            solution.numberOfRaters < MIN_RATING_COUNT ||
-            avgRating < MIN_RATING_AVERAGE ||
-            _solutionId != findSolutionWithHighestRating()
-        ) {
-            return false;
-        }
-
-        // Calculate the total ratings for the problem the solution addresses
-        uint256 totalRatingsForProblem = 0;
-        uint256[] storage solutionIds = problemToSolutions[solution.problemId];
-
-        for (uint256 i = 0; i < solutionIds.length; i++) {
-            totalRatingsForProblem += solutions[solutionIds[i]].numberOfRaters;
-        }
-
-        // Check if the total ratings meet the requirements
-        if (totalRatingsForProblem < MIN_TOTAL_RATE_COUNT) {
-            return false;
-        }
-
-        // Close the rating for all solutions associated with the same problem
-        for (uint256 i = 0; i < solutionIds.length; i++) {
-            solutions[solutionIds[i]].isOpenForRating = false; // Changed: Close the rating for all other solutions
-        }
-
-        return true;
-    }
-
-    function canBecomeProjectView(uint256 _solutionId) external view returns (bool) {
-        Solution storage solution = solutions[_solutionId];
-        uint256 avgRating = solution.ratingSum / solution.numberOfRaters;
-
+        // if (avgRating > highestRating) {
+        //     highestRating = avgRating;
+        // }
         // Check if the solution meets the rating requirements
         if (
             solution.numberOfRaters < MIN_RATING_COUNT ||
