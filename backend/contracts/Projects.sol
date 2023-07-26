@@ -110,8 +110,9 @@ contract Projects {
     // Private function to create a new project from a solution
     function createProject(uint256 _solutionId) private {
         if (_solutionId <= 0) revert IDMustBePositive();
-        if (!solutionsContract.canBecomeProject(_solutionId)) revert solutionDoesNotMeetCriteria();
-
+        if (!solutionsContract.canBecomeProjectView(_solutionId))
+            revert solutionDoesNotMeetCriteria();
+        solutionsContract.canBecomeProject(_solutionId);
         // Retrieve problem and solution creators
         (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
             _solutionId
@@ -264,12 +265,11 @@ contract Projects {
     function managerResign(uint256 _projectId) external {
         if (_projectId <= 0) revert IDMustBePositive();
         if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
- 
+
         if (msg.sender != projects[_projectId].projectManager) revert onlyManager();
 
         removeProjectManager(_projectId);
     }
-
 
     // External function to propose a management removal offer for a project
     function proposeRemoveManager(uint256 _projectId) external {
@@ -348,7 +348,7 @@ contract Projects {
 
     function removeProjectManager(uint256 _projectId) private {
         Project storage project = projects[_projectId];
-        
+
         project.isOpenForManagmentRemovalProposal = false;
         project.projectManager = address(0);
         project.isOpenForManagementProposals = true;

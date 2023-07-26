@@ -68,7 +68,6 @@ describe("MemberBackground", function () {
             for (let i = 1; i < 4; i++) {
                 await problems.connect(accounts[i]).rateProblem(problemId, 9)
             } //people 1,2,3 rate problem as 9
-
             await solutions.connect(accounts[1]).proposeSolution(problemId, "Solution 1") //person 1 raises solution
             const solutionId = await solutions.getSolutionCounter()
             for (let i = 2; i < 6; i++) {
