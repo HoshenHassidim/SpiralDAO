@@ -1,10 +1,11 @@
 const { expect } = require("chai")
 
 describe("Workflow", function () {
-    let problems, solutions, membership, tokenManagement, projects, tasks
+    let authorizationManagement, problems, solutions, membership, tokenManagement, projects, tasks
     let accounts, projectManagerAccount, offerId
 
     before(async function () {
+        const AuthorizationManagement = await ethers.getContractFactory("AuthorizationManagement")
         const TokenManagement = await ethers.getContractFactory("TokenManagement")
         const Membership = await ethers.getContractFactory("Membership")
         const Problems = await ethers.getContractFactory("Problems")
@@ -12,29 +13,84 @@ describe("Workflow", function () {
         const Projects = await ethers.getContractFactory("Projects")
         const Tasks = await ethers.getContractFactory("Tasks")
 
-        tokenManagement = await TokenManagement.deploy()
+        authorizationManagement = await AuthorizationManagement.deploy()
+        await authorizationManagement.deployed()
+
+        tokenManagement = await TokenManagement.deploy(authorizationManagement.address)
         await tokenManagement.deployed()
 
-        membership = await Membership.deploy(tokenManagement.address)
+        membership = await Membership.deploy(authorizationManagement.address)
         await membership.deployed()
 
-        problems = await Problems.deploy(membership.address)
+        problems = await Problems.deploy(membership.address, authorizationManagement.address)
         await problems.deployed()
 
-        solutions = await Solutions.deploy(membership.address, problems.address)
+        solutions = await Solutions.deploy(
+            membership.address,
+            problems.address,
+            authorizationManagement.address
+        )
         await solutions.deployed()
 
         projects = await Projects.deploy(
             membership.address,
+            authorizationManagement.address,
             solutions.address,
             tokenManagement.address
         )
         await projects.deployed()
 
-        tasks = await Tasks.deploy(membership.address, projects.address, tokenManagement.address)
+        tasks = await Tasks.deploy(
+            membership.address,
+            projects.address,
+            tokenManagement.address,
+            authorizationManagement.address
+        )
         await tasks.deployed()
 
         accounts = await ethers.getSigners()
+    })
+
+    it("AuthorizationManagement permission should be allowed for the TokenManagement contract", async function () {
+        permission_b = await authorizationManagement.isAuthorized(tokenManagement.address)
+        await authorizationManagement
+            .connect(accounts[0])
+            .authorizeContract(tokenManagement.address)
+        permission_a = await authorizationManagement.isAuthorized(tokenManagement.address)
+        expect(permission_b).to.equal(false)
+        expect(permission_a).to.equal(true)
+    })
+
+    it("AuthorizationManagement permission should be allowed for the problems contract", async function () {
+        permission_b = await authorizationManagement.isAuthorized(problems.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(problems.address)
+        permission_a = await authorizationManagement.isAuthorized(problems.address)
+        expect(permission_b).to.equal(false)
+        expect(permission_a).to.equal(true)
+    })
+
+    it("AuthorizationManagement permission should be allowed for the solutions contract", async function () {
+        permission_b = await authorizationManagement.isAuthorized(solutions.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(solutions.address)
+        permission_a = await authorizationManagement.isAuthorized(solutions.address)
+        expect(permission_b).to.equal(false)
+        expect(permission_a).to.equal(true)
+    })
+
+    it("AuthorizationManagement permission should be allowed for the project contract", async function () {
+        permission_b = await authorizationManagement.isAuthorized(projects.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(projects.address)
+        permission_a = await authorizationManagement.isAuthorized(projects.address)
+        expect(permission_b).to.equal(false)
+        expect(permission_a).to.equal(true)
+    })
+
+    it("AuthorizationManagement permission should be allowed for the tasks contract", async function () {
+        permission_b = await authorizationManagement.isAuthorized(tasks.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(tasks.address)
+        permission_a = await authorizationManagement.isAuthorized(tasks.address)
+        expect(permission_b).to.equal(false)
+        expect(permission_a).to.equal(true)
     })
 
     it("Should register five members", async function () {
@@ -58,12 +114,12 @@ describe("Workflow", function () {
         for (let i = 1; i < 2; i++) {
             await problems.connect(accounts[i]).rateProblem(problemId, 6)
         }
-        expect(await problems.meetsRatingCriteria(problemId)).to.be.false
+        expect(await problems.viewMeetsRatingCriteria(problemId)).to.be.false
 
         for (let i = 3; i < 4; i++) {
             await problems.connect(accounts[i]).rateProblem(problemId, 9)
         }
-        expect(await problems.meetsRatingCriteria(problemId)).to.be.true
+        expect(await problems.viewMeetsRatingCriteria(problemId)).to.be.true
     })
 
     it("Should propose a solution", async function () {
@@ -93,21 +149,13 @@ describe("Workflow", function () {
         expect(await solutions.canBecomeProjectView(solutionId)).to.be.true
     })
 
-    it("Token management permission should be allowed for the project contract", async function () {
-        permission_b = await tokenManagement.isAuthorized(projects.address)
-        await tokenManagement.connect(accounts[0]).authorizeContract(projects.address)
-        permission_a = await tokenManagement.isAuthorized(projects.address)
-        expect(permission_b).to.equal(false)
-        expect(permission_a).to.equal(true)
-    })
-
     it("Should allow a member to propose to be a project manager", async function () {
         // Member proposing to be the manager
         projectManagerAccount = accounts[2]
-        await projects.connect(projectManagerAccount).proposeOffer(1)
+        await projects.connect(projectManagerAccount).proposeManagementOffer(1)
 
-        offerId = await projects.getOfferCounter()
-        offerId2 = await projects.getOfferCounter()
+        offerId = await projects.getManagementOfferCounter()
+        offerId2 = await projects.getManagementOfferCounter()
 
         const offerDetails = await projects.viewOfferDetails(offerId)
 
@@ -128,11 +176,11 @@ describe("Workflow", function () {
 
     it("Should allow members to rate the management offer", async function () {
         // Member 1 rating the offer
-        await projects.connect(accounts[0]).rateOffer(offerId, 7)
+        await projects.connect(accounts[0]).ratelManagementOffer(offerId, 7)
         // Member 2 rating the offer
-        await projects.connect(accounts[1]).rateOffer(offerId, 9)
+        await projects.connect(accounts[1]).ratelManagementOffer(offerId, 9)
         // Member 3 rating the offer
-        await projects.connect(accounts[3]).rateOffer(offerId, 8)
+        await projects.connect(accounts[3]).ratelManagementOffer(offerId, 8)
 
         const offerDetails = await projects.viewOfferDetails(offerId)
 
@@ -145,26 +193,11 @@ describe("Workflow", function () {
     })
 
     it("Should assign the project manager if the average rating is above 7", async function () {
-        await projects.connect(accounts[4]).rateOffer(offerId2, 8)
+        await projects.connect(accounts[4]).ratelManagementOffer(offerId2, 8)
         await projects.assignProjectManager(1)
 
         const projectManager = await projects.getProjectManager(1)
         expect(projectManager).to.equal(projectManagerAccount.address)
-    })
-
-    // it("Should assign the project manager if the average rating is above 7", async function () {
-    //     await projects.assignProjectManager(1)
-
-    //     const projectManager = await projects.getProjectManager(1)
-    //     expect(projectManager).to.equal(projectManagerAccount.address)
-    // })
-
-    it("Token management permission should be allowed for the tasks contract", async function () {
-        permission_b = await tokenManagement.isAuthorized(tasks.address)
-        await tokenManagement.connect(accounts[0]).authorizeContract(tasks.address)
-        permission_a = await tokenManagement.isAuthorized(tasks.address)
-        expect(permission_b).to.equal(false)
-        expect(permission_a).to.equal(true)
     })
 
     let performerAccount, taskId

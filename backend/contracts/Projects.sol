@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "./Membership.sol";
 import "./Solutions.sol";
 import "./TokenManagement.sol";
+import "./AuthorizationManagement.sol";
 
 // Contract for managing projects
 contract Projects {
@@ -35,7 +36,6 @@ contract Projects {
         address manager;
         uint256 ratingSum;
         uint256 numberOfRaters;
-        bool isOpenForRating;
         bool isActive;
         mapping(address => uint256) oldRating;
     }
@@ -70,6 +70,7 @@ contract Projects {
     error cannotCancelOnceVotingBegins();
     error DAONotOpenForProposals();
     error managerHasBeenAssigned();
+    error mustBeAuthorised();
 
     // Project ID to Project mapping (solutionId is used as projectId)
     mapping(uint256 => Project) private projects;
@@ -90,29 +91,42 @@ contract Projects {
     Membership private membershipContract;
     Solutions private solutionsContract;
     TokenManagement private tokenManagementContract;
+    AuthorizationManagement private authorizationManagementContract;
 
     // Events
     event NewProject(uint256 projectId);
-    event NewRemovalOffer(uint256 removalOfferId, uint256 projectId, address proposer);
-    event RemovalOfferCancelled(uint256 removalOfferId);
-    event RemovalOfferRated(uint256 removalOfferId, address rater, uint256 rating);
     event NewManagementOffer(uint256 offerId, uint256 projectId, address proposer);
     event ManagementOfferCancelled(uint256 offerId);
     event ManagementOfferRated(uint256 offerId, address rater, uint256 rating);
     event ProjectManagerAssigned(uint256 indexed projectId, address projectManager);
-    event ProjectManagerResigned(uint256 projectId, address projectManager);
-    event ProjectManagerVotedOut(uint256 removalOfferId);
+    event NewProjectManagerRemovalOffer(
+        uint256 removalOfferId,
+        uint256 projectId,
+        address proposer
+    );
+    event ProjectManagerRemovalOfferCancelled(uint256 removalOfferId);
+    event ProjectManagerRemovalOfferRated(uint256 removalOfferId, address rater, uint256 rating);
+    event ProjectManagerResigned(uint256 projectId);
+    event ProjectManagerVotedOut(uint256 removalOfferId, uint256 projectId);
 
     // Constructor to initialize the imported contracts
     constructor(
-        address _membershipContract,
-        address _solutionsContract,
-        address _tokenManagementContract
+        Membership _membershipContract,
+        AuthorizationManagement _authorizationManagementContract,
+        Solutions _solutionsContract,
+        TokenManagement _tokenManagementContract
     ) {
-        membershipContract = Membership(_membershipContract);
-        solutionsContract = Solutions(_solutionsContract);
-        tokenManagementContract = TokenManagement(_tokenManagementContract);
+        membershipContract = _membershipContract;
+        authorizationManagementContract = _authorizationManagementContract;
+        solutionsContract = _solutionsContract;
+        tokenManagementContract = _tokenManagementContract;
         projects[0] = Project(0, false, true, msg.sender, true);
+    }
+
+    // Modifier to allow only authorized contracts to perform certain actions.
+    modifier onlyAuthorized() {
+        if (!authorizationManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
+        _;
     }
 
     // Private function to create a new project from a solution
@@ -120,7 +134,9 @@ contract Projects {
         if (_solutionId <= 0) revert IDMustBePositive();
         if (!solutionsContract.canBecomeProjectView(_solutionId))
             revert solutionDoesNotMeetCriteria();
-        solutionsContract.canBecomeProject(_solutionId);
+        if (projectToOffers[_solutionId].length == 0) {
+            solutionsContract.canBecomeProject(_solutionId);
+        }
         // Retrieve problem and solution creators
         (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
             _solutionId
@@ -146,7 +162,7 @@ contract Projects {
 
     // External function to propose a management offer for a project
 
-    function proposeOffer(uint256 _solutionId) external {
+    function proposeManagementOffer(uint256 _solutionId) external {
         // if (solutionsContract.getSolutionCounter() < _solutionId || _solutionId == 0)
         if (solutionsContract.getSolutionCounter() < _solutionId || _solutionId < 0)
             revert invalidID();
@@ -175,7 +191,6 @@ contract Projects {
         newOffer.manager = msg.sender;
         newOffer.ratingSum = 0;
         newOffer.numberOfRaters = 0;
-        newOffer.isOpenForRating = true;
         newOffer.isActive = true;
 
         projectToOffers[projectId].push(offerCounter); // Update the project to offer mapping
@@ -183,7 +198,7 @@ contract Projects {
         emit NewManagementOffer(offerCounter, projectId, msg.sender); // Emit the event
     }
 
-    function proposeOfferDAO() external {
+    function proposeManagementOfferDAO() external {
         Project memory DAOProject = projects[0];
         // Ensuring that the project is open for management proposals
         if (!DAOProject.isOpenForManagementProposals) revert DAONotOpenForProposals();
@@ -202,7 +217,6 @@ contract Projects {
         newOffer.manager = msg.sender;
         newOffer.ratingSum = 0;
         newOffer.numberOfRaters = 0;
-        newOffer.isOpenForRating = true;
         newOffer.isActive = true;
 
         projectToOffers[0].push(offerCounter); // Update the project to offer mapping
@@ -212,15 +226,14 @@ contract Projects {
 
     // External function to cancel a management offer
 
-    function cancelOffer(uint256 _offerId) external {
+    function cancelManagementOffer(uint256 _offerId) external {
         if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
 
         Offer storage offer = offers[_offerId];
 
         if (offer.manager != msg.sender) revert onlyManager();
-        if (!offer.isOpenForRating) revert notOpenForRating();
+        if (!offer.isActive) revert offerNotActive();
 
-        offer.isOpenForRating = false; // Mark the offer as not open for rating
         offer.isActive = false;
         hasProposed[offers[_offerId].projectId][msg.sender] = false;
 
@@ -229,7 +242,7 @@ contract Projects {
 
     // External function to rate a management offer
 
-    function rateOffer(uint256 _offerId, uint256 _rating) external {
+    function ratelManagementOffer(uint256 _offerId, uint256 _rating) external {
         if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
         if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
 
@@ -237,7 +250,6 @@ contract Projects {
 
         if (!offer.isActive) revert offerNotActive();
         if (offer.manager == msg.sender) revert managerCannotRateOwnOffer();
-        if (!offer.isOpenForRating) revert notOpenForRating();
 
         if (offer.oldRating[msg.sender] > 0) {
             offer.ratingSum -= offer.oldRating[msg.sender];
@@ -267,7 +279,7 @@ contract Projects {
         for (uint256 i = 0; i < projectToOffers[_projectId].length; i++) {
             Offer storage offer = offers[projectToOffers[_projectId][i]];
             if (!offer.isActive) continue;
-            if (offer.numberOfRaters >= MIN_RAITNGS_PER_OFFER && offer.isOpenForRating) {
+            if (offer.numberOfRaters >= MIN_RAITNGS_PER_OFFER) {
                 uint256 averageRating = offer.ratingSum / offer.numberOfRaters;
 
                 // If the current offer has a better rating, set it as the best
@@ -284,8 +296,8 @@ contract Projects {
             revert insufficientTotalRatersForAllOffers();
         }
 
-        // If the best offer's average rating is above 7, assign the project manager
-        if (bestRating > 7) {
+        // If the best offer's average rating is above MIN_AVG_RATING, assign the project manager
+        if (bestRating > MIN_AVG_RATING) {
             project.isOpenForManagementProposals = false;
             projects[_projectId].projectManager = offers[bestOfferId].manager;
             projects[_projectId].hasManager = true;
@@ -310,7 +322,7 @@ contract Projects {
 
         removeProjectManager(_projectId);
 
-        emit ProjectManagerResigned(_projectId, msg.sender);
+        emit ProjectManagerResigned(_projectId);
     }
 
     // External function to propose a management removal offer for a project
@@ -331,7 +343,7 @@ contract Projects {
         newRemovalOffer.removalNumberOfRaters = 0;
         newRemovalOffer.isOpenForRemovalRating = true;
 
-        emit NewRemovalOffer(offerCounter, _projectId, msg.sender);
+        emit NewProjectManagerRemovalOffer(offerCounter, _projectId, msg.sender);
     }
 
     // External function to cancel a management removal offer
@@ -341,12 +353,12 @@ contract Projects {
         RemovalOffer storage removalOffer = removalOffers[_removalOfferId];
 
         if (removalOffer.proposer != msg.sender) revert onlyManager();
-        if (removalOffer.removalNumberOfRaters > 0) revert cannotCancelOnceVotingBegins(); 
+        if (removalOffer.removalNumberOfRaters > 0) revert cannotCancelOnceVotingBegins();
         if (!removalOffer.isOpenForRemovalRating) revert notOpenForRating();
 
         removalOffer.isOpenForRemovalRating = false; // Mark the offer as not open for rating
 
-        emit RemovalOfferCancelled(_removalOfferId); // Emit the event
+        emit ProjectManagerRemovalOfferCancelled(_removalOfferId); // Emit the event
     }
 
     // External function to rate a managment removal offer
@@ -368,7 +380,7 @@ contract Projects {
         removalOffer.oldRemovalRating[msg.sender] = _rating;
         removalOffer.removalRatingSum += _rating;
 
-        emit RemovalOfferRated(_removalOfferId, msg.sender, _rating);
+        emit ProjectManagerRemovalOfferRated(_removalOfferId, msg.sender, _rating);
     }
 
     function checkRemovalRatings(uint256 _removalOfferId) external {
@@ -389,11 +401,11 @@ contract Projects {
         if (removalOffer.projectId != 0) MIN_RATING_REMOVAL = 7;
         else MIN_RATING_REMOVAL = MIN_RATING_DAO_REMOVAL;
 
-        // If the best offer's average rating is above 7, assign the project manager
+        // If the best offer's average rating is above MIN_RATING_REMOVAL, assign the project manager
         if ((removalOffer.removalRatingSum / removalOffer.removalNumberOfRaters) > MIN_AVG_RATING) {
             removalOffer.isOpenForRemovalRating = false;
             removeProjectManager(removalOffer.projectId);
-            emit ProjectManagerVotedOut(_removalOfferId);
+            emit ProjectManagerVotedOut(_removalOfferId, removalOffer.projectId);
         }
     }
 
@@ -414,19 +426,18 @@ contract Projects {
     // Function to view details about an offer
     function viewOfferDetails(
         uint256 _offerId
-    ) external view returns (uint256, uint256, address, uint256, uint256, bool, bool) {
+    ) external view returns (uint256, uint256, address, uint256, uint256, bool) {
         if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
 
         Offer storage offer = offers[_offerId];
 
-        // Return the offer details: offerId, projectId, manager, ratingSum, numberOfRaters, isOpenForRating
+        // Return the offer details: offerId, projectId, manager, ratingSum, numberOfRaters, isActive
         return (
             offer.offerId,
             offer.projectId,
             offer.manager,
             offer.ratingSum,
             offer.numberOfRaters,
-            offer.isOpenForRating,
             offer.isActive
         );
     }
@@ -482,12 +493,12 @@ contract Projects {
     }
 
     // Getter function for offerCounter
-    function getOfferCounter() external view returns (uint256) {
+    function getManagementOfferCounter() external view returns (uint256) {
         return offerCounter;
     }
 
     // Getter function for removalOfferCounter
-    function getRemovalOfferCounter() external view returns (uint256) {
+    function getManagementRemovalOfferCounter() external view returns (uint256) {
         return removalOfferCounter;
     }
 

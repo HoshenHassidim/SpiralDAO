@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "./TokenManagement.sol";
+import "./AuthorizationManagement.sol";
 
 // Importing the TokenManagement contract to access its functionalities.
 
@@ -50,17 +50,17 @@ contract Membership {
     event ProjectManaged(address _member, uint256 ProjectManagedCount); // Declare an event for when a project manager has been assigned as a specific member.
 
     event UsernameChanged(address _member, string _username);
-    
-    TokenManagement private tokenManagementContract; // Reference to the TokenManagement contract
+
+    AuthorizationManagement private authorizationManagementContract;
 
     // Constructor to initialize the imported contracts.
-    constructor(TokenManagement _tokenManagementContract) {
-        tokenManagementContract = _tokenManagementContract;
+    constructor(AuthorizationManagement _authorizationManagementContract) {
+        authorizationManagementContract = _authorizationManagementContract;
     }
 
     // Modifier to allow only authorized contracts to perform certain actions.
     modifier onlyAuthorized() {
-        if (!tokenManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
+        if (!authorizationManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
         _;
     }
 
@@ -116,7 +116,7 @@ contract Membership {
         member.username = _username;
         usernames[_username] = true;
 
-        emit UsernameChanged(msg.sender, _username); 
+        emit UsernameChanged(msg.sender, _username);
     }
 
     // View function to check if an address is registered as a member.

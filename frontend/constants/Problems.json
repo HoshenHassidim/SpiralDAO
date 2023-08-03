@@ -5,6 +5,11 @@
         "internalType": "contract Membership",
         "name": "_membershipContract",
         "type": "address"
+      },
+      {
+        "internalType": "contract AuthorizationManagement",
+        "name": "_authorizationManagementContract",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -16,6 +21,8 @@
     "type": "error"
   },
   { "inputs": [], "name": "invalidProblemID", "type": "error" },
+  { "inputs": [], "name": "mustBeAuthorised", "type": "error" },
+  { "inputs": [], "name": "nameAlreadyExists", "type": "error" },
   { "inputs": [], "name": "nameExists", "type": "error" },
   { "inputs": [], "name": "nameRequired", "type": "error" },
   { "inputs": [], "name": "onlyCreatorCanCancel", "type": "error" },
@@ -25,7 +32,6 @@
   { "inputs": [], "name": "problemDoesNotExist", "type": "error" },
   { "inputs": [], "name": "problemProposerCannotRate", "type": "error" },
   { "inputs": [], "name": "ratingOutOfRange", "type": "error" },
-  { "inputs": [], "name": "userNameAlreadyExists", "type": "error" },
   {
     "anonymous": false,
     "inputs": [
@@ -165,7 +171,7 @@
     ],
     "name": "meetsRatingCriteria",
     "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -183,6 +189,15 @@
     "name": "rateProblem",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_problemId", "type": "uint256" }
+    ],
+    "name": "viewMeetsRatingCriteria",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
     "type": "function"
   },
   {

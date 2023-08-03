@@ -7,6 +7,7 @@ pragma solidity ^0.8.0;
 import "./Membership.sol"; // Import the DAO membership contract
 import "./Projects.sol"; // Import the projects contract
 import "./TokenManagement.sol"; // Import the token management contract
+import "./AuthorizationManagement.sol";
 
 contract Tasks {
     // Enum for tracking task status
@@ -33,7 +34,7 @@ contract Tasks {
         mapping(address => uint256) addressToOfferId;
         mapping(address => bool) hasProposed; // Mapping to keep track of who has proposed to the task
         bool isRemovalProposalActive; // Boolean to keep track of whether there is an active performer removal proposal
-        performerRemovalOffer removalOffer; // 
+        performerRemovalOffer removalOffer; //
         uint256 verificationID; // Unique verification ID
         mapping(address => uint256) oldRating; //Mapping to keep track of user's old rating
     }
@@ -51,12 +52,11 @@ contract Tasks {
         address offeror; // Address of the member who made the offer
         uint256 ratingSum; // Sum of ratings received for the offer
         uint256 numberOfRaters; // Number of ratings received for the offer
-        bool isOpenForRating; // Flag to indicate if the offer is open for rating
         mapping(address => uint256) oldRating; //Mapping to keep track of old user vote rating
         mapping(address => bool) raters; // Mapping to keep track of who rated the offer
         bool isActive; // Boolean to keep track of whether this offer is active
     }
-    
+
     struct performerRemovalOffer {
         // uint256 taskId; // Task ID to which the offer is made
         address removalOfferor; // Address of the member who made the offer
@@ -70,13 +70,12 @@ contract Tasks {
     uint256 private taskCounter; // Counter for task ID
     uint256 private taskOfferCounter; // Counter for task offer ID
     uint256 private MIN_TASK_VALUE = 100; // Minimal task value
-    uint256 constant MIN_TOTAL_RATERS_COUNT = 4;
+    uint256 constant MIN_TOTAL_RATERS_COUNT = 3;
+    uint256 constant MIN_RAITNGS_PER_OFFER = 2;
     uint256 constant MIN_INDIVIDUAL_RATERS_COUNT = 2;
     uint256 constant MIN_RATING = 1;
     uint256 constant MAX_RATING = 10;
     uint256 constant MIN_AVG_RATING = 7;
-
-    error insufficientTotalRatersForAllOffers();
 
     // Mapping to store tasks
     mapping(uint256 => Task) private tasks;
@@ -89,7 +88,7 @@ contract Tasks {
 
     // Mapping to prevent task name duplication within a project
     mapping(uint256 => mapping(string => bool)) private existingTaskNamesByProjectID;
-    
+
     // Errors
     error invalidID();
     error mustBeProjectManager();
@@ -129,13 +128,15 @@ contract Tasks {
     error insufficientNumberOfRaters();
     error averageRatingTooLow();
     error onlyProposalCreator();
+    error insufficientTotalRatersForAllOffers();
+    error mustBeAuthorised();
 
     // Events
     event NewTask(uint256 taskId, uint256 projectId, string taskName, uint256 taskValue); // Event emitted when a new task is added
     event TaskCanceled(uint256 taskId); // Event emitted when a task is cancelled
     event TaskChanged(uint256 taskId, string newTaskName, uint256 newTaskValue); // Event emitted when a task is changed
     event NewTaskOffer(uint256 offerId, uint256 taskId, address offeror); // Event emitted when a new offer is made
-    event TaskOfferCanceled(uint256 taskId, uint256 offerId); // Event emitted when an offer is cancelled
+    event TaskOfferCanceled(uint256 offerId); // Event emitted when an offer is cancelled
     event TaskOfferRated(uint256 offerId, address rater, uint256 rating); // Event emitted when an offer is rated
     event TaskAssigned(uint256 taskId, uint256 offerId, address performer); // Event emitted when a task is assigned
     event TaskCompleted(uint256 taskId); // Event emitted when a task is completed
@@ -151,6 +152,7 @@ contract Tasks {
     Membership private membershipContract; // Reference to the Membership contract
     Projects private projectsContract; // Reference to the Projects contract
     TokenManagement private tokenManagementContract; // Reference to the TokenManagement contract
+    AuthorizationManagement private authorizationManagementContract;
 
     // Modifier to ensure that task ID is valid
     modifier validTaskID(uint256 _taskId) {
@@ -159,15 +161,23 @@ contract Tasks {
         _;
     }
 
+    // Modifier to allow only authorized contracts to perform certain actions.
+    modifier onlyAuthorized() {
+        if (!authorizationManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
+        _;
+    }
+
     // Constructor to initialize the imported contracts
     constructor(
         Membership _membershipContract,
         Projects _projectsContract,
-        TokenManagement _tokenManagementContract
+        TokenManagement _tokenManagementContract,
+        AuthorizationManagement _authorizationManagementContract
     ) {
         membershipContract = _membershipContract;
         projectsContract = _projectsContract;
         tokenManagementContract = _tokenManagementContract;
+        authorizationManagementContract = _authorizationManagementContract;
     }
 
     // Function to add a new task to a project. This can only be called by the project manager
@@ -255,7 +265,6 @@ contract Tasks {
     function proposeTaskOffer(uint256 _taskId) external {
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
-
         if (tasks[_taskId].status != TaskStatus.OPEN) revert taskNotOpenForProposals();
         if (tasks[_taskId].hasProposed[msg.sender] == true) revert memberAlreadyProposed();
 
@@ -269,7 +278,6 @@ contract Tasks {
         newTaskOffer.taskOfferId = taskOfferCounter;
         newTaskOffer.taskId = _taskId;
         newTaskOffer.offeror = msg.sender;
-        newTaskOffer.isOpenForRating = true;
         newTaskOffer.isActive = true;
 
         emit NewTaskOffer(taskOfferCounter, _taskId, msg.sender);
@@ -280,13 +288,14 @@ contract Tasks {
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
 
-        if (tasks[_taskId].status == TaskStatus.OPEN || tasks[_taskId].status == TaskStatus.OPEN || tasks[_taskId].performer == address(0)) 
+        if (tasks[_taskId].status == TaskStatus.OPEN || tasks[_taskId].performer == address(0))
             revert taskNotOpenForPerformerRemovalProposals();
-        if (msg.sender == tasks[_taskId].performer) revert performerCannotProposeToRemoveThemselves();
-        if (tasks[_taskId].isRemovalProposalActive) revert removalProposalAlreadyActive(); 
+        if (msg.sender == tasks[_taskId].performer)
+            revert performerCannotProposeToRemoveThemselves();
+        if (tasks[_taskId].isRemovalProposalActive) revert removalProposalAlreadyActive();
 
         tasks[_taskId].isRemovalProposalActive = true;
-        
+
         performerRemovalOffer storage newRemovalOffer = tasks[_taskId].removalOffer;
         // newRemovalOffer.taskId = _taskId;
         newRemovalOffer.removalOfferor = msg.sender;
@@ -297,16 +306,15 @@ contract Tasks {
 
     // Function to cancel a task offer. This can only be called by the member who proposed the offer
     // The task offer must be open for rating
-    // It updates the task offer's isOpenForRating property to false, and emits an TaskOfferCanceled event
+    // It updates the task offer's isActive property to false, and emits an TaskOfferCanceled event
     function cancelTaskOffer(uint256 _offerId) external {
-        if (!taskOffers[_offerId].isOpenForRating) revert taskNotOpenForCancellation();
+        if (!taskOffers[_offerId].isActive) revert taskNotOpenForCancellation();
         if (taskOffers[_offerId].offeror != msg.sender) revert onlyPerformerCanCancel();
 
-        taskOffers[_offerId].isOpenForRating = false;
         taskOffers[_offerId].isActive = false;
         tasks[taskOffers[_offerId].taskId].hasProposed[msg.sender] = false;
 
-        emit TaskOfferCanceled(taskOffers[_offerId].taskId, _offerId);
+        emit TaskOfferCanceled(_offerId);
     }
 
     // Function to cancel of performer removal offer. Can only be called my the member to made the proposal
@@ -314,11 +322,11 @@ contract Tasks {
     function cancelPerformerRemovalOffer(uint256 _taskId) external {
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
-    
+
         performerRemovalOffer storage removalOffer = tasks[_taskId].removalOffer;
 
         if (msg.sender != removalOffer.removalOfferor) revert onlyProposerCanCancel();
-        if (!removalOffer.isOpenForRemovalRating || !tasks[_taskId].isRemovalProposalActive) 
+        if (!removalOffer.isOpenForRemovalRating || !tasks[_taskId].isRemovalProposalActive)
             revert performerRemovalOfferNotOpenForCancellation();
         if (removalOffer.numberOfRemovalRaters > 0) revert cannotCancelOnceVotingHasBegun();
 
@@ -331,24 +339,39 @@ contract Tasks {
 
     // Function to rate a task offer. This can only be called by a member
     // The task must be open and the offer must be open for rating
-    // The member must not have already rated this offer and the rating must be between 1 and 10
+    // The member must not have already rated this offer and the rating must be between 1 and MAX_RATING
     // It updates the offer's rating sum and number of raters, and emits a TaskOfferRated event
+    // function rateTaskOffer(uint256 _offerId, uint256 _rating) external {
+    //     if (tasks[taskOffers[_offerId].taskId].status != TaskStatus.OPEN)
+    //         revert taskNotOpenForRating();
+    //     if (taskOffers[_offerId].offeror == msg.sender) revert performerCannotRateOwnOffer();
+    //     if (!taskOffers[_offerId].isActive) revert offerNotActive();
+    //     if (_rating < MIN_RATING || _rating > MAX_RATING) revert ratingOutOfRange();
+    //     if ((tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] > 0)) {
+    //         taskOffers[_offerId].ratingSum -= tasks[taskOffers[_offerId].taskId].oldRating[
+    //             msg.sender
+    //         ];
+    //     } else {
+    //         taskOffers[_offerId].numberOfRaters++;
+    //         taskOffers[_offerId].raters[msg.sender] = true;
+    //     }
+    //     tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] = _rating;
+    //     taskOffers[_offerId].ratingSum += _rating;
+    //     emit TaskOfferRated(_offerId, msg.sender, _rating);
+    // }
     function rateTaskOffer(uint256 _offerId, uint256 _rating) external {
         if (tasks[taskOffers[_offerId].taskId].status != TaskStatus.OPEN)
             revert taskNotOpenForRating();
         if (taskOffers[_offerId].offeror == msg.sender) revert performerCannotRateOwnOffer();
         if (!taskOffers[_offerId].isActive) revert offerNotActive();
-        if (!taskOffers[_offerId].isOpenForRating) revert offerNotOpenForRating();
         if (_rating < MIN_RATING || _rating > MAX_RATING) revert ratingOutOfRange();
-        if ((tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] > 0)) {
-            taskOffers[_offerId].ratingSum -= tasks[taskOffers[_offerId].taskId].oldRating[
-                msg.sender
-            ];
+        if ((taskOffers[_offerId].oldRating[msg.sender] > 0)) {
+            taskOffers[_offerId].ratingSum -= taskOffers[_offerId].oldRating[msg.sender];
         } else {
             taskOffers[_offerId].numberOfRaters++;
             taskOffers[_offerId].raters[msg.sender] = true;
         }
-        tasks[taskOffers[_offerId].taskId].oldRating[msg.sender] = _rating;
+        taskOffers[_offerId].oldRating[msg.sender] = _rating;
         taskOffers[_offerId].ratingSum += _rating;
         emit TaskOfferRated(_offerId, msg.sender, _rating);
     }
@@ -356,25 +379,25 @@ contract Tasks {
     function ratePerformerRemovalOffer(uint256 _taskId, uint256 _rating) external {
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
-        performerRemovalOffer storage removalOffer = tasks[_taskId].removalOffer;  
+        performerRemovalOffer storage removalOffer = tasks[_taskId].removalOffer;
         if (!removalOffer.isOpenForRemovalRating) revert performerRemovalOfferNotOpenForRating();
         if (msg.sender == tasks[_taskId].performer) revert performerCannotRateAgainstThemselves();
         if (_rating < MIN_RATING || _rating > MAX_RATING) revert ratingOutOfRange();
 
         if ((removalOffer.oldRemovalRating[msg.sender] > 0)) {
-           removalOffer.removalRatingSum -= removalOffer.oldRemovalRating[msg.sender];
+            removalOffer.removalRatingSum -= removalOffer.oldRemovalRating[msg.sender];
         } else {
             removalOffer.numberOfRemovalRaters++;
             removalOffer.removalRaters[msg.sender] = true;
         }
-        
+
         removalOffer.oldRemovalRating[msg.sender] = _rating;
         removalOffer.removalRatingSum += _rating;
-        emit PerformerRemovalOfferRated(_taskId, msg.sender, _rating);    
+        emit PerformerRemovalOfferRated(_taskId, msg.sender, _rating);
     }
 
     // Function to assign the task to a member who has the highest rating on the task offer.
-    // The task must be open, and the highest rating must be at least 7.
+    // The task must be open, and the highest rating must be at least MIN_AVG_RATING.
     // If a suitable offer is found, the task status is updated to IN_PROGRESS, and the task's performer and assignedOfferId are set.
     // Emits a TaskAssigned event upon successful assignment.
     function assignTask(uint256 _taskId) external {
@@ -392,14 +415,14 @@ contract Tasks {
         for (uint256 i = 0; i < taskToTaskOffer[_taskId].length; i++) {
             uint256 offerId = taskToTaskOffer[_taskId][i];
             TaskOffer storage offer = taskOffers[offerId];
-            if  (!offer.isActive) continue;
+            if (!offer.isActive) continue;
             // Ensure that there are at least two raters for this offer.
-            if (offer.numberOfRaters >= 2) {
+            if (offer.numberOfRaters >= MIN_RAITNGS_PER_OFFER) {
                 // Calculate the average rating for this offer.
                 uint256 averageRating = offer.ratingSum / offer.numberOfRaters;
 
-                // If the average rating is at least 7 and it is higher than the current highest rating, update the highest rating and corresponding offer ID.
-                if (averageRating >= 7 && averageRating > highestRating) {
+                // If the average rating is at least MIN_AVG_RATING and it is higher than the current highest rating, update the highest rating and corresponding offer ID.
+                if (averageRating >= MIN_AVG_RATING && averageRating > highestRating) {
                     highestRating = averageRating;
                     highestRatedOfferId = offerId;
                 }
@@ -411,7 +434,7 @@ contract Tasks {
             revert insufficientTotalRatersForAllOffers();
         }
 
-        // Check if a suitable task offer (average rating of at least 7) was found.
+        // Check if a suitable task offer (average rating of at least MIN_AVG_RATING) was found.
         if (highestRatedOfferId == 0) revert noSuitableOffer();
 
         // If a suitable offer was found, update the task status, assign the task to the member, and save the task offer ID.
@@ -421,7 +444,7 @@ contract Tasks {
         tasks[_taskId].assignedOfferId = highestRatedOfferId;
         for (uint i = 0; i < taskToTaskOffer[_taskId].length; i++) {
             TaskOffer storage offer = taskOffers[taskToTaskOffer[_taskId][i]];
-            if (!offer.isActive) continue; 
+            if (!offer.isActive) continue;
             offer.isActive = false;
         }
 
@@ -433,47 +456,46 @@ contract Tasks {
         // Check if the task is open.
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
- 
+
         performerRemovalOffer storage removalOffer = tasks[_taskId].removalOffer;
 
-        // Ensure that there are at least two raters for this offer.
+        // Ensure that there are at least MIN_INDIVIDUAL_RATERS_COUNT raters for this offer.
         if (removalOffer.numberOfRemovalRaters < MIN_INDIVIDUAL_RATERS_COUNT) {
             revert insufficientNumberOfRaters();
         }
         // Calculate the average rating for this offer.
         uint256 averageRating = removalOffer.removalRatingSum / removalOffer.numberOfRemovalRaters;
-        // If the average rating is at least 7 and it is higher than the current highest rating, update the highest rating and corresponding offer ID.
+        // If the average rating is at least MIN_AVG_RATING and it is higher than the current highest rating, update the highest rating and corresponding offer ID.
         if (averageRating < MIN_AVG_RATING) {
             revert averageRatingTooLow();
         }
 
-         // Check if a suitable task offer (average rating of at least 7) was found.
+        // Check if a suitable task offer (average rating of at least MIN_AVG_RATING) was found.
         removalOffer.isOpenForRemovalRating = false;
         removeTaskPerformer(_taskId);
         emit TaskPerformerVotedOut(_taskId);
     }
 
     function taskPerformerResign(uint256 _taskId) external {
-       if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
+        if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
 
         if (msg.sender != tasks[_taskId].performer) revert onlyProposalCreator();
 
-         removeTaskPerformer(_taskId);
-         emit TaskPerformerResigned(_taskId);
+        removeTaskPerformer(_taskId);
+        emit TaskPerformerResigned(_taskId);
     }
 
-    function removeTaskPerformer (uint256 _taskId) private {
+    function removeTaskPerformer(uint256 _taskId) private {
         tasks[_taskId].performer = address(0);
         tasks[_taskId].status = TaskStatus.OPEN;
-        membershipContract.assignTaskToMember(address(0));
-        tasks[_taskId].assignedOfferId = 0; 
+        tasks[_taskId].assignedOfferId = 0;
 
         for (uint256 i = 0; i < taskToTaskOffer[_taskId].length; i++) {
             address proposer = taskOffers[taskToTaskOffer[_taskId][i]].offeror;
             tasks[_taskId].hasProposed[proposer] = false;
         }
-   }
+    }
 
     // Function to complete a task.
     // This function can only be called by the performer of the task and only for an assigned task.
@@ -486,7 +508,6 @@ contract Tasks {
         if (tasks[_taskId].assignedOfferId < 1) revert taskNotAssigned(); // I don't think you need this case, but ask Choshen
 
         if (tasks[_taskId].performer != msg.sender) revert onlyAssignedPerformerCanComplete();
-        if (!tasks[_taskId].hasProposed[msg.sender]) revert userHasNotProposed();
         // if (tasks[_taskId].status != TaskStatus.IN_PROGRESS) revert taskNotAssigned();
         // if (tasks[_taskId].status != TaskStatus.IN_PROGRESS) revert taskNotInProgress(); //DELETE IF TEST WORKS
         // Update the task's status and increment the verification ID counter.
@@ -501,7 +522,7 @@ contract Tasks {
 
     // Function to rate a completed task.
     // The task must be in VERIFICATION status, and the rater cannot be the performer of the task.
-    // The rater must not have already rated this task, and the rating must be between 1 and 10.
+    // The rater must not have already rated this task, and the rating must be between 1 and MAX_RATING.
     // Updates the task's completion rating sum and number of completion raters, and emits a TaskExecutionRated event.
     function rateCompletedTask(uint256 _taskId, uint256 _rating) external {
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
@@ -509,7 +530,7 @@ contract Tasks {
         if (tasks[_taskId].status != TaskStatus.VERIFICATION) revert taskNotCompleted();
 
         if (tasks[_taskId].performer == msg.sender) revert performerCannotRateOwnTask();
-        if (_rating == 0 || _rating > 10) revert ratingOutOfRange();
+        if (_rating == 0 || _rating > MAX_RATING) revert ratingOutOfRange();
         if (verificationRaters[tasks[_taskId].verificationID][msg.sender]) {
             tasks[_taskId].completionRatingSum -= tasks[_taskId].oldRating[msg.sender];
         } else {
@@ -527,19 +548,20 @@ contract Tasks {
 
     // Function to verify a task.
     // The task must be in the VERIFICATION status, and there must be at least two ratings.
-    // If the average rating is at least 7, the task status is updated to VERIFIED and the completion process is triggered. Otherwise, it is reset to IN_PROGRESS.
+    // If the average rating is at least MIN_AVG_RATING, the task status is updated to VERIFIED and the completion process is triggered. Otherwise, it is reset to IN_PROGRESS.
     // Emits a TaskVerified event upon successful task verification.
     function verifyTask(uint256 _taskId) external {
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
         if (tasks[_taskId].status != TaskStatus.VERIFICATION) revert taskNotInVerificationStage();
-        if (tasks[_taskId].numberOfCompletionRaters < 2) revert notEnoughRatings();
+        if (tasks[_taskId].numberOfCompletionRaters < MIN_RAITNGS_PER_OFFER)
+            revert notEnoughRatings();
 
         uint256 taskAvg = tasks[_taskId].completionRatingSum /
             tasks[_taskId].numberOfCompletionRaters;
         membershipContract.updateTasksAvg(tasks[_taskId].performer, _taskId, taskAvg);
 
-        if (taskAvg >= 7) {
+        if (taskAvg >= MIN_AVG_RATING) {
             tasks[_taskId].status = TaskStatus.VERIFIED;
             address _projectManager = projectsContract.getProjectManager(
                 (tasks[_taskId].projectId)
@@ -560,7 +582,7 @@ contract Tasks {
     }
 
     // Function that returns the details of a task offer.
-    // The returned values include: taskOfferId, taskId, offeror, ratingSum, numberOfRaters, isOpenForRating, and isActive.
+    // The returned values include: taskOfferId, taskId, offeror, ratingSum, numberOfRaters, and isActive.
     function getTaskOfferDetails(
         uint256 _taskOfferId
     )
@@ -572,7 +594,6 @@ contract Tasks {
             address offeror,
             uint256 ratingSum,
             uint256 numberOfRaters,
-            bool isOpenForRating,
             bool isActive
         )
     {
@@ -583,7 +604,6 @@ contract Tasks {
             taskOffer.offeror,
             taskOffer.ratingSum,
             taskOffer.numberOfRaters,
-            taskOffer.isOpenForRating,
             taskOffer.isActive
         );
     }

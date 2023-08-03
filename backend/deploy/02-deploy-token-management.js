@@ -7,11 +7,9 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deployer } = await getNamedAccounts()
 
     log("----------------------------------------------------")
-    const membership = await get("Membership")
-    const solutions = await get("Solutions")
-    const tokenManagement = await get("TokenManagement")
-    const arguments = [membership.address, solutions.address, tokenManagement.address]
-    const projects = await deploy("Projects", {
+    const authorizationManagement = await get("AuthorizationManagement")
+    const arguments = [authorizationManagement.address]
+    const tokenManagement = await deploy("TokenManagement", {
         from: deployer,
         args: arguments,
         log: true,
@@ -21,8 +19,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     // Verify the deployment
     if (!developmentChains.includes(network.name) && process.env.FTMSCAN_API_KEY) {
         log("Verifying...")
-        await verify(projects.address, arguments)
+        await verify(tokenManagement.address, arguments)
     }
 }
 
-module.exports.tags = ["all", "projects", "main"]
+module.exports.tags = ["all", "tokenmanagement", "main"]

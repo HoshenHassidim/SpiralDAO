@@ -2,14 +2,20 @@
 pragma solidity ^0.8.0;
 
 import "./Membership.sol";
+import "./AuthorizationManagement.sol";
 
 contract Problems {
     // This is a reference to the external Membership contract
     Membership private membershipContract;
+    AuthorizationManagement private authorizationManagementContract;
 
     // The constructor function is called once when the contract is deployed
-    constructor(Membership _membershipContract) {
+    constructor(
+        Membership _membershipContract,
+        AuthorizationManagement _authorizationManagementContract
+    ) {
         membershipContract = _membershipContract;
+        authorizationManagementContract = _authorizationManagementContract;
     }
 
     // The Problem struct defines the structure for each problem
@@ -33,10 +39,17 @@ contract Problems {
     error problemClosedForRating();
     error ratingOutOfRange();
     error problemProposerCannotRate();
-    error userNameAlreadyExists();
+    error nameAlreadyExists();
     error onlyCreatorCanChangeProblemName();
     error cannotChangeNameAfterProblemHasBeenRated();
     error problemDoesNotExist();
+    error mustBeAuthorised();
+
+    // Modifier to allow only authorized contracts to perform certain actions.
+    modifier onlyAuthorized() {
+        if (!authorizationManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
+        _;
+    }
 
     // This is a counter for the problems raised, serving as the unique identifier for each problem
     uint256 private problemCounter;
@@ -95,6 +108,28 @@ contract Problems {
         emit ProblemCancelled(_problemId); //Event emitted
     }
 
+    // Function to change the name of a problem
+    function changeProblemName(uint256 _problemId, string calldata _newName) external {
+        if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID(); //If the problem id is less than 0 or greater than the problem counter, an error will be emitted
+        if (bytes(_newName).length == 0) revert nameRequired(); //If the number of characters entered is 0, an error will be emitted
+        if (problemNames[_newName]) revert nameAlreadyExists(); //If the problem name for the problem entered already exists inside the problemNames mapping, an error will occur
+
+        Problem storage problem = problems[_problemId]; //the problem entered is now saved into a variable
+
+        if (msg.sender != problem.creator) revert onlyCreatorCanChangeProblemName(); //If the person calling the function is not the problem creator, an error will occur
+        if (problem.ratingCount != 0) revert cannotChangeNameAfterProblemHasBeenRated(); //If there are people who have already rated the problem, an error will occur
+
+        // Delete the old name from the problemNames mapping
+        delete problemNames[problem.name]; //delete the old problem name from the problemNames mapping
+        // delete problems[_problemId]; //ETHAN SUGGESTION - ADD WHEN CHOSHEN APPROVES
+        // Update the problem's name
+        problem.name = _newName; //name property changed to new name
+        // Mark the new name as used in the problemNames mapping
+        problemNames[_newName] = true; //name property set to true inside the problemNames mapping
+
+        emit ProblemChanged(_problemId, _newName); //Event emitted
+    }
+
     // This function allows a member to rate a problem
     function rateProblem(uint256 _problemId, uint256 _rating) external {
         if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange(); //If rating is less than 1 or higher than 10, an error will occur
@@ -118,7 +153,31 @@ contract Problems {
     }
 
     // This function checks if a problem meets certain rating criteria
-    function meetsRatingCriteria(uint256 _problemId) external view returns (bool) {
+    function meetsRatingCriteria(uint256 _problemId) external onlyAuthorized returns (bool) {
+        if (bytes(problems[_problemId].name).length <= 0) revert problemDoesNotExist(); //If the problem entered doesn't have a name (it doesn't exist) then an error is emitted
+        if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID(); //If the problem id is less than 0 or greater than the problem counter, an error will be emitted
+        Problem storage problem = problems[_problemId]; //problem entered is now saved in a variable
+        if (!problem.openForRating) revert problemClosedForRating(); //If the openForRating variable is false, an error will occur as the problem is not open for rating
+
+        // The problem must have at least MIN_RATING_COUNT ratings
+        if (problem.ratingCount < MIN_RATING_COUNT) {
+            //If the rating count for the problem is less than the minimum rating count any problem to move on...
+            return false;
+        }
+
+        // The average rating must be at least MIN_RATING_AVERAGE
+        if ((problem.ratingSum / problem.ratingCount) < MIN_RATING_AVERAGE) {
+            //If the average rating for the problem is less than the minimum rating average for the problem to move on to the next step....
+            return false;
+        }
+
+        problem.openForRating = false;
+
+        return true;
+    }
+
+    // This function checks if a problem meets certain rating criteria
+    function viewMeetsRatingCriteria(uint256 _problemId) external view returns (bool) {
         if (bytes(problems[_problemId].name).length <= 0) revert problemDoesNotExist(); //If the problem entered doesn't have a name (it doesn't exist) then an error is emitted
         if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID(); //If the problem id is less than 0 or greater than the problem counter, an error will be emitted
         Problem storage problem = problems[_problemId]; //problem entered is now saved in a variable
@@ -136,28 +195,6 @@ contract Problems {
         }
 
         return true;
-    }
-
-    // Function to change the name of a problem
-    function changeProblemName(uint256 _problemId, string calldata _newName) external {
-        if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID(); //If the problem id is less than 0 or greater than the problem counter, an error will be emitted
-        if (bytes(_newName).length == 0) revert nameRequired(); //If the number of characters entered is 0, an error will be emitted
-        if (problemNames[_newName]) revert userNameAlreadyExists(); //If the problem name for the problem entered already exists inside the problemNames mapping, an error will occur
-
-        Problem storage problem = problems[_problemId]; //the problem entered is now saved into a variable
-
-        if (msg.sender != problem.creator) revert onlyCreatorCanChangeProblemName(); //If the person calling the function is not the problem creator, an error will occur
-        if (problem.ratingCount != 0) revert cannotChangeNameAfterProblemHasBeenRated(); //If there are people who have already rated the problem, an error will occur
-
-        // Delete the old name from the problemNames mapping
-        delete problemNames[problem.name]; //delete the old problem name from the problemNames mapping
-        // delete problems[_problemId]; //ETHAN SUGGESTION - ADD WHEN CHOSHEN APPROVES
-        // Update the problem's name
-        problem.name = _newName; //name property changed to new name
-        // Mark the new name as used in the problemNames mapping
-        problemNames[_newName] = true; //name property set to true inside the problemNames mapping
-
-        emit ProblemChanged(_problemId, _newName); //Event emitted
     }
 
     // View function to see details about a problem

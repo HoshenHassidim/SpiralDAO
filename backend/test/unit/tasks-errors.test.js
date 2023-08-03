@@ -2,10 +2,11 @@ const { expect } = require("chai")
 const { ethers } = require("hardhat")
 let owner, member1, member2, accounts
 describe("Tasks Errors", function () {
-    let problems, solutions, membership, tokenManagement, projects, tasks
+    let problems, solutions, membership, tokenManagement, projects, tasks, authorizationManagement
     let projectManagerAccount, projectId
 
     beforeEach(async function () {
+        const AuthorizationManagement = await ethers.getContractFactory("AuthorizationManagement")
         const TokenManagement = await ethers.getContractFactory("TokenManagement")
         const Membership = await ethers.getContractFactory("Membership")
         const Problems = await ethers.getContractFactory("Problems")
@@ -13,29 +14,51 @@ describe("Tasks Errors", function () {
         const Projects = await ethers.getContractFactory("Projects")
         const Tasks = await ethers.getContractFactory("Tasks")
 
-        tokenManagement = await TokenManagement.deploy()
+        authorizationManagement = await AuthorizationManagement.deploy()
+        await authorizationManagement.deployed()
+
+        tokenManagement = await TokenManagement.deploy(authorizationManagement.address)
         await tokenManagement.deployed()
 
-        membership = await Membership.deploy(tokenManagement.address)
+        membership = await Membership.deploy(authorizationManagement.address)
         await membership.deployed()
 
-        problems = await Problems.deploy(membership.address)
+        problems = await Problems.deploy(membership.address, authorizationManagement.address)
         await problems.deployed()
 
-        solutions = await Solutions.deploy(membership.address, problems.address)
+        solutions = await Solutions.deploy(
+            membership.address,
+            problems.address,
+            authorizationManagement.address
+        )
         await solutions.deployed()
 
         projects = await Projects.deploy(
             membership.address,
+            authorizationManagement.address,
             solutions.address,
             tokenManagement.address
         )
         await projects.deployed()
 
-        tasks = await Tasks.deploy(membership.address, projects.address, tokenManagement.address)
+        tasks = await Tasks.deploy(
+            membership.address,
+            projects.address,
+            tokenManagement.address,
+            authorizationManagement.address
+        )
         await tasks.deployed()
 
         accounts = await ethers.getSigners()
+
+        await authorizationManagement
+            .connect(accounts[0])
+            .authorizeContract(tokenManagement.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(problems.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(solutions.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(projects.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(tasks.address)
+
         await problems.connect(accounts[0]).raiseProblem("Problem 1")
         const problemId = await problems.getProblemCounter()
         for (let i = 1; i < 4; i++) {
@@ -48,15 +71,13 @@ describe("Tasks Errors", function () {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
         }
 
-        await tokenManagement.connect(accounts[0]).authorizeContract(projects.address)
-        await projects.connect(accounts[0]).proposeOffer(1)
-        await projects.connect(accounts[2]).rateOffer(1, 10)
-        await projects.connect(accounts[3]).rateOffer(1, 10)
-        await projects.connect(accounts[4]).rateOffer(1, 10)
-        await projects.connect(accounts[5]).rateOffer(1, 10)
+        await projects.connect(accounts[0]).proposeManagementOffer(1)
+        await projects.connect(accounts[2]).ratelManagementOffer(1, 10)
+        await projects.connect(accounts[3]).ratelManagementOffer(1, 10)
+        await projects.connect(accounts[4]).ratelManagementOffer(1, 10)
+        await projects.connect(accounts[5]).ratelManagementOffer(1, 10)
 
         await projects.assignProjectManager(1)
-        await tokenManagement.connect(accounts[0]).authorizeContract(tasks.address)
 
         let owner, member1, member2
 
@@ -260,29 +281,6 @@ describe("Tasks Errors", function () {
         )
     })
 
-    // Tests for any other additional errors
-
-    // ...Previous tests
-
-    it("reverts if wrong task status when completing", async () => {
-        await tasks.connect(accounts[0]).addTask(1, "Task 15", 100)
-
-        await tasks.connect(accounts[1]).proposeTaskOffer(1)
-        const offerId = await tasks.connect(accounts[1]).getTaskOfferId(1)
-        await tasks.connect(accounts[2]).rateTaskOffer(offerId, 10) // Low rating
-        await tasks.connect(accounts[3]).rateTaskOffer(offerId, 10)
-        await tasks.connect(accounts[4]).rateTaskOffer(offerId, 10)
-        await tasks.connect(accounts[5]).rateTaskOffer(offerId, 10)
-
-        await tasks.assignTask(1)
-
-        await tasks.connect(accounts[1]).cancelTaskOffer(1)
-
-        await expect(tasks.connect(accounts[1]).completeTask(1)).to.be.revertedWith(
-            "userHasNotProposed"
-        )
-    })
-
     it("reverts if performer rates own task", async () => {
         await tasks.connect(accounts[0]).addTask(1, "Task 16", 100)
 
@@ -361,31 +359,25 @@ describe("Tasks Errors", function () {
     // Add any other additional test cases
 
     it("Should have transferred the tokens to the performer & administrator", async function () {
-
         await tasks.connect(accounts[0]).addTask(0, "Task 1", 100)
         await tasks.connect(accounts[1]).proposeTaskOffer(1)
         await tasks.connect(accounts[2]).rateTaskOffer(1, 10)
         await tasks.connect(accounts[3]).rateTaskOffer(1, 10)
         await tasks.connect(accounts[4]).rateTaskOffer(1, 10)
         await tasks.connect(accounts[5]).rateTaskOffer(1, 10)
-        await tasks.assignTask(1);
-        await tasks.connect(accounts[1]).completeTask(1);
-        await tasks.connect(accounts[2]).rateCompletedTask(1, 10);
-        await tasks.connect(accounts[3]).rateCompletedTask(1, 10);
-        await tasks.verifyTask(1);
+        await tasks.assignTask(1)
+        await tasks.connect(accounts[1]).completeTask(1)
+        await tasks.connect(accounts[2]).rateCompletedTask(1, 10)
+        await tasks.connect(accounts[3]).rateCompletedTask(1, 10)
+        await tasks.verifyTask(1)
         const taskDetails = await tasks.getTaskDetails(0)
         let performerBalance = await tokenManagement.viewBalance(
             accounts[1].address,
             taskDetails[1]
         )
-        let adminBalance = await tokenManagement.viewBalance(
-            accounts[0].address,
-            taskDetails[1]
-        )
+        let adminBalance = await tokenManagement.viewBalance(accounts[0].address, taskDetails[1])
 
         expect(performerBalance).to.equal(110)
         expect(adminBalance).to.equal(20)
     })
-
-});
-
+})

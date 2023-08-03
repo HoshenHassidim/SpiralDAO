@@ -2,7 +2,7 @@ const { expect } = require("chai")
 const { ethers } = require("hardhat")
 
 describe("Membership", function () {
-    let Membership, membership, deployer, addr1
+    let Membership, membership, deployer, addr1, authorizationManagement
     let deployerAddress, addr1Address
 
     before(async function () {
@@ -14,13 +14,13 @@ describe("Membership", function () {
     })
 
     beforeEach(async function () {
-        const TokenManagement = await ethers.getContractFactory("TokenManagement")
+        const AuthorizationManagement = await ethers.getContractFactory("AuthorizationManagement")
         const Membership = await ethers.getContractFactory("Membership")
 
-        tokenManagement = await TokenManagement.deploy()
-        await tokenManagement.deployed()
+        authorizationManagement = await AuthorizationManagement.deploy()
+        await authorizationManagement.deployed()
 
-        membership = await Membership.deploy(tokenManagement.address)
+        membership = await Membership.deploy(authorizationManagement.address)
         await membership.deployed()
     })
 
@@ -64,7 +64,7 @@ describe("Membership", function () {
             await membership.connect(deployer).registerMember(oldUsername)
             await membership.connect(addr1).registerMember(newUsername)
             await expect(membership.connect(addr1).changeName(oldUsername)).to.be.revertedWith(
-               "UsernameAlreadyExists" 
+                "UsernameAlreadyExists"
             )
         })
     })

@@ -3,7 +3,15 @@ require("dotenv").config()
 const fs = require("fs")
 const { network } = require("hardhat")
 
-const Contracts = ["Membership", "Problems", "Solutions", "TokenManagement", "Projects", "Tasks"]
+const Contracts = [
+    "AuthorizationManagement",
+    "TokenManagement",
+    "Membership",
+    "Problems",
+    "Solutions",
+    "Projects",
+    "Tasks",
+]
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
     const { get } = deployments

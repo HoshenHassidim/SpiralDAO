@@ -15,12 +15,20 @@
         "internalType": "contract TokenManagement",
         "name": "_tokenManagementContract",
         "type": "address"
+      },
+      {
+        "internalType": "contract AuthorizationManagement",
+        "name": "_authorizationManagementContract",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
   { "inputs": [], "name": "addressHasNotProposed", "type": "error" },
+  { "inputs": [], "name": "averageRatingTooLow", "type": "error" },
+  { "inputs": [], "name": "cannotCancelOnceVotingHasBegun", "type": "error" },
+  { "inputs": [], "name": "insufficientNumberOfRaters", "type": "error" },
   {
     "inputs": [],
     "name": "insufficientTotalRatersForAllOffers",
@@ -28,18 +36,43 @@
   },
   { "inputs": [], "name": "invalidID", "type": "error" },
   { "inputs": [], "name": "memberAlreadyProposed", "type": "error" },
+  { "inputs": [], "name": "mustBeAuthorised", "type": "error" },
   { "inputs": [], "name": "mustBeProjectManager", "type": "error" },
   { "inputs": [], "name": "nameAlreadyExists", "type": "error" },
   { "inputs": [], "name": "nameRequired", "type": "error" },
   { "inputs": [], "name": "noSuitableOffer", "type": "error" },
   { "inputs": [], "name": "notEnoughRatings", "type": "error" },
+  { "inputs": [], "name": "offerNotActive", "type": "error" },
   { "inputs": [], "name": "offerNotOpenForRating", "type": "error" },
   { "inputs": [], "name": "onlyAssignedPerformerCanComplete", "type": "error" },
   { "inputs": [], "name": "onlyPerformerCanCancel", "type": "error" },
+  { "inputs": [], "name": "onlyProposalCreator", "type": "error" },
+  { "inputs": [], "name": "onlyProposerCanCancel", "type": "error" },
+  {
+    "inputs": [],
+    "name": "performerCannotProposeToRemoveThemselves",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "performerCannotRateAgainstThemselves",
+    "type": "error"
+  },
   { "inputs": [], "name": "performerCannotRateOwnOffer", "type": "error" },
   { "inputs": [], "name": "performerCannotRateOwnTask", "type": "error" },
+  {
+    "inputs": [],
+    "name": "performerRemovalOfferNotOpenForCancellation",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "performerRemovalOfferNotOpenForRating",
+    "type": "error"
+  },
   { "inputs": [], "name": "proposalsExist", "type": "error" },
   { "inputs": [], "name": "ratingOutOfRange", "type": "error" },
+  { "inputs": [], "name": "removalProposalAlreadyActive", "type": "error" },
   {
     "inputs": [],
     "name": "taskCannotBeChangedProposalsNeedToBeExecuted",
@@ -51,10 +84,34 @@
   { "inputs": [], "name": "taskNotOpenForAssigning", "type": "error" },
   { "inputs": [], "name": "taskNotOpenForCancellation", "type": "error" },
   { "inputs": [], "name": "taskNotOpenForChanges", "type": "error" },
+  {
+    "inputs": [],
+    "name": "taskNotOpenForPerformerRemovalProposals",
+    "type": "error"
+  },
   { "inputs": [], "name": "taskNotOpenForProposals", "type": "error" },
   { "inputs": [], "name": "taskNotOpenForRating", "type": "error" },
   { "inputs": [], "name": "userHasNotProposed", "type": "error" },
   { "inputs": [], "name": "valueTooLow", "type": "error" },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "taskId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "proposer",
+        "type": "address"
+      }
+    ],
+    "name": "NewPerformerRemovalOffer",
+    "type": "event"
+  },
   {
     "anonymous": false,
     "inputs": [
@@ -109,6 +166,44 @@
       }
     ],
     "name": "NewTaskOffer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "taskId",
+        "type": "uint256"
+      }
+    ],
+    "name": "PerformerRemovalOfferCancelled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "taskId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "rater",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "rating",
+        "type": "uint256"
+      }
+    ],
+    "name": "PerformerRemovalOfferRated",
     "type": "event"
   },
   {
@@ -218,12 +313,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "taskId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "offerId",
         "type": "uint256"
       }
@@ -254,6 +343,32 @@
       }
     ],
     "name": "TaskOfferRated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "taskId",
+        "type": "uint256"
+      }
+    ],
+    "name": "TaskPerformerResigned",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "taskId",
+        "type": "uint256"
+      }
+    ],
+    "name": "TaskPerformerVotedOut",
     "type": "event"
   },
   {
@@ -299,6 +414,15 @@
     "inputs": [
       { "internalType": "uint256", "name": "_taskId", "type": "uint256" }
     ],
+    "name": "cancelPerformerRemovalOffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_taskId", "type": "uint256" }
+    ],
     "name": "cancelTask",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -320,6 +444,15 @@
       { "internalType": "uint256", "name": "_newTaskValue", "type": "uint256" }
     ],
     "name": "changeTask",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_taskId", "type": "uint256" }
+    ],
+    "name": "checkPerformerRemovalOfferRatings",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -381,7 +514,16 @@
         "name": "status",
         "type": "uint8"
       },
-      { "internalType": "uint256", "name": "verificationID", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "verificationID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isRemovalProposalActive",
+        "type": "bool"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -401,7 +543,7 @@
         "name": "numberOfRaters",
         "type": "uint256"
       },
-      { "internalType": "bool", "name": "isOpenForRating", "type": "bool" }
+      { "internalType": "bool", "name": "isActive", "type": "bool" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -488,6 +630,15 @@
   },
   {
     "inputs": [
+      { "internalType": "uint256", "name": "_taskId", "type": "uint256" }
+    ],
+    "name": "proposerRemovePerformerOffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       { "internalType": "uint256", "name": "_taskId", "type": "uint256" },
       { "internalType": "uint256", "name": "_rating", "type": "uint256" }
     ],
@@ -498,10 +649,29 @@
   },
   {
     "inputs": [
+      { "internalType": "uint256", "name": "_taskId", "type": "uint256" },
+      { "internalType": "uint256", "name": "_rating", "type": "uint256" }
+    ],
+    "name": "ratePerformerRemovalOffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       { "internalType": "uint256", "name": "_offerId", "type": "uint256" },
       { "internalType": "uint256", "name": "_rating", "type": "uint256" }
     ],
     "name": "rateTaskOffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_taskId", "type": "uint256" }
+    ],
+    "name": "taskPerformerResign",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

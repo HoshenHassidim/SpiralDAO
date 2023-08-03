@@ -2,17 +2,22 @@
   {
     "inputs": [
       {
-        "internalType": "address",
+        "internalType": "contract Membership",
         "name": "_membershipContract",
         "type": "address"
       },
       {
-        "internalType": "address",
+        "internalType": "contract AuthorizationManagement",
+        "name": "_authorizationManagementContract",
+        "type": "address"
+      },
+      {
+        "internalType": "contract Solutions",
         "name": "_solutionsContract",
         "type": "address"
       },
       {
-        "internalType": "address",
+        "internalType": "contract TokenManagement",
         "name": "_tokenManagementContract",
         "type": "address"
       }
@@ -20,7 +25,9 @@
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
+  { "inputs": [], "name": "DAONotOpenForProposals", "type": "error" },
   { "inputs": [], "name": "IDMustBePositive", "type": "error" },
+  { "inputs": [], "name": "cannotCancelOnceVotingBegins", "type": "error" },
   {
     "inputs": [],
     "name": "insufficientTotalRatersForAllOffers",
@@ -33,6 +40,8 @@
     "type": "error"
   },
   { "inputs": [], "name": "managerCannotRateOwnOffer", "type": "error" },
+  { "inputs": [], "name": "managerHasBeenAssigned", "type": "error" },
+  { "inputs": [], "name": "mustBeAuthorised", "type": "error" },
   { "inputs": [], "name": "notOpenForRating", "type": "error" },
   { "inputs": [], "name": "notOpenForRemovalProposals", "type": "error" },
   { "inputs": [], "name": "offerNotActive", "type": "error" },
@@ -112,31 +121,6 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "offerId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "projectId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "proposer",
-        "type": "address"
-      }
-    ],
-    "name": "NewOffer",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
         "name": "projectId",
         "type": "uint256"
       }
@@ -166,45 +150,7 @@
         "type": "address"
       }
     ],
-    "name": "NewRemovalOffer",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "offerId",
-        "type": "uint256"
-      }
-    ],
-    "name": "OfferCancelled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "offerId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "rater",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "rating",
-        "type": "uint256"
-      }
-    ],
-    "name": "OfferRated",
+    "name": "NewProjectManagerRemovalOffer",
     "type": "event"
   },
   {
@@ -236,7 +182,7 @@
         "type": "uint256"
       }
     ],
-    "name": "RemovalOfferCancelled",
+    "name": "ProjectManagerRemovalOfferCancelled",
     "type": "event"
   },
   {
@@ -261,7 +207,39 @@
         "type": "uint256"
       }
     ],
-    "name": "RemovalOfferRated",
+    "name": "ProjectManagerRemovalOfferRated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "projectId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProjectManagerResigned",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "removalOfferId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "projectId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProjectManagerVotedOut",
     "type": "event"
   },
   {
@@ -277,7 +255,7 @@
     "inputs": [
       { "internalType": "uint256", "name": "_offerId", "type": "uint256" }
     ],
-    "name": "cancelOffer",
+    "name": "cancelManagementOffer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -309,8 +287,33 @@
     "type": "function"
   },
   {
+    "inputs": [
+      { "internalType": "uint256", "name": "projectId", "type": "uint256" }
+    ],
+    "name": "doesProjectExist",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "projectId", "type": "uint256" }
+    ],
+    "name": "doesProjectHaveManager",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
-    "name": "getOfferCounter",
+    "name": "getManagementOfferCounter",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getManagementRemovalOfferCounter",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
@@ -325,13 +328,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getRemovalOfferCounter",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       { "internalType": "uint256", "name": "_projectId", "type": "uint256" }
     ],
@@ -341,10 +337,24 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "projectCounter",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       { "internalType": "uint256", "name": "_solutionId", "type": "uint256" }
     ],
-    "name": "proposeOffer",
+    "name": "proposeManagementOffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "proposeManagementOfferDAO",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -354,16 +364,6 @@
       { "internalType": "uint256", "name": "_projectId", "type": "uint256" }
     ],
     "name": "proposeRemoveManager",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "_offerId", "type": "uint256" },
-      { "internalType": "uint256", "name": "_rating", "type": "uint256" }
-    ],
-    "name": "rateOffer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -384,6 +384,16 @@
   },
   {
     "inputs": [
+      { "internalType": "uint256", "name": "_offerId", "type": "uint256" },
+      { "internalType": "uint256", "name": "_rating", "type": "uint256" }
+    ],
+    "name": "ratelManagementOffer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
       { "internalType": "uint256", "name": "_offerId", "type": "uint256" }
     ],
     "name": "viewOfferDetails",
@@ -393,7 +403,6 @@
       { "internalType": "address", "name": "", "type": "address" },
       { "internalType": "uint256", "name": "", "type": "uint256" },
       { "internalType": "uint256", "name": "", "type": "uint256" },
-      { "internalType": "bool", "name": "", "type": "bool" },
       { "internalType": "bool", "name": "", "type": "bool" }
     ],
     "stateMutability": "view",

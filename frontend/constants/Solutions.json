@@ -10,6 +10,11 @@
         "internalType": "contract Problems",
         "name": "_problemsContract",
         "type": "address"
+      },
+      {
+        "internalType": "contract AuthorizationManagement",
+        "name": "_authorizationManagementContract",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -18,6 +23,7 @@
   { "inputs": [], "name": "IDOutofRange", "type": "error" },
   { "inputs": [], "name": "creatorCannotRateOwnProblem", "type": "error" },
   { "inputs": [], "name": "invalidID", "type": "error" },
+  { "inputs": [], "name": "mustBeAuthorised", "type": "error" },
   { "inputs": [], "name": "nameAlreadyExists", "type": "error" },
   { "inputs": [], "name": "nameCannotBeEmpty", "type": "error" },
   { "inputs": [], "name": "onlySolutionCreatorCanPerform", "type": "error" },
@@ -120,6 +126,15 @@
       { "internalType": "uint256", "name": "_solutionId", "type": "uint256" }
     ],
     "name": "canBecomeProject",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_solutionId", "type": "uint256" }
+    ],
+    "name": "canBecomeProjectView",
     "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"

@@ -3,7 +3,7 @@ const { expect } = require("chai")
 
 describe("TokenManagement", function () {
     let admin, authorized, notAuthorized, problemCreator, solutionCreator, executor, manager
-    let tokenManagement, tokens
+    let tokenManagement, authorizationManagement, tokens
 
     beforeEach(async function () {
         // Get the Signers
@@ -12,25 +12,21 @@ describe("TokenManagement", function () {
 
         // Deploy the Tokens contract
         const Tokens = await ethers.getContractFactory("Tokens")
-        tokens = await Tokens.deploy("Test Token", "TST", admin.address)
+        tokens = await Tokens.deploy("SPIRALDAOTOKEN", "SDT", admin.address)
         await tokens.deployed()
+
+        // Deploy the AuthorizationManagement contract
+        const AuthorizationManagement = await ethers.getContractFactory("AuthorizationManagement")
+        authorizationManagement = await AuthorizationManagement.deploy()
+        await authorizationManagement.deployed()
 
         // Deploy the TokenManagement contract
         const TokenManagement = await ethers.getContractFactory("TokenManagement")
-        tokenManagement = await TokenManagement.deploy()
+        tokenManagement = await TokenManagement.deploy(authorizationManagement.address)
         await tokenManagement.deployed()
 
         // Authorize one account
-        await tokenManagement.authorizeContract(authorized.address)
-    })
-
-    it("should set the correct admin address", async function () {
-        expect(await tokenManagement.getAdmin()).to.equal(admin.address)
-    })
-
-    it("should authorize a contract correctly", async function () {
-        expect(await tokenManagement.isAuthorized(authorized.address)).to.equal(true)
-        expect(await tokenManagement.isAuthorized(notAuthorized.address)).to.equal(false)
+        await authorizationManagement.authorizeContract(authorized.address)
     })
 
     it("should create new project tokens correctly", async function () {
@@ -89,12 +85,6 @@ describe("TokenManagement", function () {
     })
 
     // New tests for error cases
-    it("should not authorize a zero address", async function () {
-        await expect(
-            tokenManagement.authorizeContract("0x0000000000000000000000000000000000000000")
-        ).to.be.revertedWith("addressCannotBeZero")
-    })
-
     it("should not create project token with zero address", async function () {
         await expect(
             tokenManagement
@@ -131,16 +121,9 @@ describe("TokenManagement", function () {
         ).to.be.revertedWith("taskValueMustBeGreaterThanZero")
     })
 
-
     it("should not view balance for zero address", async function () {
         await expect(
             tokenManagement.viewBalance("0x0000000000000000000000000000000000000000", 1)
-        ).to.be.revertedWith("addressCannotBeZero")
-    })
-
-    it("should not check authorization for zero address", async function () {
-        await expect(
-            tokenManagement.isAuthorized("0x0000000000000000000000000000000000000000")
         ).to.be.revertedWith("addressCannotBeZero")
     })
 })

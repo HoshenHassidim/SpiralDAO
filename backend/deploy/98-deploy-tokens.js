@@ -3,15 +3,11 @@ const { developmentChains } = require("../helper-hardhat-config")
 const { verify } = require("../utils/verify")
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
-    const { deploy, log, get } = deployments
+    const { deploy, log } = deployments
     const { deployer } = await getNamedAccounts()
-
+    const arguments = ["name", "sym", "0x0000000000000000000000000000000000000000"]
     log("----------------------------------------------------")
-    const membership = await get("Membership")
-    const projects = await get("Projects")
-    const tokenManagement = await get("TokenManagement")
-    const arguments = [membership.address, projects.address, tokenManagement.address]
-    const tasks = await deploy("Tasks", {
+    const tokens = await deploy("Tokens", {
         from: deployer,
         args: arguments,
         log: true,
@@ -21,8 +17,8 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     // Verify the deployment
     if (!developmentChains.includes(network.name) && process.env.FTMSCAN_API_KEY) {
         log("Verifying...")
-        await verify(tasks.address, arguments)
+        await verify(tokens.address, arguments)
     }
 }
 
-module.exports.tags = ["all", "tasks", "main"]
+// module.exports.tags = ["all", "tokens"]

@@ -1,10 +1,11 @@
 const { expect } = require("chai")
 
 describe("changeVote", function () {
-    let problems, solutions, membership, tokenManagement, projects, tasks
+    let problems, solutions, membership, tokenManagement, projects, tasks, authorizationManagement
     let accounts, projectManagerAccount, offerId, projectId
 
     before(async function () {
+        const AuthorizationManagement = await ethers.getContractFactory("AuthorizationManagement")
         const TokenManagement = await ethers.getContractFactory("TokenManagement")
         const Membership = await ethers.getContractFactory("Membership")
         const Problems = await ethers.getContractFactory("Problems")
@@ -12,34 +13,50 @@ describe("changeVote", function () {
         const Projects = await ethers.getContractFactory("Projects")
         const Tasks = await ethers.getContractFactory("Tasks")
 
-        tokenManagement = await TokenManagement.deploy()
+        authorizationManagement = await AuthorizationManagement.deploy()
+        await authorizationManagement.deployed()
+
+        tokenManagement = await TokenManagement.deploy(authorizationManagement.address)
         await tokenManagement.deployed()
 
-        membership = await Membership.deploy(tokenManagement.address)
+        membership = await Membership.deploy(authorizationManagement.address)
         await membership.deployed()
 
-        problems = await Problems.deploy(membership.address)
+        problems = await Problems.deploy(membership.address, authorizationManagement.address)
         await problems.deployed()
 
-        solutions = await Solutions.deploy(membership.address, problems.address)
+        solutions = await Solutions.deploy(
+            membership.address,
+            problems.address,
+            authorizationManagement.address
+        )
         await solutions.deployed()
 
         projects = await Projects.deploy(
             membership.address,
+            authorizationManagement.address,
             solutions.address,
             tokenManagement.address
         )
         await projects.deployed()
 
-        tasks = await Tasks.deploy(membership.address, projects.address, tokenManagement.address)
+        tasks = await Tasks.deploy(
+            membership.address,
+            projects.address,
+            tokenManagement.address,
+            authorizationManagement.address
+        )
         await tasks.deployed()
 
         accounts = await ethers.getSigners()
 
-        for (let i = 0; i < 8; i++) {
-            const name = String(i)
-            await membership.connect(accounts[i]).registerMember(name)
-        }
+        await authorizationManagement
+            .connect(accounts[0])
+            .authorizeContract(tokenManagement.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(problems.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(solutions.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(projects.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(tasks.address)
 
         await problems.connect(accounts[0]).raiseProblem("Problem 1")
     })
@@ -49,12 +66,12 @@ describe("changeVote", function () {
         for (let i = 1; i < 4; i++) {
             await problems.connect(accounts[i]).rateProblem(problemId, 6)
         }
-        expect(await problems.meetsRatingCriteria(problemId)).to.be.false
+        expect(await problems.viewMeetsRatingCriteria(problemId)).to.be.false
 
         for (let i = 1; i < 4; i++) {
             await problems.connect(accounts[i]).rateProblem(problemId, 9)
         }
-        expect(await problems.meetsRatingCriteria(problemId)).to.be.true
+        expect(await problems.viewMeetsRatingCriteria(problemId)).to.be.true
     })
 
     it("Should allow members to change their vote for solution", async function () {
@@ -77,25 +94,23 @@ describe("changeVote", function () {
     })
 
     it("Should allow members to change their rating for the management offer", async function () {
-        permission_b = await tokenManagement.isAuthorized(projects.address)
-        await tokenManagement.connect(accounts[0]).authorizeContract(projects.address)
-        permission_a = await tokenManagement.isAuthorized(projects.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(projects.address)
 
         projectManagerAccount = accounts[2]
-        await projects.connect(projectManagerAccount).proposeOffer(projectId)
+        await projects.connect(projectManagerAccount).proposeManagementOffer(projectId)
 
-        offerId = await projects.getOfferCounter()
+        offerId = await projects.getManagementOfferCounter()
 
         // Members rating the offer
         for (let i = 3; i < 7; i++) {
-            await projects.connect(accounts[i]).rateOffer(offerId, 6)
+            await projects.connect(accounts[i]).ratelManagementOffer(offerId, 6)
         }
         const offerDetails = await projects.viewOfferDetails(offerId)
         expect(offerDetails[3]).to.equal(24) // Total rating
         expect(offerDetails[4]).to.equal(4) // Total number of raters
 
         for (let i = 3; i < 7; i++) {
-            await projects.connect(accounts[i]).rateOffer(offerId, 9)
+            await projects.connect(accounts[i]).ratelManagementOffer(offerId, 9)
         }
         const offerDetails1 = await projects.viewOfferDetails(offerId)
 
@@ -108,9 +123,7 @@ describe("changeVote", function () {
     it("Should allow members to change their rate for the task offer", async function () {
         await projects.assignProjectManager(projectId)
 
-        permission_b = await tokenManagement.isAuthorized(tasks.address)
-        await tokenManagement.connect(accounts[0]).authorizeContract(tasks.address)
-        permission_a = await tokenManagement.isAuthorized(tasks.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(tasks.address)
 
         performerAccount = accounts[3]
         await tasks.connect(projectManagerAccount).addTask(projectId, "Task 1", 1000)
@@ -161,7 +174,7 @@ describe("changeVote", function () {
     it("Should allow members to change their rating for the management removal offer", async function () {
         removalProposer = accounts[7]
         await projects.connect(removalProposer).proposeRemoveManager(projectId)
-        removalOfferId = projects.getRemovalOfferCounter()
+        removalOfferId = projects.getManagementRemovalOfferCounter()
 
         // Members rating the offer
         for (let i = 3; i < 7; i++) {

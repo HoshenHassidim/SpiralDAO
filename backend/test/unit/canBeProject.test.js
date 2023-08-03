@@ -1,10 +1,11 @@
 const { expect } = require("chai")
 describe("canBecomeProject", function () {
-    let problems, solutions, membership, tokenManagement, projects, tasks
+    let problems, solutions, membership, tokenManagement, projects, tasks, authorizationManagement
     let accounts, projectManagerAccount, offerId
     let x
 
     before(async function () {
+        const AuthorizationManagement = await ethers.getContractFactory("AuthorizationManagement")
         const TokenManagement = await ethers.getContractFactory("TokenManagement")
         const Membership = await ethers.getContractFactory("Membership")
         const Problems = await ethers.getContractFactory("Problems")
@@ -12,27 +13,50 @@ describe("canBecomeProject", function () {
         const Projects = await ethers.getContractFactory("Projects")
         const Tasks = await ethers.getContractFactory("Tasks")
 
-        tokenManagement = await TokenManagement.deploy()
+        authorizationManagement = await AuthorizationManagement.deploy()
+        await authorizationManagement.deployed()
+
+        tokenManagement = await TokenManagement.deploy(authorizationManagement.address)
         await tokenManagement.deployed()
 
-        membership = await Membership.deploy(tokenManagement.address)
+        membership = await Membership.deploy(authorizationManagement.address)
         await membership.deployed()
 
-        problems = await Problems.deploy(membership.address)
+        problems = await Problems.deploy(membership.address, authorizationManagement.address)
         await problems.deployed()
 
-        solutions = await Solutions.deploy(membership.address, problems.address)
+        solutions = await Solutions.deploy(
+            membership.address,
+            problems.address,
+            authorizationManagement.address
+        )
         await solutions.deployed()
 
         projects = await Projects.deploy(
             membership.address,
+            authorizationManagement.address,
             solutions.address,
             tokenManagement.address
         )
         await projects.deployed()
 
-        tasks = await Tasks.deploy(membership.address, projects.address, tokenManagement.address)
+        tasks = await Tasks.deploy(
+            membership.address,
+            projects.address,
+            tokenManagement.address,
+            authorizationManagement.address
+        )
         await tasks.deployed()
+
+        accounts = await ethers.getSigners()
+
+        await authorizationManagement
+            .connect(accounts[0])
+            .authorizeContract(tokenManagement.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(problems.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(solutions.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(projects.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(tasks.address)
 
         accounts = await ethers.getSigners()
         x = 0

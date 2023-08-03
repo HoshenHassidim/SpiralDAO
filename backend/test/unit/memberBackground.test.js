@@ -16,10 +16,19 @@ describe("MemberBackground", function () {
     // })
 
     describe("viewMemberDetails", function () {
-        let problems, solutions, membership, tokenManagement, projects, tasks
+        let problems,
+            solutions,
+            membership,
+            tokenManagement,
+            projects,
+            tasks,
+            authorizationManagement
         let accounts, projectManagerAccount, projectId, offerId, removalOfferId
 
         before(async function () {
+            const AuthorizationManagement = await ethers.getContractFactory(
+                "AuthorizationManagement"
+            )
             const TokenManagement = await ethers.getContractFactory("TokenManagement")
             const Membership = await ethers.getContractFactory("Membership")
             const Problems = await ethers.getContractFactory("Problems")
@@ -27,20 +36,28 @@ describe("MemberBackground", function () {
             const Projects = await ethers.getContractFactory("Projects")
             const Tasks = await ethers.getContractFactory("Tasks")
 
-            tokenManagement = await TokenManagement.deploy()
+            authorizationManagement = await AuthorizationManagement.deploy()
+            await authorizationManagement.deployed()
+
+            tokenManagement = await TokenManagement.deploy(authorizationManagement.address)
             await tokenManagement.deployed()
 
-            membership = await Membership.deploy(tokenManagement.address)
+            membership = await Membership.deploy(authorizationManagement.address)
             await membership.deployed()
 
-            problems = await Problems.deploy(membership.address)
+            problems = await Problems.deploy(membership.address, authorizationManagement.address)
             await problems.deployed()
 
-            solutions = await Solutions.deploy(membership.address, problems.address)
+            solutions = await Solutions.deploy(
+                membership.address,
+                problems.address,
+                authorizationManagement.address
+            )
             await solutions.deployed()
 
             projects = await Projects.deploy(
                 membership.address,
+                authorizationManagement.address,
                 solutions.address,
                 tokenManagement.address
             )
@@ -49,14 +66,20 @@ describe("MemberBackground", function () {
             tasks = await Tasks.deploy(
                 membership.address,
                 projects.address,
-                tokenManagement.address
+                tokenManagement.address,
+                authorizationManagement.address
             )
             await tasks.deployed()
 
-            await tokenManagement.authorizeContract(projects.address)
-            await tokenManagement.authorizeContract(tasks.address)
-
             accounts = await ethers.getSigners()
+
+            await authorizationManagement
+                .connect(accounts[0])
+                .authorizeContract(tokenManagement.address)
+            await authorizationManagement.connect(accounts[0]).authorizeContract(problems.address)
+            await authorizationManagement.connect(accounts[0]).authorizeContract(solutions.address)
+            await authorizationManagement.connect(accounts[0]).authorizeContract(projects.address)
+            await authorizationManagement.connect(accounts[0]).authorizeContract(tasks.address)
 
             for (let i = 0; i < 8; i++) {
                 const name = String(i)
@@ -74,7 +97,7 @@ describe("MemberBackground", function () {
                 await problems.connect(accounts[i]).rateProblem(problemId2, 9)
             } //people 1,2,3 rate problem as 9
 
-            await tokenManagement.connect(accounts[0]).authorizeContract(projects.address) //authorizes contract
+            // await tokenManagement.connect(accounts[0]).authorizeContract(projects.address) //authorizes contract
             projectManagerAccount = accounts[2] //person 2 will become proj manager
 
             await solutions.connect(accounts[1]).proposeSolution(problemId, "Solution 1") //person 1 raises solution
@@ -85,7 +108,7 @@ describe("MemberBackground", function () {
             expect((await solutions.viewSolutionDetails(solutionId))[6]).to.be.true
 
             await expect(
-                projects.connect(projectManagerAccount).proposeOffer(solutionId)
+                projects.connect(projectManagerAccount).proposeManagementOffer(solutionId)
             ).to.be.revertedWith("solutionDoesNotMeetCriteria")
             expect((await solutions.viewSolutionDetails(solutionId))[6]).to.be.true
 
@@ -109,15 +132,15 @@ describe("MemberBackground", function () {
             expect((await solutions.viewSolutionDetails(solutionId2))[6]).to.be.true
             expect((await solutions.viewSolutionDetails(solutionId3))[6]).to.be.true
 
-            await projects.connect(projectManagerAccount).proposeOffer(solutionId) //person 3 offers to be manager for project 1 and creates project
+            await projects.connect(projectManagerAccount).proposeManagementOffer(solutionId) //person 3 offers to be manager for project 1 and creates project
 
             expect((await solutions.viewSolutionDetails(solutionId))[6]).to.be.false
             expect((await solutions.viewSolutionDetails(solutionId2))[6]).to.be.false
             expect((await solutions.viewSolutionDetails(solutionId3))[6]).to.be.true
 
-            const offerId = await projects.getOfferCounter() //create offer Id
+            const offerId = await projects.getManagementOfferCounter() //create offer Id
             for (let i = 3; i < 7; i++) {
-                await projects.connect(accounts[i]).rateOffer(offerId, 9)
+                await projects.connect(accounts[i]).ratelManagementOffer(offerId, 9)
             } //people 3,4,5,6 rate offer as 9
             projectId = solutionId //assigns projectId
             projects.assignProjectManager(projectId) //assigns project manager

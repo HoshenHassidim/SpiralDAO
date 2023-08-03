@@ -2,8 +2,8 @@
   {
     "inputs": [
       {
-        "internalType": "contract TokenManagement",
-        "name": "_tokenManagementContract",
+        "internalType": "contract AuthorizationManagement",
+        "name": "_authorizationManagementContract",
         "type": "address"
       }
     ],
@@ -45,19 +45,6 @@
       }
     ],
     "name": "MemberRegisteredWithoutName",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "memberAddress",
-        "type": "address"
-      }
-    ],
-    "name": "MemberUnregistered",
     "type": "event"
   },
   {
@@ -130,22 +117,38 @@
     "type": "event"
   },
   {
+    "anonymous": false,
     "inputs": [
-      { "internalType": "address", "name": "_address", "type": "address" },
-      { "internalType": "address", "name": "_rater", "type": "address" },
-      { "internalType": "uint256", "name": "_rating", "type": "uint256" },
-      { "internalType": "uint256", "name": "_taskId", "type": "uint256" }
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_member",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "_username",
+        "type": "string"
+      }
     ],
-    "name": "addTaskAvg",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    "name": "UsernameChanged",
+    "type": "event"
   },
   {
     "inputs": [
       { "internalType": "address", "name": "_address", "type": "address" }
     ],
     "name": "assignTaskToMember",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "_username", "type": "string" }
+    ],
+    "name": "changeName",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -205,8 +208,12 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "unregisterMember",
+    "inputs": [
+      { "internalType": "address", "name": "performer", "type": "address" },
+      { "internalType": "uint256", "name": "_taskId", "type": "uint256" },
+      { "internalType": "uint256", "name": "_taskAvg", "type": "uint256" }
+    ],
+    "name": "updateTasksAvg",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

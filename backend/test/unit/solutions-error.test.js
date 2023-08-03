@@ -2,7 +2,7 @@ const { ethers } = require("hardhat")
 const { expect } = require("chai")
 
 describe("Solutions Errors", function () {
-    let problems, solutions, membership, tokenManagement
+    let problems, solutions, membership, authorizationManagement
     let owner
     let user1
     let user2
@@ -10,25 +10,32 @@ describe("Solutions Errors", function () {
 
     beforeEach(async function () {
         ;[owner, user1, user2, user3] = await ethers.getSigners()
+        accounts = await ethers.getSigners()
 
         // Get the ContractFactory and Signers here.
-        const TokenManagement = await ethers.getContractFactory("TokenManagement")
+        const AuthorizationManagement = await ethers.getContractFactory("AuthorizationManagement")
         const Membership = await ethers.getContractFactory("Membership")
         const Problems = await ethers.getContractFactory("Problems")
         const Solutions = await ethers.getContractFactory("Solutions")
 
-        tokenManagement = await TokenManagement.deploy()
-        await tokenManagement.deployed()
+        authorizationManagement = await AuthorizationManagement.deploy()
+        await authorizationManagement.deployed()
 
-        membership = await Membership.deploy(tokenManagement.address)
+        membership = await Membership.deploy(authorizationManagement.address)
         await membership.deployed()
 
         // Deploying Problems contract, passing the Membership contract address in constructor
-        problems = await Problems.deploy(membership.address)
+        problems = await Problems.deploy(membership.address, authorizationManagement.address)
         await problems.deployed()
 
         // Deploying Solutions contract, passing the Problems contract address in constructor
-        solutions = await Solutions.deploy(membership.address, problems.address)
+        solutions = await Solutions.deploy(
+            membership.address,
+            problems.address,
+            authorizationManagement.address
+        )
+        await authorizationManagement.connect(accounts[0]).authorizeContract(problems.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(solutions.address)
         await solutions.deployed()
         await problems.connect(user1).raiseProblem("Problem1")
         await problems.connect(user2).rateProblem(1, 10)

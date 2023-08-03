@@ -1,7 +1,7 @@
 const { expect } = require("chai")
 
 describe("removeManager", function () {
-    let problems, solutions, membership, tokenManagement, projects, tasks
+    let problems, solutions, membership, tokenManagement, projects, tasks, authorizationManagement
     let accounts,
         projectManagerAccount,
         projectId,
@@ -12,6 +12,7 @@ describe("removeManager", function () {
         newPM
 
     before(async function () {
+        const AuthorizationManagement = await ethers.getContractFactory("AuthorizationManagement")
         const TokenManagement = await ethers.getContractFactory("TokenManagement")
         const Membership = await ethers.getContractFactory("Membership")
         const Problems = await ethers.getContractFactory("Problems")
@@ -19,29 +20,50 @@ describe("removeManager", function () {
         const Projects = await ethers.getContractFactory("Projects")
         const Tasks = await ethers.getContractFactory("Tasks")
 
-        tokenManagement = await TokenManagement.deploy()
+        authorizationManagement = await AuthorizationManagement.deploy()
+        await authorizationManagement.deployed()
+
+        tokenManagement = await TokenManagement.deploy(authorizationManagement.address)
         await tokenManagement.deployed()
 
-        membership = await Membership.deploy(tokenManagement.address)
+        membership = await Membership.deploy(authorizationManagement.address)
         await membership.deployed()
 
-        problems = await Problems.deploy(membership.address)
+        problems = await Problems.deploy(membership.address, authorizationManagement.address)
         await problems.deployed()
 
-        solutions = await Solutions.deploy(membership.address, problems.address)
+        solutions = await Solutions.deploy(
+            membership.address,
+            problems.address,
+            authorizationManagement.address
+        )
         await solutions.deployed()
 
         projects = await Projects.deploy(
             membership.address,
+            authorizationManagement.address,
             solutions.address,
             tokenManagement.address
         )
         await projects.deployed()
 
-        tasks = await Tasks.deploy(membership.address, projects.address, tokenManagement.address)
+        tasks = await Tasks.deploy(
+            membership.address,
+            projects.address,
+            tokenManagement.address,
+            authorizationManagement.address
+        )
         await tasks.deployed()
 
         accounts = await ethers.getSigners()
+
+        await authorizationManagement
+            .connect(accounts[0])
+            .authorizeContract(tokenManagement.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(problems.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(solutions.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(projects.address)
+        await authorizationManagement.connect(accounts[0]).authorizeContract(tasks.address)
 
         for (let i = 0; i < 8; i++) {
             const name = String(i)
@@ -60,13 +82,11 @@ describe("removeManager", function () {
             await solutions.connect(accounts[i]).rateSolution(solutionId, 9)
         }
 
-        await tokenManagement.connect(accounts[0]).authorizeContract(projects.address)
-
         projectManagerAccount = accounts[2]
-        await projects.connect(projectManagerAccount).proposeOffer(solutionId)
-        offerId = await projects.getOfferCounter()
+        await projects.connect(projectManagerAccount).proposeManagementOffer(solutionId)
+        offerId = await projects.getManagementOfferCounter()
         for (let i = 3; i < 7; i++) {
-            await projects.connect(accounts[i]).rateOffer(offerId, 9)
+            await projects.connect(accounts[i]).ratelManagementOffer(offerId, 9)
         }
         projectId = solutionId
         projects.assignProjectManager(projectId)
@@ -76,7 +96,7 @@ describe("removeManager", function () {
     it("Should allow a member to propose the removal of a project manager", async function () {
         await projects.connect(removalProposerAccount).proposeRemoveManager(projectId)
 
-        removalOfferId = await projects.getRemovalOfferCounter()
+        removalOfferId = await projects.getManagementRemovalOfferCounter()
         const removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
 
         expect(removalOfferDetails[0]).to.equal(removalOfferId)
@@ -123,8 +143,8 @@ describe("removeManager", function () {
 
     it("Should allow new manager to be elected after one is removed", async function () {
         newPM = accounts[5]
-        await projects.connect(newPM).proposeOffer(projectId)
-        offerId = await projects.getOfferCounter()
+        await projects.connect(newPM).proposeManagementOffer(projectId)
+        offerId = await projects.getManagementOfferCounter()
         const offerDetails = await projects.viewOfferDetails(offerId)
         projectDetails = await projects.viewProjectDetails(projectId)
         projectManager = await projects.getProjectManager(projectId)
@@ -141,7 +161,7 @@ describe("removeManager", function () {
         expect(offerDetails[5]).to.be.true
 
         for (let i = 0; i < 4; i++) {
-            await projects.connect(accounts[i]).rateOffer(offerId, 9)
+            await projects.connect(accounts[i]).ratelManagementOffer(offerId, 9)
         }
         projects.assignProjectManager(projectId)
 
@@ -159,7 +179,7 @@ describe("removeManager", function () {
         const newRPA = accounts[3]
 
         await projects.connect(newRPA).proposeRemoveManager(projectId)
-        removalOfferId = await projects.getRemovalOfferCounter()
+        removalOfferId = await projects.getManagementRemovalOfferCounter()
         removalOfferDetails = await projects.viewRemovalOfferDetails(removalOfferId)
         const projectManager = await projects.getProjectManager(projectId)
 

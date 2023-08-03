@@ -1,11 +1,12 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { expect } = require("chai")
+const { ethers } = require("hardhat")
 
 describe("Problems", function () {
     let Problems
     let problems
     let Membership
     let membership
+    let authorizationManagement
     let deployer
     let addr1
     let addr2
@@ -22,68 +23,64 @@ describe("Problems", function () {
     })
 
     beforeEach(async function () {
-        const TokenManagement = await ethers.getContractFactory("TokenManagement")
+        const AuthorizationManagement = await ethers.getContractFactory("AuthorizationManagement")
         const Membership = await ethers.getContractFactory("Membership")
 
-        tokenManagement = await TokenManagement.deploy()
-        await tokenManagement.deployed()
+        authorizationManagement = await AuthorizationManagement.deploy()
+        await authorizationManagement.deployed()
 
-        membership = await Membership.deploy(tokenManagement.address)
+        membership = await Membership.deploy(authorizationManagement.address)
         await membership.deployed()
 
-        problems = await Problems.deploy(membership.address)
+        problems = await Problems.deploy(membership.address, authorizationManagement.address)
         await problems.deployed()
     })
 
     describe("raiseProblem", function () {
         it("Should raise a new problem successfully", async function () {
+            await problems.connect(deployer).raiseProblem("New Problem")
 
-            await problems.connect(deployer).raiseProblem("New Problem");
-
-            const problemDetails = await problems.viewProblemDetails(1);
-            expect(problemDetails[0]).to.equal(1); // Problem ID
-            expect(problemDetails[1]).to.equal(deployerAddress); // Creator address
-            expect(problemDetails[2]).to.equal("New Problem"); // Problem name
-            expect(problemDetails[3]).to.equal(0); // Rating sum
-            expect(problemDetails[4]).to.equal(0); // Rating count
-            expect(problemDetails[5]).to.equal(true); // Open for rating
-        });
+            const problemDetails = await problems.viewProblemDetails(1)
+            expect(problemDetails[0]).to.equal(1) // Problem ID
+            expect(problemDetails[1]).to.equal(deployerAddress) // Creator address
+            expect(problemDetails[2]).to.equal("New Problem") // Problem name
+            expect(problemDetails[3]).to.equal(0) // Rating sum
+            expect(problemDetails[4]).to.equal(0) // Rating count
+            expect(problemDetails[5]).to.equal(true) // Open for rating
+        })
 
         it("Should revert when raising a problem with an empty name", async function () {
-            await expect(
-                problems.connect(deployer).raiseProblem("")
-            ).to.be.revertedWith("nameRequired");
-        });
+            await expect(problems.connect(deployer).raiseProblem("")).to.be.revertedWith(
+                "nameRequired"
+            )
+        })
 
         it("Should revert when raising a problem with an existing name", async function () {
-            await problems.connect(deployer).raiseProblem("New Problem");
-            await expect(
-                problems.connect(deployer).raiseProblem("New Problem")
-            ).to.be.revertedWith("nameExists");
-        });
-    });
+            await problems.connect(deployer).raiseProblem("New Problem")
+            await expect(problems.connect(deployer).raiseProblem("New Problem")).to.be.revertedWith(
+                "nameExists"
+            )
+        })
+    })
 
     describe("cancelProblem", function () {
         it("Should cancel a problem successfully", async function () {
-            await problems.connect(deployer).raiseProblem("New Problem");
-            await problems.connect(deployer).cancelProblem(1);
-
+            await problems.connect(deployer).raiseProblem("New Problem")
+            await problems.connect(deployer).cancelProblem(1)
 
             const problemDetails = await problems.viewProblemDetails(1)
             expect(problemDetails[5]).to.equal(false) // Open for rating
         })
 
         it("Should revert when canceling a non-existent problem", async function () {
-
-            await expect(
-                problems.connect(deployer).cancelProblem(1)
-            ).to.be.revertedWith("problemDoesNotExist");
-        });
+            await expect(problems.connect(deployer).cancelProblem(1)).to.be.revertedWith(
+                "problemDoesNotExist"
+            )
+        })
 
         it("Should revert when canceling a problem that has been rated", async function () {
-            await problems.connect(deployer).raiseProblem("New Problem");
-            await problems.connect(addr1).rateProblem(1, 5);
-
+            await problems.connect(deployer).raiseProblem("New Problem")
+            await problems.connect(addr1).rateProblem(1, 5)
 
             await expect(problems.connect(deployer).cancelProblem(1)).to.be.revertedWith(
                 "problemAlreadyRated"
@@ -93,10 +90,8 @@ describe("Problems", function () {
 
     describe("rateProblem", function () {
         it("Should rate a problem successfully", async function () {
-
-            await problems.connect(deployer).raiseProblem("New Problem");
-            await problems.connect(addr1).rateProblem(1, 8);
-
+            await problems.connect(deployer).raiseProblem("New Problem")
+            await problems.connect(addr1).rateProblem(1, 8)
 
             const problemDetails = await problems.viewProblemDetails(1)
             expect(problemDetails[3]).to.equal(8) // Rating sum
@@ -104,15 +99,13 @@ describe("Problems", function () {
         })
 
         it("Should revert when rating a non-existent problem", async function () {
-
-            await expect(
-                problems.connect(deployer).rateProblem(1, 5)
-            ).to.be.revertedWith("invalidProblemID");
-        });
+            await expect(problems.connect(deployer).rateProblem(1, 5)).to.be.revertedWith(
+                "invalidProblemID"
+            )
+        })
 
         it("Should revert when rating a problem as the problem proposer", async function () {
-            await problems.connect(deployer).raiseProblem("New Problem");
-
+            await problems.connect(deployer).raiseProblem("New Problem")
 
             await expect(problems.connect(deployer).rateProblem(1, 5)).to.be.revertedWith(
                 "problemProposerCannotRate"
@@ -120,10 +113,8 @@ describe("Problems", function () {
         })
 
         it("Should revert when rating a problem after it has been closed for rating", async function () {
-
-            await problems.connect(deployer).raiseProblem("New Problem");
-            await problems.connect(deployer).cancelProblem(1);
-
+            await problems.connect(deployer).raiseProblem("New Problem")
+            await problems.connect(deployer).cancelProblem(1)
 
             await expect(problems.connect(addr1).rateProblem(1, 7)).to.be.revertedWith(
                 "problemClosedForRating"
@@ -131,9 +122,7 @@ describe("Problems", function () {
         })
 
         it("Should revert when rating a problem with an out-of-range rating", async function () {
-
-            await problems.connect(deployer).raiseProblem("New Problem");
-
+            await problems.connect(deployer).raiseProblem("New Problem")
 
             await expect(problems.connect(addr1).rateProblem(1, 15)).to.be.revertedWith(
                 "ratingOutOfRange"
@@ -143,26 +132,21 @@ describe("Problems", function () {
 
     describe("changeProblemName", function () {
         it("Should change the name of a problem successfully", async function () {
-
-            await problems.connect(deployer).raiseProblem("Old Problem Name");
-            await problems.connect(deployer).changeProblemName(1, "New Problem Name");
-
+            await problems.connect(deployer).raiseProblem("Old Problem Name")
+            await problems.connect(deployer).changeProblemName(1, "New Problem Name")
 
             const problemDetails = await problems.viewProblemDetails(1)
             expect(problemDetails[2]).to.equal("New Problem Name") // New problem name
         })
 
         it("Should revert when changing the name of a non-existent problem", async function () {
-
             await expect(
                 problems.connect(deployer).changeProblemName(1, "New Problem Name")
             ).to.be.revertedWith("invalidProblemID")
         })
 
         it("Should revert when changing the name to an empty name", async function () {
-
-            await problems.connect(deployer).raiseProblem("Old Problem Name");
-
+            await problems.connect(deployer).raiseProblem("Old Problem Name")
 
             await expect(problems.connect(deployer).changeProblemName(1, "")).to.be.revertedWith(
                 "nameRequired"
@@ -170,20 +154,17 @@ describe("Problems", function () {
         })
 
         it("Should revert when changing the name to an existing name", async function () {
-
-            await problems.connect(deployer).raiseProblem("Old Problem Name");
-            await problems.connect(addr1).raiseProblem("Another Problem");
+            await problems.connect(deployer).raiseProblem("Old Problem Name")
+            await problems.connect(addr1).raiseProblem("Another Problem")
 
             await expect(
                 problems.connect(deployer).changeProblemName(1, "Another Problem")
-            ).to.be.revertedWith("userNameAlreadyExists")
+            ).to.be.revertedWith("nameAlreadyExists")
         })
 
         it("Should revert when changing the name of a problem after it has been rated", async function () {
-
-            await problems.connect(deployer).raiseProblem("Old Problem Name");
-            await problems.connect(addr1).rateProblem(1, 9);
-
+            await problems.connect(deployer).raiseProblem("Old Problem Name")
+            await problems.connect(addr1).rateProblem(1, 9)
 
             await expect(
                 problems.connect(deployer).changeProblemName(1, "New Problem Name")
@@ -191,9 +172,7 @@ describe("Problems", function () {
         })
 
         it("Should revert when changing the name of a problem by a non-creator member", async function () {
-
-            await problems.connect(deployer).raiseProblem("Old Problem Name");
-
+            await problems.connect(deployer).raiseProblem("Old Problem Name")
 
             await expect(
                 problems.connect(addr1).changeProblemName(1, "New Problem Name")
@@ -203,34 +182,26 @@ describe("Problems", function () {
 
     describe("meetsRatingCriteria", function () {
         it("Should return false for a problem that doesn't meet the rating criteria", async function () {
+            await problems.connect(deployer).raiseProblem("Problem 1")
+            await problems.connect(addr1).rateProblem(1, 6)
 
-            await problems.connect(deployer).raiseProblem("Problem 1");
-            await problems.connect(addr1).rateProblem(1, 6);
-
-
-            const meetsCriteria = await problems.meetsRatingCriteria(1)
+            const meetsCriteria = await problems.viewMeetsRatingCriteria(1)
             expect(meetsCriteria).to.equal(false)
         })
 
         it("Should return true for a problem that meets the rating criteria", async function () {
+            await problems.connect(deployer).raiseProblem("Problem 1")
+            await problems.connect(addr1).rateProblem(1, 9)
+            await problems.connect(addr2).rateProblem(1, 8)
 
-            await problems.connect(deployer).raiseProblem("Problem 1");
-            await problems.connect(addr1).rateProblem(1, 9);
-            await problems.connect(addr2).rateProblem(1, 8);
-
-
-            const meetsCriteria = await problems.meetsRatingCriteria(1)
+            const meetsCriteria = await problems.viewMeetsRatingCriteria(1)
             expect(meetsCriteria).to.equal(true)
         })
 
         it("Should revert when checking the rating criteria for a non-existent problem", async function () {
-
-            await expect(
-                problems.meetsRatingCriteria(1)
-            ).to.be.revertedWith("problemDoesNotExist");
-        });
-    });
-
+            await expect(problems.meetsRatingCriteria(1)).to.be.revertedWith("problemDoesNotExist")
+        })
+    })
 
     describe("getProblemCounter", function () {
         it("Should return the correct problem counter", async function () {
@@ -246,9 +217,7 @@ describe("Problems", function () {
         })
 
         it("Should return true for a taken problem name", async function () {
-
-            await problems.connect(deployer).raiseProblem("New Problem");
-
+            await problems.connect(deployer).raiseProblem("New Problem")
 
             const isTaken = await problems.isProblemNameTaken("New Problem")
             expect(isTaken).to.equal(true)
@@ -257,32 +226,26 @@ describe("Problems", function () {
 
     describe("getProblemCreator", function () {
         it("Should return the correct creator address of a problem", async function () {
-
-            await problems.connect(deployer).raiseProblem("New Problem");
-
+            await problems.connect(deployer).raiseProblem("New Problem")
 
             const creator = await problems.getProblemCreator(1)
             expect(creator).to.equal(deployerAddress)
         })
 
         it("Should revert when getting the creator of a non-existent problem", async function () {
-
-            await expect(
-                problems.getProblemCreator(1)
-            ).to.be.revertedWith("invalidProblemID");
-        });
+            await expect(problems.getProblemCreator(1)).to.be.revertedWith("invalidProblemID")
+        })
         it("Should delete problem name when  problem is cancelled", async function () {
-            await problems.connect(addr1).raiseProblem('P1');
-            await problems.connect(addr1).cancelProblem(1);
-            const isTaken = await problems.isProblemNameTaken("P1");
-            expect(isTaken).to.equal(false);
+            await problems.connect(addr1).raiseProblem("P1")
+            await problems.connect(addr1).cancelProblem(1)
+            const isTaken = await problems.isProblemNameTaken("P1")
+            expect(isTaken).to.equal(false)
         })
         it("Should delete name when  problem name is changed", async function () {
-            await problems.connect(addr1).raiseProblem('P1');
-            await problems.connect(addr1).changeProblemName(1, 'P2');
-            const isTaken = await problems.isProblemNameTaken("P1");
-            expect(isTaken).to.equal(false);
+            await problems.connect(addr1).raiseProblem("P1")
+            await problems.connect(addr1).changeProblemName(1, "P2")
+            const isTaken = await problems.isProblemNameTaken("P1")
+            expect(isTaken).to.equal(false)
         })
-    });
-});
-
+    })
+})

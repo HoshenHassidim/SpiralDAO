@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 // Import external contracts
 import "./Membership.sol";
 import "./Problems.sol";
+import "./AuthorizationManagement.sol";
 
 // Main contract for handling solutions
 contract Solutions {
@@ -23,6 +24,7 @@ contract Solutions {
     Membership private membershipContract;
     // Problems contract reference
     Problems private problemsContract;
+    AuthorizationManagement private authorizationManagementContract;
 
     // Counter to maintain solution ids
     uint256 private solutionCounter;
@@ -44,10 +46,7 @@ contract Solutions {
     uint256 constant MIN_RATING_AVERAGE = 7; // Minimum average rating required
     uint256 constant MIN_TOTAL_RATE_COUNT = 3; // Minimum number ratings required
 
-    uint256 constant SOLUTION_ID_INDEX = 2; // Index where the solution id is held
-    uint256 constant RATING_NUMBER_INDEX = 1; // Index where the number of raters is held
-    uint256 constant TOTAL_RATING_INDEX = 0; // Index where the total rating is held
-//Custom Errors
+    //Custom Errors
     error onlySolutionCreatorCanPerform();
     error invalidID();
     error nameCannotBeEmpty();
@@ -60,6 +59,8 @@ contract Solutions {
     error ratingOutOfRange();
     error solutionDoesNotExist();
     error problemDoesNotExist();
+    error mustBeAuthorised();
+
     // Events to log actions happening in the contract
     event SolutionProposed(uint256 solutionId, uint256 problemId, address creator, string name);
     event SolutionCancelled(uint256 solutionId);
@@ -68,28 +69,41 @@ contract Solutions {
 
     // Modifier to restrict actions to solution creators
     modifier onlyCreator(uint256 _solutionId) {
-        if (msg.sender != solutions[_solutionId].creator) revert onlySolutionCreatorCanPerform(); //If the person calling the function is not the oslution creator of the solution entered, an error will occur 
+        if (msg.sender != solutions[_solutionId].creator) revert onlySolutionCreatorCanPerform(); //If the person calling the function is not the oslution creator of the solution entered, an error will occur
+        _;
+    }
+
+    // Modifier to allow only authorized contracts to perform certain actions.
+    modifier onlyAuthorized() {
+        if (!authorizationManagementContract.isAuthorized(msg.sender)) revert mustBeAuthorised();
         _;
     }
 
     // Constructor for initial setup
-    constructor(Membership _membershipContract, Problems _problemsContract) {
+    constructor(
+        Membership _membershipContract,
+        Problems _problemsContract,
+        AuthorizationManagement _authorizationManagementContract
+    ) {
         //variables initialized to the values of the contracts entered into the constructor function
-        membershipContract = _membershipContract; 
+        membershipContract = _membershipContract;
         problemsContract = _problemsContract;
+        authorizationManagementContract = _authorizationManagementContract;
     }
 
     // Function to propose a solution
     function proposeSolution(uint256 _problemId, string memory _name) external {
-        if (bytes(_name).length <= 0) revert nameCannotBeEmpty(); //If the number of characters inside the name entered into the function 
-        if (_problemId == 0) revert invalidID(); // If the problem id is 0 then an error will occur 
+        if (bytes(_name).length <= 0) revert nameCannotBeEmpty(); //If the number of characters inside the name entered into the function
+        if (_problemId == 0) revert invalidID(); // If the problem id is 0 then an error will occur
         if (!problemsContract.doesProblemExist(_problemId)) revert problemDoesNotExist(); //If the problem entered does not exist, an error will occur
 
         if (solutionNames[_name]) revert nameAlreadyExists(); //if the solution name already exists in the solutionNames mapping, an error will occur
-        if (!problemsContract.meetsRatingCriteria(_problemId)) revert problemDoesNotMeetCriteria(); //If the problem entered doesn't meet the rting criteria, an error will occur
-
+        if (problemToSolutions[_problemId].length == 0) {
+            if (!problemsContract.meetsRatingCriteria(_problemId))
+                revert problemDoesNotMeetCriteria(); //If the problem entered doesn't meet the rting criteria, an error will occur
+        }
         // Increment solution counter and create a new solution
-        solutionCounter++; 
+        solutionCounter++;
 
         Solution storage newSolution = solutions[solutionCounter]; //New solution created in solutions mapping and saved in a variable
         //Properties of new solution are now set here
@@ -112,8 +126,8 @@ contract Solutions {
         if (_solutionId == 0) revert invalidID(); //If solution ID is zero then an error will occur
 
         if (bytes(solutions[_solutionId].name).length <= 0 || solutionCounter < _solutionId)
-            revert solutionDoesNotExist(); //If the solution id doesnt exist (either below 1 or above the solution counter) than an error will occur 
-        if (msg.sender != solutions[_solutionId].creator) revert onlySolutionCreatorCanPerform(); //If the person calling the function is not the solution creator of the solution entered, then an error will occur 
+            revert solutionDoesNotExist(); //If the solution id doesnt exist (either below 1 or above the solution counter) than an error will occur
+        if (msg.sender != solutions[_solutionId].creator) revert onlySolutionCreatorCanPerform(); //If the person calling the function is not the solution creator of the solution entered, then an error will occur
 
         Solution storage solution = solutions[_solutionId]; //solution entered is now saved into a variable
 
@@ -151,14 +165,16 @@ contract Solutions {
 
     // Function to rate a solution
     function rateSolution(uint256 _solutionId, uint256 _rating) external {
-        if (solutionCounter < _solutionId) revert solutionDoesNotExist(); //If the solution id is greater than the solution couter, then an error will occur 
-        if (solutions[_solutionId].creator == msg.sender) revert creatorCannotRateOwnProblem(); //If the person calling the function is the solution creator, an error wll occur 
-        if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange(); //If the rating is below one or above ten, an error will occur 
-        if (!solutions[_solutionId].isOpenForRating) revert solutonClosedForRating(); // If the solution is not open for rating, an error will occur 
+        if (solutionCounter < _solutionId) revert solutionDoesNotExist(); //If the solution id is greater than the solution couter, then an error will occur
+        if (solutions[_solutionId].creator == msg.sender) revert creatorCannotRateOwnProblem(); //If the person calling the function is the solution creator, an error wll occur
+        if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange(); //If the rating is below one or above ten, an error will occur
+        if (!solutions[_solutionId].isOpenForRating) revert solutonClosedForRating(); // If the solution is not open for rating, an error will occur
 
-        if (solutions[_solutionId].oldRating[msg.sender] > 0) { //If the person calling the function has rated before (meaning their previous rating is above 0)...
+        if (solutions[_solutionId].oldRating[msg.sender] > 0) {
+            //If the person calling the function has rated before (meaning their previous rating is above 0)...
             solutions[_solutionId].ratingSum -= solutions[_solutionId].oldRating[msg.sender]; //Subtract the user's old rating from the rating sum for the solution
-        } else { //If the person has not rated before...
+        } else {
+            //If the person has not rated before...
             solutions[_solutionId].numberOfRaters++; //Increment the rater count by 1
         }
         solutions[_solutionId].oldRating[msg.sender] = _rating; //Current rating now becoemes the old rating
@@ -172,7 +188,7 @@ contract Solutions {
         // allRatings.push([solutions[_solutionId].ratingSum, solutions[_solutionId].numberOfRaters, solutions[_solutionId].solutionId]);
         // solutions[_solutionId].indexOfArray = allRatings.length - 1;
         // }
-        if (solutions[_solutionId].numberOfRaters > 1) { 
+        if (solutions[_solutionId].numberOfRaters > 1) {
             allSolutions[solutions[_solutionId].problemId].push(_solutionId); //Add the current solution id to the allSolutions mapping
         }
         // Emit the event
@@ -180,7 +196,7 @@ contract Solutions {
     }
 
     // Function to check if a solution can become a project
-    function canBecomeProject(uint256 _solutionId) external returns (bool) {
+    function canBecomeProject(uint256 _solutionId) external onlyAuthorized returns (bool) {
         Solution storage solution = solutions[_solutionId]; //solution entered now stored into a variable
         uint256 avgRating = solution.ratingSum / solution.numberOfRaters; //calculate average
 
@@ -198,11 +214,12 @@ contract Solutions {
         uint256[] storage solutionIds = problemToSolutions[solution.problemId]; //Solution ids for problem entered now stored into variable
 
         for (uint256 i = 0; i < solutionIds.length; i++) {
-            totalRatingsForProblem += solutions[solutionIds[i]].numberOfRaters; //Add the raters for each solution to the problem to a variable 
+            totalRatingsForProblem += solutions[solutionIds[i]].numberOfRaters; //Add the raters for each solution to the problem to a variable
         }
 
         // Check if the total ratings meet the requirements
-        if (totalRatingsForProblem < MIN_TOTAL_RATE_COUNT) { //If the total raters for the problem is less than the minimum...
+        if (totalRatingsForProblem < MIN_TOTAL_RATE_COUNT) {
+            //If the total raters for the problem is less than the minimum...
             return false;
         }
 
@@ -229,11 +246,10 @@ contract Solutions {
 
         // Calculate the total ratings for the problem the solution addresses
         uint256 totalRatingsForProblem = 0;
-        uint256[] storage solutionIds = problemToSolutions[solution.problemId];//Solution ids for problem entered now stored into variable
+        uint256[] storage solutionIds = problemToSolutions[solution.problemId]; //Solution ids for problem entered now stored into variable
 
         for (uint256 i = 0; i < solutionIds.length; i++) {
-            totalRatingsForProblem += solutions[solutionIds[i]].numberOfRaters; //Add the raters for each solution to the problem to a variable 
-        
+            totalRatingsForProblem += solutions[solutionIds[i]].numberOfRaters; //Add the raters for each solution to the problem to a variable
         }
 
         // Check if the total ratings meet the requirements
