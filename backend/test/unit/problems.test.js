@@ -199,7 +199,9 @@ describe("Problems", function () {
         })
 
         it("Should revert when checking the rating criteria for a non-existent problem", async function () {
-            await expect(problems.meetsRatingCriteria(1)).to.be.revertedWith("problemDoesNotExist")
+            await expect(problems.viewMeetsRatingCriteria(1)).to.be.revertedWith(
+                "problemDoesNotExist"
+            )
         })
     })
 

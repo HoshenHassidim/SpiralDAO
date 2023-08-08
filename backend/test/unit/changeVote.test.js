@@ -94,8 +94,6 @@ describe("changeVote", function () {
     })
 
     it("Should allow members to change their rating for the management offer", async function () {
-        await authorizationManagement.connect(accounts[0]).authorizeContract(projects.address)
-
         projectManagerAccount = accounts[2]
         await projects.connect(projectManagerAccount).proposeManagementOffer(projectId)
 
@@ -122,8 +120,6 @@ describe("changeVote", function () {
 
     it("Should allow members to change their rate for the task offer", async function () {
         await projects.assignProjectManager(projectId)
-
-        await authorizationManagement.connect(accounts[0]).authorizeContract(tasks.address)
 
         performerAccount = accounts[3]
         await tasks.connect(projectManagerAccount).addTask(projectId, "Task 1", 1000)

@@ -101,7 +101,7 @@ contract Membership {
         newMember.problemsAccepted = 0;
         newMember.solutionsAccepted = 0;
 
-        emit MemberRegisteredWithoutName(msg.sender); // Emit event after successful registration.
+        emit MemberRegisteredWithoutName(_address); // Emit event after successful registration.
     }
 
     function changeName(string memory _username) external {

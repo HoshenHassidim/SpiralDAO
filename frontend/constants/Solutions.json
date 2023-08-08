@@ -73,6 +73,19 @@
         "internalType": "uint256",
         "name": "solutionId",
         "type": "uint256"
+      }
+    ],
+    "name": "SolutionProjectCriteriaMet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "solutionId",
+        "type": "uint256"
       },
       {
         "indexed": false,

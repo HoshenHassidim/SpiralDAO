@@ -38,7 +38,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "id",
+        "name": "problemId",
         "type": "uint256"
       },
       {
@@ -63,7 +63,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "id",
+        "name": "problemId",
         "type": "uint256"
       }
     ],
@@ -76,7 +76,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "id",
+        "name": "problemId",
         "type": "uint256"
       },
       {
@@ -95,7 +95,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "id",
+        "name": "problemId",
         "type": "uint256"
       },
       {
@@ -112,6 +112,19 @@
       }
     ],
     "name": "ProblemRated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "problemId",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProblemRatingCriteriaMet",
     "type": "event"
   },
   {

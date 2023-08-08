@@ -40,6 +40,8 @@ contract Solutions {
     // uint256[] private allSolutions;
     mapping(uint256 => uint256[]) private allSolutions;
 
+    mapping(uint256 => bool) areProblemOpenToSolutions;
+
     // Constants for the rating system
     uint256 constant MAX_RATING = 10; // Maximum possible rating
     uint256 constant MIN_RATING_COUNT = 2; // Minimum count of ratings required
@@ -60,12 +62,14 @@ contract Solutions {
     error solutionDoesNotExist();
     error problemDoesNotExist();
     error mustBeAuthorised();
+    error ProblemNotOpenForSolutions();
 
     // Events to log actions happening in the contract
     event SolutionProposed(uint256 solutionId, uint256 problemId, address creator, string name);
     event SolutionCancelled(uint256 solutionId);
     event SolutionRated(uint256 solutionId, address rater, uint256 rating);
     event SolutionNameChanged(uint256 solutionId, string newName);
+    event SolutionProjectCriteriaMet(uint256 solutionId);
 
     // Modifier to restrict actions to solution creators
     modifier onlyCreator(uint256 _solutionId) {
@@ -99,9 +103,13 @@ contract Solutions {
 
         if (solutionNames[_name]) revert nameAlreadyExists(); //if the solution name already exists in the solutionNames mapping, an error will occur
         if (problemToSolutions[_problemId].length == 0) {
-            if (!problemsContract.meetsRatingCriteria(_problemId))
+            if (!problemsContract.meetsRatingCriteria(_problemId)) {
                 revert problemDoesNotMeetCriteria(); //If the problem entered doesn't meet the rting criteria, an error will occur
+            } else {
+                areProblemOpenToSolutions[_problemId] = true;
+            }
         }
+        if (!areProblemOpenToSolutions[_problemId]) revert ProblemNotOpenForSolutions();
         // Increment solution counter and create a new solution
         solutionCounter++;
 
@@ -116,7 +124,6 @@ contract Solutions {
         // Register new solution name and map problem to the solution
         solutionNames[_name] = true;
         problemToSolutions[_problemId].push(solutionCounter); //Add a new solution to the problemsToSolutions mapping. This will cause the mapping with the id of the problem to have one more solution added for that id
-
         // Emit the event
         emit SolutionProposed(solutionCounter, _problemId, msg.sender, _name); //Event emitted
     }
@@ -153,6 +160,7 @@ contract Solutions {
         if (solutionNames[_newName]) revert nameAlreadyExists(); //if the name entered already exists inside the solutionName mapping, an error will occur
 
         Solution storage solution = solutions[_solutionId]; //solution entered is now saved into a variable
+        if (solution.numberOfRaters != 0) revert solutionAlreadyRated(); //If the number of raters is not zero, meaning it has been rated before, an error will occur
 
         // Update the solution name
         delete solutionNames[solution.name]; //delete the old solution name from the solutionNames mapping
@@ -227,6 +235,9 @@ contract Solutions {
         for (uint256 i = 0; i < solutionIds.length; i++) {
             solutions[solutionIds[i]].isOpenForRating = false; // Changed: Close the rating for all other solutions
         }
+        areProblemOpenToSolutions[solution.problemId] = false;
+
+        emit SolutionProjectCriteriaMet(_solutionId);
 
         return true;
     }

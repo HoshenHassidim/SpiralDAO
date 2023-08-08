@@ -121,6 +121,8 @@ contract Projects {
         solutionsContract = _solutionsContract;
         tokenManagementContract = _tokenManagementContract;
         projects[0] = Project(0, false, true, msg.sender, true);
+        emit NewProject(0);
+        emit ProjectManagerAssigned(0, msg.sender);
     }
 
     // Modifier to allow only authorized contracts to perform certain actions.
@@ -307,16 +309,16 @@ contract Projects {
                 if (!offer.isActive) continue;
                 offer.isActive = false;
             }
+            membershipContract.managedProject(projects[_projectId].projectManager);
             // Emit the event to track the project manager assignment
             emit ProjectManagerAssigned(_projectId, offers[bestOfferId].manager);
         }
-        membershipContract.managedProject(projects[_projectId].projectManager);
     }
 
     // External function to allow a manager to resign
     function managerResign(uint256 _projectId) external {
-        if (_projectId <= 0) revert IDMustBePositive();
-        if (projects[_projectId].solutionId <= 0) revert projectDoesNotExist();
+        if (_projectId < 0) revert IDMustBePositive();
+        if (!doesProjectExist(_projectId)) revert projectDoesNotExist();
 
         if (msg.sender != projects[_projectId].projectManager) revert onlyManager();
 

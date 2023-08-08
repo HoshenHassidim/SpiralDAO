@@ -165,6 +165,13 @@ describe("Workflow", function () {
         expect(offerDetails[5]).to.be.true
     })
 
+    it("reverts if solution allredy been chosen", async () => {
+        const problemId = await problems.getProblemCounter()
+        await expect(
+            solutions.connect(accounts[1]).proposeSolution(problemId, "Solution 5")
+        ).to.be.revertedWith("ProblemNotOpenForSolutions")
+    })
+
     it("Should have transferred the tokens to the creators", async function () {
         const Creators = await solutions.getCreators(1)
         let problemCreatorBalance = await tokenManagement.viewBalance(Creators[1], 1)

@@ -66,10 +66,11 @@ contract Problems {
     mapping(string => bool) private problemNames;
 
     // These events are emitted when a new problem is raised, a problem is cancelled, or a problem is rated
-    event NewProblem(uint256 id, address creator, string name);
-    event ProblemCancelled(uint256 id);
-    event ProblemRated(uint256 id, address rater, uint256 rating);
-    event ProblemChanged(uint256 id, string name);
+    event NewProblem(uint256 problemId, address creator, string name);
+    event ProblemCancelled(uint256 problemId);
+    event ProblemRated(uint256 problemId, address rater, uint256 rating);
+    event ProblemChanged(uint256 problemId, string name);
+    event ProblemRatingCriteriaMet(uint256 problemId);
 
     // This function allows a member to raise a problem
     function raiseProblem(string calldata _name) external {
@@ -172,6 +173,8 @@ contract Problems {
         }
 
         problem.openForRating = false;
+
+        emit ProblemRatingCriteriaMet(_problemId);
 
         return true;
     }
