@@ -1,3 +1,11 @@
+# AuthorizationManagement
+
+type AuthorizedContract @entity {
+  id: Bytes!
+  account: Bytes! # address
+  blockNumber: BigInt!
+}
+
 type AdminChanged @entity(immutable: true) {
   id: Bytes!
   newAdmin: Bytes! # address
@@ -21,6 +29,16 @@ type AuthorizationRevoked @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+# TokenManagement
+
+type TokenBalance @entity {
+  id: String!
+  member: Bytes! # address
+  projectId: BigInt! # uint256
+  balance: BigInt! # uint256
+}
+
 type ProjectTokenCreated @entity(immutable: true) {
   id: Bytes!
   projectId: BigInt! # uint256
@@ -45,6 +63,16 @@ type TokensMinted @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+# Membership
+
+type ActiveMember @entity {
+  id: Bytes!
+  memberAddress: Bytes! # address
+  username: String # string
+  blockNumber: BigInt!
+}
+
 type MemberRegistered @entity(immutable: true) {
   id: Bytes!
   memberAddress: Bytes! # address
@@ -99,6 +127,30 @@ type UsernameChanged @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+# Problems
+
+type ActiveProblem @entity {
+  id: ID!
+  problemId: BigInt! # uint256
+  creator: Bytes! # address
+  name: String! # string
+  ratingCount: BigInt!
+  ratingSum: BigInt!
+  solutions: [ActiveSolution!]! @derivedFrom(field: "problem")
+  isOpenForRating: Boolean!
+  isOpenForNewSolutions: Boolean!
+  blockNumber: BigInt!
+}
+
+type UserProblemRating @entity {
+  id: ID!
+  problemId: BigInt! # uint256
+  rater: Bytes! # address
+  rating: BigInt! # uint256
+  blockNumber: BigInt!
+}
+
 type NewProblem @entity(immutable: true) {
   id: Bytes!
   problemId: BigInt! # uint256
@@ -143,6 +195,31 @@ type ProblemRatingCriteriaMet @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+# Solutions
+
+type ActiveSolution @entity {
+  id: ID!
+  solutionId: BigInt! # uint256
+  problemId: BigInt! # uint256
+  problem: ActiveProblem!
+  creator: Bytes! # address
+  name: String! # string
+  ratingCount: BigInt!
+  ratingSum: BigInt!
+  isOpenForRating: Boolean!
+  hasProject: Boolean!
+  blockNumber: BigInt!
+}
+
+type UserSolutionRating @entity {
+  id: ID!
+  solutionId: BigInt! # uint256
+  rater: Bytes! # address
+  rating: BigInt! # uint256
+  blockNumber: BigInt!
+}
+
 type SolutionCancelled @entity(immutable: true) {
   id: Bytes!
   solutionId: BigInt! # uint256
@@ -188,6 +265,38 @@ type SolutionRated @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+# Projects
+
+type Project @entity {
+  id: ID!
+  projectId: BigInt! # uint256
+  projectManager: Bytes! # address
+  isOpenForManagementProposals: Boolean!
+  managementOffers: [ActiveManagementOffer!]! @derivedFrom(field: "project")
+  blockNumber: BigInt!
+}
+
+type ActiveManagementOffer @entity {
+  id: ID!
+  offerId: BigInt! # uint256
+  projectId: BigInt! # uint256
+  project: Project!
+  proposer: Bytes! # address
+  ratingCount: BigInt!
+  ratingSum: BigInt!
+  isActive: Boolean!
+  blockNumber: BigInt!
+}
+
+type UserManagementOfferRating @entity {
+  id: ID!
+  offerId: BigInt! # uint256
+  rater: Bytes! # address
+  rating: BigInt! # uint256
+  blockNumber: BigInt!
+}
+
 type ManagementOfferCancelled @entity(immutable: true) {
   id: Bytes!
   offerId: BigInt! # uint256
@@ -277,6 +386,51 @@ type ProjectManagerVotedOut @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+# Tasks
+
+type Task @entity {
+  id: ID!
+  taskId: BigInt! # uint256
+  projectId: BigInt! # uint256
+  taskName: String! # string
+  taskValue: BigInt! # uint256
+  performer: Bytes #! address
+  completionRatingSum: BigInt!
+  numberOfCompletionRaters: BigInt!
+  status: String! # string
+  taskOffers: [ActiveTaskOffer!]! @derivedFrom(field: "task")
+  blockNumber: BigInt!
+}
+
+type ActiveTaskOffer @entity {
+  id: ID!
+  offerId: BigInt! # uint256
+  taskId: BigInt! # uint256
+  task: Task!
+  offeror: Bytes! # address
+  ratingCount: BigInt!
+  ratingSum: BigInt!
+  isActive: Boolean!
+  blockNumber: BigInt!
+}
+
+type UserTaskOfferRating @entity {
+  id: ID!
+  offerId: BigInt! # uint256
+  rater: Bytes! # address
+  rating: BigInt! # uint256
+  blockNumber: BigInt!
+}
+
+type UserTaskCompletionRating @entity {
+  id: ID!
+  offerId: BigInt! # uint256
+  rater: Bytes! # address
+  rating: BigInt! # uint256
+  blockNumber: BigInt!
+}
+
 type NewPerformerRemovalOffer @entity(immutable: true) {
   id: Bytes!
   taskId: BigInt! # uint256

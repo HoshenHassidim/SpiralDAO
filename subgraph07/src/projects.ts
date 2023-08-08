@@ -8,8 +8,8 @@ import {
   ProjectManagerRemovalOfferCancelled as ProjectManagerRemovalOfferCancelledEvent,
   ProjectManagerRemovalOfferRated as ProjectManagerRemovalOfferRatedEvent,
   ProjectManagerResigned as ProjectManagerResignedEvent,
-  ProjectManagerVotedOut as ProjectManagerVotedOutEvent
-} from "../generated/Projects/Projects"
+  ProjectManagerVotedOut as ProjectManagerVotedOutEvent,
+} from "../generated/Projects/Projects";
 import {
   ManagementOfferCancelled,
   ManagementOfferRated,
@@ -20,22 +20,97 @@ import {
   ProjectManagerRemovalOfferCancelled,
   ProjectManagerRemovalOfferRated,
   ProjectManagerResigned,
-  ProjectManagerVotedOut
-} from "../generated/schema"
+  ProjectManagerVotedOut,
+  Project,
+  ActiveManagementOffer,
+  UserManagementOfferRating,
+} from "../generated/schema";
+import {
+  BigInt,
+  Bytes,
+  store,
+  Address,
+  crypto,
+  ethereum,
+  log,
+} from "@graphprotocol/graph-ts";
+
+export function handleNewProject(event: NewProjectEvent): void {
+  let entity = new NewProject(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  entity.projectId = event.params.projectId;
+
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
+
+  entity.save();
+
+  let idString = event.params.projectId.toString();
+  let project = new Project(idString);
+  project.projectId = event.params.projectId;
+  project.projectManager = Address.fromString(
+    "0x0000000000000000000000000000000000000000"
+  );
+  project.isOpenForManagementProposals = true;
+  project.blockNumber = event.block.number;
+  project.save();
+}
+
+export function handleNewManagementOffer(event: NewManagementOfferEvent): void {
+  let entity = new NewManagementOffer(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  entity.offerId = event.params.offerId;
+  entity.projectId = event.params.projectId;
+  entity.proposer = event.params.proposer;
+
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
+
+  entity.save();
+
+  let idString = event.params.offerId.toString();
+  let activeManagementOffer = new ActiveManagementOffer(idString);
+
+  activeManagementOffer.offerId = event.params.offerId;
+  activeManagementOffer.projectId = event.params.projectId;
+  activeManagementOffer.proposer = event.params.proposer;
+  activeManagementOffer.ratingCount = BigInt.fromI32(0);
+  activeManagementOffer.ratingSum = BigInt.fromI32(0);
+  activeManagementOffer.isActive = true;
+  let idStringProjectId = event.params.projectId.toString();
+  let project = Project.load(idStringProjectId);
+  if (project) {
+    activeManagementOffer.project = project.id;
+  }
+  activeManagementOffer.blockNumber = event.block.number;
+
+  activeManagementOffer.save();
+}
 
 export function handleManagementOfferCancelled(
   event: ManagementOfferCancelledEvent
 ): void {
   let entity = new ManagementOfferCancelled(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.offerId = event.params.offerId
+  );
+  entity.offerId = event.params.offerId;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
+
+  let idString = event.params.offerId.toString();
+  let activeManagementOffer = ActiveManagementOffer.load(idString);
+
+  if (activeManagementOffer != null) {
+    store.remove("ActiveManagementOffer", idString);
+  }
 }
 
 export function handleManagementOfferRated(
@@ -43,61 +118,70 @@ export function handleManagementOfferRated(
 ): void {
   let entity = new ManagementOfferRated(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.offerId = event.params.offerId
-  entity.rater = event.params.rater
-  entity.rating = event.params.rating
+  );
+  entity.offerId = event.params.offerId;
+  entity.rater = event.params.rater;
+  entity.rating = event.params.rating;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
-}
+  entity.save();
 
-export function handleNewManagementOffer(event: NewManagementOfferEvent): void {
-  let entity = new NewManagementOffer(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.offerId = event.params.offerId
-  entity.projectId = event.params.projectId
-  entity.proposer = event.params.proposer
+  let idString = event.params.offerId.toString();
+  let activeManagementOffer = ActiveManagementOffer.load(idString);
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  if (activeManagementOffer != null) {
+    // Create UserSolutionRatingId as bytes by combining problem ID and rater address
+    let userManagementOfferRatingIdString = idString.concat(
+      event.params.rater.toHex()
+    );
 
-  entity.save()
-}
+    // Load prev rating using UserSolutionRatingId bytes
+    let userManagementOfferRating = UserManagementOfferRating.load(
+      userManagementOfferRatingIdString
+    );
 
-export function handleNewProject(event: NewProjectEvent): void {
-  let entity = new NewProject(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.projectId = event.params.projectId
+    // Validate rating
+    let newRating = event.params.rating;
+    let minRating = BigInt.fromI32(1);
+    let maxRating = BigInt.fromI32(10);
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+    if (newRating.lt(minRating) || newRating.gt(maxRating)) {
+      log.warning("Invalid rating: {}", [newRating.toString()]);
+      return;
+    }
 
-  entity.save()
-}
+    let prevRatingValue = BigInt.fromI32(0);
+    if (userManagementOfferRating != null) {
+      prevRatingValue = userManagementOfferRating.rating;
+      // Update the rating in UserManagementOfferRating
+      userManagementOfferRating.rating = newRating;
+      userManagementOfferRating.save();
+    } else {
+      // If UserManagementOfferRating is null then create a new one
+      userManagementOfferRating = new UserManagementOfferRating(
+        userManagementOfferRatingIdString
+      );
+      userManagementOfferRating.offerId = event.params.offerId;
+      userManagementOfferRating.rater = event.params.rater;
+      userManagementOfferRating.rating = newRating;
+      userManagementOfferRating.blockNumber = event.block.number;
+      userManagementOfferRating.save();
 
-export function handleNewProjectManagerRemovalOffer(
-  event: NewProjectManagerRemovalOfferEvent
-): void {
-  let entity = new NewProjectManagerRemovalOffer(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.removalOfferId = event.params.removalOfferId
-  entity.projectId = event.params.projectId
-  entity.proposer = event.params.proposer
+      activeManagementOffer.ratingCount = activeManagementOffer.ratingCount.plus(
+        BigInt.fromI32(1)
+      );
+    }
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+    // Update ratingSum in ActiveManagementOffer
+    activeManagementOffer.ratingSum = activeManagementOffer.ratingSum
+      .minus(prevRatingValue)
+      .plus(newRating);
 
-  entity.save()
+    activeManagementOffer.save();
+  }
 }
 
 export function handleProjectManagerAssigned(
@@ -105,15 +189,45 @@ export function handleProjectManagerAssigned(
 ): void {
   let entity = new ProjectManagerAssigned(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.projectId = event.params.projectId
-  entity.projectManager = event.params.projectManager
+  );
+  entity.projectId = event.params.projectId;
+  entity.projectManager = event.params.projectManager;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
+
+  let idString = event.params.projectId.toString();
+  let project = Project.load(idString);
+  if (project) {
+    let managementOffers = project.managementOffers.load();
+    for (let i = 0; i < managementOffers.length; i++) {
+      managementOffers[i].isActive = false;
+      managementOffers[i].save();
+    }
+    project.projectManager = event.params.projectManager;
+    project.isOpenForManagementProposals = false;
+    project.save();
+  }
+}
+
+export function handleNewProjectManagerRemovalOffer(
+  event: NewProjectManagerRemovalOfferEvent
+): void {
+  let entity = new NewProjectManagerRemovalOffer(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  );
+  entity.removalOfferId = event.params.removalOfferId;
+  entity.projectId = event.params.projectId;
+  entity.proposer = event.params.proposer;
+
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
+
+  entity.save();
 }
 
 export function handleProjectManagerRemovalOfferCancelled(
@@ -121,14 +235,14 @@ export function handleProjectManagerRemovalOfferCancelled(
 ): void {
   let entity = new ProjectManagerRemovalOfferCancelled(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.removalOfferId = event.params.removalOfferId
+  );
+  entity.removalOfferId = event.params.removalOfferId;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
 
 export function handleProjectManagerRemovalOfferRated(
@@ -136,16 +250,16 @@ export function handleProjectManagerRemovalOfferRated(
 ): void {
   let entity = new ProjectManagerRemovalOfferRated(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.removalOfferId = event.params.removalOfferId
-  entity.rater = event.params.rater
-  entity.rating = event.params.rating
+  );
+  entity.removalOfferId = event.params.removalOfferId;
+  entity.rater = event.params.rater;
+  entity.rating = event.params.rating;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
 
 export function handleProjectManagerResigned(
@@ -153,14 +267,14 @@ export function handleProjectManagerResigned(
 ): void {
   let entity = new ProjectManagerResigned(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.projectId = event.params.projectId
+  );
+  entity.projectId = event.params.projectId;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
 
 export function handleProjectManagerVotedOut(
@@ -168,13 +282,13 @@ export function handleProjectManagerVotedOut(
 ): void {
   let entity = new ProjectManagerVotedOut(
     event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.removalOfferId = event.params.removalOfferId
-  entity.projectId = event.params.projectId
+  );
+  entity.removalOfferId = event.params.removalOfferId;
+  entity.projectId = event.params.projectId;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number;
+  entity.blockTimestamp = event.block.timestamp;
+  entity.transactionHash = event.transaction.hash;
 
-  entity.save()
+  entity.save();
 }
