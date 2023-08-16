@@ -1,14 +1,12 @@
-// "use client"
+// "use client";
+
 import { useState, useEffect } from "react";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 
 import abi from "../constants/Problems.json";
-import addresses from '../constants/networkMapping.json'
+import addresses from "../constants/networkMapping.json";
 
-import {
-  useContractWrite,
-  useAccount
-} from "wagmi";
+import { useContractWrite, useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
 
 // Toast notification

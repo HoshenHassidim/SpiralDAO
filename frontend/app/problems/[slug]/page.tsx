@@ -3,12 +3,11 @@ import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 // Stars
-import RatingSolutionsStars from '../../../components/RatingSolutionsStars.jsx'
-
+import RatingSolutionsStars from "../../../components/RatingSolutionsStars.jsx";
 
 // Wagmi write
 import { useContractWrite, useAccount } from "wagmi";
-import addresses from '../../../constants/networkMapping.json'
+import addresses from "../../../constants/networkMapping.json";
 
 // Graph reading
 import GET_NEW_PROBLEMS from "../../../constants/subgraphQueries";
@@ -30,7 +29,6 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   const [solution, setSolution] = useState();
   const { register, handleSubmit } = useForm();
 
-
   const { address, isConnecting, isDisconnected } = useAccount();
 
   const router = useRouter();
@@ -48,7 +46,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   }, [data]);
 
   // Wagmi propose a solution
-  const { raisedSolutionData, isLoading, isSuccess, write } = useContractWrite({
+  const { isLoading, isSuccess, write } = useContractWrite({
     address: addresses[4002].Solutions[0],
     abi: abi,
     functionName: "proposeSolution",
@@ -84,7 +82,6 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
 
   return (
     <div>
-
       <div className="overflow-x-hidden overflow-y-scroll h-screen">
         <Navbar />
 
@@ -137,7 +134,6 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
             ?.map((solution) => (
               <div className="">
                 <div className="flex flex-col">
-
                   <p>
                     {address && address.toLowerCase() == solution.creator
                       ? "Mine"
@@ -149,7 +145,6 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
                 </div>
 
                 <span className="">
-
                   {/* <RatingStars starRating={starRating} setStarRating={setStarRating} id={solution.problemId}/> */}
                   <RatingSolutionsStars id={solution.solutionId} />
                 </span>

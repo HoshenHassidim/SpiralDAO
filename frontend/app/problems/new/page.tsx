@@ -7,15 +7,10 @@ import { useRouter } from "next/navigation";
 
 import { useForm, SubmitHandler } from "react-hook-form";
 
-
-
 import abi from "../../../constants/Problems.json";
-import addresses from '../../../constants/networkMapping.json'
+import addresses from "../../../constants/networkMapping.json";
 
-import {
-  useContractWrite,
-  useAccount,
-} from "wagmi";
+import { useContractWrite, useAccount } from "wagmi";
 
 import createNotification from "../../../createNotification.js";
 
@@ -24,12 +19,19 @@ type Inputs = {
   exampleRequired: string;
 };
 
-export default function page() {
+export default function Page() {
   const { register, handleSubmit } = useForm();
   const [name, setName] = useState();
   const [description, setDescription] = useState("");
 
   const { address, isConnecting, isDisconnected } = useAccount();
+
+  const { data, isLoading, isSuccess, write } = useContractWrite({
+    address: addresses[4002].Problems[0],
+    abi: abi,
+    functionName: "raiseProblem",
+    args: [name],
+  });
 
   useEffect(() => {
     if (name) {
@@ -40,20 +42,13 @@ export default function page() {
         console.log(data);
       }
     }
-  }, [name]);
+  }, [name, address, data, write]);
   const onSubmit = async (data: any) => {
     console.log(data);
     await setName(data.title);
     // setDescription(data.description)
     // await write()
   };
-
-  const { data, isLoading, isSuccess, write } = useContractWrite({
-    address: addresses[4002].Problems[0],
-    abi: abi,
-    functionName: "raiseProblem",
-    args: [name],
-  });
 
   // Router instance to handle navigation
   const router = useRouter();
@@ -65,11 +60,10 @@ export default function page() {
       // Redirect to the main page when it is successful
       createNotification("Problem Poster", "success");
 
-
       router.push("/problems"); // Replace '/main' with your desired main page URL
       router.refresh();
     }
-  }, [isSuccess]);
+  }, [isSuccess, router]);
 
   return (
     <div className="overflow-x-hidden">
