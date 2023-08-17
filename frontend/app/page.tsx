@@ -1,11 +1,11 @@
 "use client";
 
-import { Web3Button } from "@web3modal/react";
+// import { Web3Button } from "@web3modal/react";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Image from "next/image";
 import { useAccount } from "wagmi";
-import GetProblemCounter from "../components/GetProblemCounter";
+// import GetProblemCounter from "../components/GetProblemCounter";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
