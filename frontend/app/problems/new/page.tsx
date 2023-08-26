@@ -14,11 +14,6 @@ import { useContractWrite, useAccount } from "wagmi";
 
 import createNotification from "../../../createNotification.js";
 
-type Inputs = {
-  example: string;
-  exampleRequired: string;
-};
-
 export default function Page() {
   const { register, handleSubmit } = useForm();
   const [name, setName] = useState();
@@ -27,7 +22,7 @@ export default function Page() {
   const { address, isConnecting, isDisconnected } = useAccount();
 
   const { data, isLoading, isSuccess, write } = useContractWrite({
-    address: addresses[4002].Problems[0],
+    address: addresses[4002].Problems[0] as `0x${string}`,
     abi: abi,
     functionName: "raiseProblem",
     args: [name],

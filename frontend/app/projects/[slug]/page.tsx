@@ -18,8 +18,14 @@ import Link from "next/link";
 
 import Navbar from "../../../components/Navbar";
 
-import GET_NEW_PROJECTS from "../../../constants/subgraphQueryGetProject";
-import GET_NEW_PROBLEMS from "../../../constants/subgraphQueries";
+import GET_PROJECTS_PAGE from "../../../constants/subgraphQueryGetProject";
+import {
+  ActiveProblemType,
+  ActiveSolutionType,
+  CustomError,
+  ProjectType,
+  Task,
+} from "@/common.types";
 
 export default function ProblemPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
@@ -27,34 +33,31 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
 
   // Graph to fetch problems and projects
   const {
-    loading,
+    loading: projectLoading,
     error: subgraphQueryError,
-    data,
-  } = useQuery(GET_NEW_PROJECTS);
+    data: projectData,
+  } = useQuery(GET_PROJECTS_PAGE);
 
-  const {
-    loading: problemLoading,
-    error: subgraphQueryErrorProblem,
-    data: problemData,
-  } = useQuery(GET_NEW_PROBLEMS);
-
-  if (data) {
-    console.log(data);
+  if (projectData) {
+    console.log(projectData);
   }
-  const currentProject = data?.projects.find(
-    (p) => p.projectId === params.slug
+  const currentProject = projectData?.projects.find(
+    (pj: ProjectType) => pj.projectId === BigInt(params.slug)
   );
 
   //Wagmi to propose as a offer (manager)
-  const { proposedOfferData, isLoading, isSuccess, write } = useContractWrite({
-    address: addresses[4002].Projects[0],
+  const { data, isLoading, isSuccess, write } = useContractWrite({
+    address: addresses[4002].Projects[0] as `0x${string}`,
     abi: abi,
     functionName: "proposeOffer",
     args: [params.slug],
-    onError(error) {
-      createNotification(error.metaMessages[0], "error");
+    onError(error: CustomError) {
+      createNotification(
+        error.metaMessages ? error.metaMessages[0] : "An error occurred",
+        "error"
+      );
     },
-    onSuccess(data) {
+    onSuccess(projectData) {
       createNotification("Successfully proposed for a manager role", "success");
     },
   });
@@ -77,23 +80,22 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
           <section className="projectInfo">
             {params.slug}
 
-            {problemData &&
-              data &&
-              data.projects.map((project) => {
-                if (project.projectId == params.slug) {
-                  let solution = problemData.activeSolutions.find(
-                    (p) => p.solutionId == project.projectId
+            {projectData &&
+              projectData.projects.map((project: ProjectType) => {
+                if (project.projectId == BigInt(params.slug)) {
+                  let solution = projectData.activeSolutions.find(
+                    (s: ActiveSolutionType) => s.solutionId == project.projectId
                   );
-                  let problem = problemData.activeProblems.find(
-                    (p) => p.problemId == project.projectId
+                  let problem = projectData.activeProblems.find(
+                    (p: ActiveProblemType) => p.problemId == project.projectId
                   );
                   return (
-                    <div>
+                    <div key={project.projectId.toString()}>
                       <div className="flex flex-col">
                         <span className="self-end">
                           By{" "}
                           {address && address.toLowerCase() == problem.creator
-                            ? "Mine"
+                            ? "My Problem"
                             : problem.creator.substr(0, 4) +
                               "..." +
                               problem.creator.substr(
@@ -113,7 +115,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
                             By{" "}
                             {address &&
                             address.toLowerCase() == solution.creator
-                              ? "Mine"
+                              ? "My Solution"
                               : solution.creator.substr(0, 4) +
                                 "..." +
                                 solution.creator.substr(
@@ -130,11 +132,14 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
           </section>
           <section>
             <h2 className="text-xl mt-5">Tasks</h2>
-            {data &&
-              data.tasks.map((task) => {
-                if (task.projectId === params.slug) {
+            {projectData &&
+              projectData.tasks.map((task: Task) => {
+                if (task.projectId === BigInt(params.slug)) {
                   return (
-                    <div className="flex flex-col items-center">
+                    <div
+                      key={task.taskId.toString()}
+                      className="flex flex-col items-center"
+                    >
                       <span>{task.taskName}</span>
                       <span>
                         {task.performer ==
@@ -175,13 +180,16 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
                 </button>
               </div>
 
-              {data?.activeProjectOffers.map((offer: any) => {
+              {projectData?.activeProjectOffers.map((offer: any) => {
                 {
                   console.log(offer);
                 }
                 if (offer.projectId === params.slug) {
                   return (
-                    <div className="flex flex-col items-center">
+                    <div
+                      key={offer.offerId.toString()}
+                      className="flex flex-col items-center"
+                    >
                       <span>{offer.proposer}</span>
 
                       <div className="flex flex-row">

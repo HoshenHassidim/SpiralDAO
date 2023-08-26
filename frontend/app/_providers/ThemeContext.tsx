@@ -6,10 +6,13 @@ import React, {
   ReactNode,
 } from "react";
 
+// Define a specific type for the theme
+type Theme = "dark" | "light";
+
 // Define the type for the theme context value
 type ThemeContextType = {
-  theme: string;
-  setTheme: React.Dispatch<React.SetStateAction<string>>;
+  theme: Theme;
+  setTheme: React.Dispatch<React.SetStateAction<Theme>>;
 };
 
 // Provide a default value for the context
@@ -20,7 +23,7 @@ type ThemeProviderProps = {
 };
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<string>("light");
+  const [theme, setTheme] = useState<Theme>("light");
 
   // Update the theme in the local storage when it changes
   useEffect(() => {

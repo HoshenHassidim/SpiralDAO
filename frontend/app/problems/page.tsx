@@ -2,33 +2,29 @@
 
 import Navbar from "../../components/Navbar";
 import Problem from "../../components/Problem";
-
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
-
-//graph
 import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
-
 import { useState, useEffect } from "react";
+import { ProblemType } from "@/common.types";
+import { useAccount } from "wagmi";
 
-interface ProblemType {
-  problemId: string;
-  name: string;
-  creator: string;
-}
+export default function ProblemsPage() {
+  const { address, isConnecting, isDisconnected } = useAccount();
 
-export default function Problems() {
   const {
     loading,
     error: subgraphQueryError,
     data,
-  } = useQuery(GET_NEW_PROBLEMS);
+  } = useQuery(GET_NEW_PROBLEMS, {
+    // variables: { address: address },
+    pollInterval: 500,
+  });
 
   return (
     <div className="overflow-x-hidden">
       <Navbar />
-
       <section className="flex flex-col items-center justify-center gap-5 p-5">
         {data?.activeProblems.map((problem: ProblemType) => (
           <Problem

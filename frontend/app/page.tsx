@@ -3,15 +3,15 @@
 // import { Web3Button } from "@web3modal/react";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import Image from "next/image";
-import { useAccount } from "wagmi";
+// import Image from "next/image";
+// import { useAccount } from "wagmi";
 // import GetProblemCounter from "../components/GetProblemCounter";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const { address, isConnecting, isDisconnected } = useAccount();
+  // const { address, isConnecting, isDisconnected } = useAccount();
 
   if (!mounted) return <></>;
 
@@ -33,13 +33,13 @@ export default function Home() {
         </div>
 
         <div>
-          <Image
+          {/* <Image
             src="/assets/spiral_hero_image.png"
             className="max-w-md z-30"
             width={450}
             height={450}
             alt="Spiral hero image"
-          />
+          /> */}
         </div>
       </div>
 

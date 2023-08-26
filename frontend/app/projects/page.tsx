@@ -8,82 +8,29 @@ import { AiOutlinePlus } from "react-icons/ai";
 
 //graph
 import type { NextPage } from "next";
-import GET_NEW_PROJECTS from "../../constants/subgraphQueryGetProject";
-import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
+import GET_PROJECTS_PAGE from "../../constants/subgraphQueryGetProject";
 import { useQuery } from "@apollo/client";
 import { useState, useEffect } from "react";
 //toast
 import createNotification from "../../createNotification.js";
-
-interface ActiveProblemType {
-  id: string;
-  problemId: BigInt;
-  creator: string;
-  name: string;
-  ratingCount: BigInt;
-  ratingSum: BigInt;
-  solutions: ActiveSolutionType[];
-  isOpenForRating: boolean;
-  isOpenForNewSolutions: boolean;
-  blockNumber: BigInt;
-}
-
-interface ActiveSolutionType {
-  id: string;
-  solutionId: BigInt;
-  problemId: BigInt;
-  problem: ActiveProblemType;
-  creator: string;
-  name: string;
-  ratingCount: BigInt;
-  ratingSum: BigInt;
-  isOpenForRating: boolean;
-  hasProject: boolean;
-  blockNumber: BigInt;
-}
-interface ProjectType {
-  id: string;
-  projectId: BigInt;
-  projectManager: string; // Assuming Bytes translates to string in TypeScript for the address. Adjust if needed.
-  isOpenForManagementProposals: boolean;
-  managementOffers: ActiveManagementOfferType[];
-  blockNumber: BigInt;
-}
-
-interface ActiveManagementOfferType {
-  id: string;
-  offerId: BigInt;
-  projectId: BigInt;
-  project: ProjectType;
-  proposer: string; // Adjust if needed.
-  ratingCount: BigInt;
-  ratingSum: BigInt;
-  isActive: boolean;
-  blockNumber: BigInt;
-}
-
-interface ErrorType {
-  metaMessages: string[];
-  // ... any other properties that the error might have.
-}
+import {
+  ActiveProblemType,
+  ActiveSolutionType,
+  ErrorType,
+  ProjectType,
+} from "@/common.types";
 
 export default function Projects() {
   const [error, setError] = useState<ErrorType | null>(null);
+
   const {
-    loading,
+    loading: projectLoading,
     error: subgraphQueryError,
-    data,
-  } = useQuery(GET_NEW_PROJECTS);
+    data: projectData,
+  } = useQuery(GET_PROJECTS_PAGE);
 
-  const {
-    loading: problemLoading,
-    error: subgraphQueryErrorProblem,
-    data: problemData,
-  } = useQuery(GET_NEW_PROBLEMS);
-
-  if (data) {
-    console.log(data);
-    console.log(problemData);
+  if (projectData) {
+    console.log(projectData);
   }
 
   useEffect(() => {
@@ -100,20 +47,19 @@ export default function Projects() {
 
       {/* <ToastContainer /> */}
       <section className="flex flex-col items-center justify-center gap-5 p-5">
-        {problemData &&
-          data &&
-          data.projects.map((project: ProjectType) => {
+        {projectData &&
+          projectData.projects.map((project: ProjectType) => {
             // <Problem key={project.projectID} id={project.projectID} title={project.name} creator={project.creator} setError={setError}/>
             // project.projectId
-            let solution = problemData.activeSolutions.find(
+            let solution = projectData.activeSolutions.find(
               (p: ActiveSolutionType) =>
-                p.hasProject && p.solutionId === project.projectId
+                p.hasProject && p.solutionId == project.projectId
             );
             console.log("solution found:", solution);
 
             if (solution) {
               console.log("Matching solution found:", solution);
-              let problem = problemData.activeProblems.find(
+              let problem = projectData.activeProblems.find(
                 (p: ActiveProblemType) => p.problemId === solution.problemId
               );
 

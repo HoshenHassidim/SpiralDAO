@@ -1,8 +1,9 @@
 import { gql } from "@apollo/client";
 
 // See more example queries on https://thegraph.com/explorer/subgraph/protofire/maker-protocol
-const GET_NEW_PROBLEMS = gql`
-  query {
+// GET_PROBLEMS_PAGE that returns the list of problems and solutions
+const GET_PROBLEMS_PAGE = gql`
+  query ActiveProblems {
     problemRateds(orderBy: blockNumber, orderDirection: desc) {
       problemId
       rater
@@ -21,6 +22,7 @@ const GET_NEW_PROBLEMS = gql`
       rater
       rating
     }
+
     activeSolutions(orderBy: blockNumber, orderDirection: desc) {
       solutionId
       problemId
@@ -35,12 +37,6 @@ const GET_NEW_PROBLEMS = gql`
       rater
       rating
     }
-
-    tokenBalances(first: 5) {
-      member
-      projectId
-      balance
-    }
   }
 `;
-export default GET_NEW_PROBLEMS;
+export default GET_PROBLEMS_PAGE;

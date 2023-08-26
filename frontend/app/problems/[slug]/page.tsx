@@ -16,14 +16,38 @@ import { useQuery } from "@apollo/client";
 
 // Toast notification
 import createNotification from "../../../createNotification.js";
-
 import abi from "../../../constants/Solutions.json";
-
 import { useState, useEffect } from "react";
-
 import Link from "next/link";
-
 import Navbar from "../../../components/Navbar";
+import { CustomError, ProblemDataType } from "@/common.types.js";
+
+interface ActiveProblemType {
+  id: string;
+  problemId: BigInt;
+  creator: string;
+  name: string;
+  ratingCount: BigInt;
+  ratingSum: BigInt;
+  solutions: ActiveSolutionType[];
+  isOpenForRating: boolean;
+  isOpenForNewSolutions: boolean;
+  blockNumber: BigInt;
+}
+
+interface ActiveSolutionType {
+  id: string;
+  solutionId: BigInt;
+  problemId: BigInt;
+  problem: ActiveProblemType;
+  creator: string;
+  name: string;
+  ratingCount: BigInt;
+  ratingSum: BigInt;
+  isOpenForRating: boolean;
+  hasProject: boolean;
+  blockNumber: BigInt;
+}
 
 export default function ProblemPage({ params }: { params: { slug: string } }) {
   const [solution, setSolution] = useState();
@@ -34,7 +58,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
 
   // Fetching the problem from id
-  const [problemData, setProblemData] = useState();
+  const [problemData, setProblemData] = useState<ProblemDataType | null>(null);
   const { loading, error, data } = useQuery(GET_PROBLEM, {
     variables: { id: params.slug },
   });
@@ -47,12 +71,15 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
 
   // Wagmi propose a solution
   const { isLoading, isSuccess, write } = useContractWrite({
-    address: addresses[4002].Solutions[0],
+    address: addresses[4002].Solutions[0] as `0x${string}`,
     abi: abi,
     functionName: "proposeSolution",
     args: [params.slug, solution],
-    onError(error) {
-      createNotification(error.metaMessages[0], "error");
+    onError(error: CustomError) {
+      createNotification(
+        error.metaMessages ? error.metaMessages[0] : "An error occurred",
+        "error"
+      );
     },
     onSuccess(data) {
       createNotification("Solution posted", "success");
@@ -127,12 +154,14 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
 
         <section className="flex flex-col items-center justify-center gap-4">
           {readSolutionsData?.activeSolutions?.filter(
-            (s) => s.problemId === params.slug
+            (s: ActiveSolutionType) => s.problemId === BigInt(params.slug)
           ).length !== 0 && <h3 className="text-xl">Solutions</h3>}
           {readSolutionsData?.activeSolutions
-            ?.filter((s) => s.problemId === params.slug)
-            ?.map((solution) => (
-              <div className="">
+            ?.filter(
+              (s: ActiveSolutionType) => s.problemId === BigInt(params.slug)
+            )
+            ?.map((solution: ActiveSolutionType) => (
+              <div key={solution.solutionId.toString()}>
                 <div className="flex flex-col">
                   <p>
                     {address && address.toLowerCase() == solution.creator

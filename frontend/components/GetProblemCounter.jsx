@@ -1,3 +1,3 @@
-export default function GetProblemCounter() {
-  return <div>{"100"}</div>;
-}
+// export default function GetProblemCounter() {
+//   return <div>{"100"}</div>;
+// }
