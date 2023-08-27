@@ -19,7 +19,7 @@ import createNotification from "../../../createNotification.js";
 import abi from "../../../constants/Solutions.json";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Navbar from "../../../components/Navbar";
+import Navbar from "../../../components/Navbar.jsx";
 import { CustomError, ProblemDataType } from "@/common.types.js";
 
 interface ActiveProblemType {

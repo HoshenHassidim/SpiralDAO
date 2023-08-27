@@ -11,6 +11,7 @@ export interface ActiveProblemType {
   isOpenForRating: boolean;
   isOpenForNewSolutions: boolean;
   blockNumber: BigInt;
+  status: string;
 }
 
 export interface ActiveSolutionType {

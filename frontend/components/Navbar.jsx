@@ -140,8 +140,6 @@ export default function Navbar() {
         <div
           className="relative group hover:bg-blue-600 rounded-md"
           ref={engageRef}
-          onMouseEnter={() => setEngageOpen(true)} // Open on hover
-          onMouseLeave={() => setEngageOpen(false)} // Close when mouse leaves
         >
           <button
             className="text-2xl font-semibold text-white px-4 py-2"
@@ -155,7 +153,7 @@ export default function Navbar() {
           {isEngageOpen && (
             <div className="absolute left-0 w-48 text-base z-10 bg-white dark:bg-neutral-gray rounded-md">
               <Link
-                href="/problems"
+                href="/engage"
                 className="block px-4 py-2 hover:bg-gray-100 nav__link"
               >
                 All Problems
@@ -215,7 +213,7 @@ export default function Navbar() {
         </div>
 
         {/* Search Bar */}
-        <div className="ml-10 relative">
+        {/* <div className="ml-10 relative">
           <input
             className="bg-white pl-10 pr-4 py-2 rounded-lg shadow-md w-72 focus:outline-none"
             type="text"
@@ -224,7 +222,7 @@ export default function Navbar() {
           <div className="absolute left-3 top-1/2 -translate-y-1/2">
             <i className="fa fa-search text-gray-500" aria-hidden="true"></i>
           </div>
-        </div>
+        </div> */}
 
         {/* Theme Switch */}
         <div className="ml-5">

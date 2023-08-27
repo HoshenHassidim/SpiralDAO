@@ -9,12 +9,13 @@ const GET_PROBLEMS_PAGE = gql`
       rater
       rating
     }
-    activeProblems(orderBy: blockNumber, orderDirection: desc) {
+    activeProblems {
       problemId
       name
       creator
-      ratingSum
       ratingCount
+      isOpenForRating
+      isOpenForNewSolutions
     }
 
     userSolutionRatings(orderBy: blockNumber, orderDirection: desc) {
