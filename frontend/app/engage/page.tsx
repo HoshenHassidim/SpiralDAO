@@ -7,7 +7,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
 import { useQuery } from "@apollo/client";
 import { useState, useEffect } from "react";
-import { ActiveProblemType } from "@/common.types";
+import { ActiveProblemType, UserProblemRating } from "@/common.types";
 import { useAccount } from "wagmi";
 
 function status(problem: ActiveProblemType) {
@@ -35,12 +35,27 @@ export default function EngagePage() {
   const [filterStatus, setFilterStatus] = useState("All Problems");
   const [filterEngage, setFilterEngage] = useState("everything");
   const [sortDate, setSortDate] = useState("Newest");
+  const [filterRated, setFilterRated] = useState("All");
+  const [isClient, setIsClient] = useState(false);
+
+  function getUserRatingForProblem(problemId: BigInt) {
+    if (data && data.userProblemRatings) {
+      const userRating = data.userProblemRatings.find(
+        (rating: UserProblemRating) =>
+          rating.problemId === problemId &&
+          rating.rater.toLowerCase() === address?.toLowerCase()
+      );
+      return userRating ? userRating.rating : 0;
+    }
+    return 0;
+  }
 
   const filteredProblems =
     data && data.activeProblems
       ? data.activeProblems.filter((problem: ActiveProblemType) => {
           let meetsStatusCondition = false;
-          let meetsCreatorCondition = false;
+          let meetsCreatorCondition = true;
+          let meetsRatingCondition = true;
 
           // Handle Status filter
           switch (filterStatus) {
@@ -56,20 +71,40 @@ export default function EngagePage() {
               meetsStatusCondition = true;
           }
 
-          // Handle Creator filter
-          switch (filterEngage) {
-            case "my problems":
-              meetsCreatorCondition =
-                problem.creator.toLowerCase() === address?.toLowerCase();
-              break;
-            case "not my problem":
-              meetsCreatorCondition = problem.creator !== address;
-              break;
-            default: // For "All Problems"
-              meetsCreatorCondition = true;
+          if (address) {
+            // Handle Creator filter
+            switch (filterEngage) {
+              case "my problems":
+                meetsCreatorCondition =
+                  problem.creator.toLowerCase() === address?.toLowerCase();
+                break;
+              case "not my problem":
+                meetsCreatorCondition = address
+                  ? problem.creator.toLowerCase() !== address.toLowerCase()
+                  : true;
+                break;
+              default: // For "All Problems"
+                meetsCreatorCondition = true;
+            }
+            switch (filterRated) {
+              case "Rated":
+                meetsRatingCondition =
+                  getUserRatingForProblem(problem.problemId) > 0;
+                break;
+              case "Not Rated":
+                meetsRatingCondition =
+                  getUserRatingForProblem(problem.problemId) === 0;
+                break;
+              default: // For "All"
+                meetsRatingCondition = true;
+            }
           }
 
-          return meetsStatusCondition && meetsCreatorCondition;
+          return (
+            meetsStatusCondition &&
+            meetsCreatorCondition &&
+            meetsRatingCondition
+          );
         })
       : [];
 
@@ -83,6 +118,10 @@ export default function EngagePage() {
       return a.problemId.valueOf() - b.problemId.valueOf();
     });
   }
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <div className="overflow-x-hidden">
@@ -111,14 +150,12 @@ export default function EngagePage() {
             <option>Awaiting Ranking</option>
             <option>In Solution Phase</option>
           </select>
-
           {/* <label>Category/Topic:</label>
           <select className="input-field">
             <option>Technology</option>
             <option>Environment</option>
             <option>Social Issues</option>
           </select> */}
-
           <label>Date Added:</label>
           <select
             className="input-field"
@@ -128,17 +165,31 @@ export default function EngagePage() {
             <option>Newest</option>
             <option>Oldest</option>
           </select>
+          {isClient && address && (
+            <div>
+              <label>My Intervention:</label>
+              <select
+                className="input-field"
+                value={filterEngage}
+                onChange={(e) => setFilterEngage(e.target.value)}
+              >
+                <option value="everything">All Problems</option>
+                <option value="my problems">My Problems</option>
+                <option value="not my problem">Others' Problems</option>
+              </select>
 
-          <label>My Intervention:</label>
-          <select
-            className="input-field"
-            value={filterEngage}
-            onChange={(e) => setFilterEngage(e.target.value)}
-          >
-            <option value="everything">All Problems</option>
-            <option value="my problems">My Problems</option>
-            <option value="not my problem">Others' Problems</option>
-          </select>
+              <label>Rating:</label>
+              <select
+                className="input-field"
+                value={filterRated}
+                onChange={(e) => setFilterRated(e.target.value)}
+              >
+                <option>All</option>
+                <option>Rated</option>
+                <option>Not Rated</option>
+              </select>
+            </div>
+          )}
         </div>
 
         {/* <div className="flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
@@ -163,6 +214,7 @@ export default function EngagePage() {
             isOpenForNewSolutions={problem.isOpenForNewSolutions}
             userAddress={address}
             status={status(problem)}
+            userPreviousRating={getUserRatingForProblem(problem.problemId)}
           />
         ))}
       </section>

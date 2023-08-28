@@ -4,7 +4,7 @@ import { gql } from "@apollo/client";
 // GET_PROBLEMS_PAGE that returns the list of problems and solutions
 const GET_PROBLEMS_PAGE = gql`
   query ActiveProblems {
-    problemRateds(orderBy: blockNumber, orderDirection: desc) {
+    userProblemRatings {
       problemId
       rater
       rating

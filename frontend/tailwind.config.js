@@ -26,6 +26,12 @@ module.exports = {
         primary: ["Roboto", "sans-serif"],
         secondary: ["Lato", "sans-serif"],
       },
+      spacing: {
+        72: "18rem",
+        80: "20rem",
+        88: "22rem",
+        96: "24rem",
+      },
     },
   },
   plugins: [],

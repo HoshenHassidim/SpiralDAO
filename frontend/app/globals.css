@@ -1,151 +1,177 @@
 /* globals.css */
+
+/* Imports */
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+/* Base Styles */
 body {
-  @apply text-primary font-primary bg-white leading-relaxed tracking-normal text-base;
+  @apply text-primary font-primary bg-white leading-relaxed tracking-normal text-base transition-colors duration-300;
 }
-
-.dark {
-  @apply bg-neutral-gray text-white;
-}
-
-/* Typography */
-.title {
-  @apply text-4xl font-bold;
-}
-
-.subtitle {
-  @apply text-2xl font-semibold;
-}
-
-.body-text {
-  @apply text-base;
-}
-
-.small-text {
-  @apply text-sm;
-}
-
-.caption {
-  @apply text-xs;
-}
-
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  @apply font-primary;
+  @apply font-primary mb-4;
+}
+
+/* Typography */
+.title {
+  @apply text-4xl font-bold mb-4;
+}
+.subtitle {
+  @apply text-2xl font-semibold mb-3;
+}
+.body-text {
+  @apply text-base mb-2;
+}
+.small-text {
+  @apply text-sm mb-1;
+}
+.caption {
+  @apply text-xs;
+}
+
+/* Dark Mode */
+.dark {
+  @apply bg-neutral-gray text-democracy-beige;
+}
+.dark .card {
+  @apply bg-neutral-gray text-democracy-beige shadow-md transition-colors duration-300 ease-in-out;
+}
+.dark .subtitle,
+.dark .title {
+  @apply text-white;
+}
+.dark .btn-primary {
+  @apply bg-blue-600 text-white;
+}
+.dark .btn-primary:hover {
+  @apply bg-blue-700;
+}
+
+/* Transitions & Effects */
+.transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+.hover\:grow:hover {
+  transform: scale(1.05);
+}
+.hover\:shrink:hover {
+  transform: scale(0.95);
+}
+.focus-ring:focus {
+  @apply ring-4 ring-future-neon;
 }
 
 /* Buttons */
 .btn-primary {
-  @apply bg-tech-blue text-white py-2 px-4 rounded;
+  @apply shadow-md hover:shadow-lg bg-tech-blue text-white py-2 px-4 rounded transition-transform transform-gpu hover:scale-105 active:scale-95;
 }
-
 .btn-primary:hover {
   @apply bg-blue-600;
 }
-
-.btn-primary:active {
-  @apply bg-blue-700;
-}
-
 .btn-primary:disabled {
   @apply bg-gray-400 cursor-not-allowed;
 }
-
 .btn-primary:focus {
   @apply outline-none;
 }
 
-/* Ensures that the dropdown remains open when the user hovers over the dropdown content */
-.group:hover .group-hover\:block {
-  display: block;
-}
-
-/* Rounded corners for the dropdown */
-.group:hover .group-hover\:rounded-md {
-  border-radius: 0.375rem;
-}
-
-/* Cards & Popups */
-.card {
-  @apply bg-white shadow-lg rounded p-4 md:p-6;
-}
-
-.dark .card {
-  @apply bg-neutral-gray text-white;
-}
-
-/* Forms */
+/* Form Elements */
 .input-field {
-  @apply border-b border-tech-blue bg-transparent p-2;
+  @apply border-b border-tech-blue bg-transparent p-2 transition duration-300 ease-in-out;
 }
-
+.input-field:focus {
+  @apply border-future-neon;
+}
 .mandatory-field::before {
   content: "*";
   @apply text-tech-blue;
 }
 
-.input-field:focus {
-  @apply border-tech-blue outline-none;
+/* Containers & Layout */
+.container {
+  @apply max-w-7xl mx-auto px-6;
 }
-
-/* Spacing Utilities */
 .section-padding {
-  @apply p-8;
+  @apply p-10;
 }
-
 .card-spacing {
-  @apply m-4;
+  @apply m-6;
 }
-
 .btn-spacing {
   @apply my-2 mx-1;
 }
 
-/* Flexbox & Grid Utilities */
+/* Grid & Flex Utilities */
 .flex-center {
   @apply flex justify-center items-center;
 }
-
 .grid-2cols {
   @apply grid grid-cols-2 gap-4;
 }
-
 .grid-3cols {
   @apply grid grid-cols-3 gap-4;
 }
-
-/* Dark Mode Enhancements */
-
-.toggle__dot {
-  transition: all 0.3s ease-in-out;
+.flex-col-center {
+  @apply flex flex-col items-center;
 }
 
-input:checked ~ .toggle__dot {
-  transform: translateX(100%);
-  background-color: #48bb78;
+/* Cards & Popups */
+.card {
+  @apply bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl transform hover:-translate-y-1;
 }
 
-body.dark {
-  /* Add your dark mode styles here */
-  --tw-bg-opacity: 1;
-  background-color: rgba(17, 24, 39, var(--tw-bg-opacity));
+/* Icons & Badges */
+.icon {
+  @apply w-6 h-6 fill-current transition-all duration-300;
+}
+.icon:hover {
+  @apply w-7 h-7;
+}
+.badge-tech {
+  @apply bg-tech-blue text-white py-1 px-3 rounded;
+}
+.badge-growth {
+  @apply bg-growth-green text-white py-1 px-3 rounded;
+}
+.badge-community {
+  @apply bg-community-coral text-white py-1 px-3 rounded;
+}
+.badge-tech:hover,
+.badge-growth:hover,
+.badge-community:hover {
+  @apply shadow-md;
 }
 
-.dark .btn-primary {
-  @apply bg-blue-600 text-white;
+/* Responsive Styling */
+@media screen and (max-width: 640px) {
+  .mobile-text-lg {
+    @apply text-lg;
+  }
+  .container {
+    @apply px-4;
+  }
+}
+@media screen and (min-width: 641px) and (max-width: 1024px) {
+  .tablet-text-xl {
+    @apply text-xl;
+  }
+}
+@media (min-width: 1024px) {
+  .section-padding {
+    @apply p-20;
+  }
 }
 
-.dark .btn-primary:hover {
-  @apply bg-blue-700;
+/* Mobile Navigation */
+.hamburger {
+  display: none;
 }
-
 .nav-mobile-active {
   transform: translateX(0);
 }
@@ -161,14 +187,33 @@ body.dark {
   z-index: 20;
   padding-top: 60px;
 }
-.hamburger {
-  display: none; /* Hide by default */
-}
 @media screen and (max-width: 768px) {
   .hamburger {
-    display: block; /* Show when screen is small */
+    display: block;
   }
   .desktop-nav {
-    display: none; /* Hide desktop navigation when screen is small */
+    display: none;
   }
+}
+
+/* Dropdown Enhancements */
+.group:hover .group-hover\:block {
+  display: block;
+}
+.group:hover .group-hover\:rounded-md {
+  border-radius: 0.375rem;
+}
+
+/* Dark Mode Toggle */
+.toggle__dot {
+  transition: all 0.3s ease-in-out;
+}
+input:checked ~ .toggle__dot {
+  transform: translateX(100%);
+  background-color: #48bb78;
+}
+body.dark {
+  transition: background-color 0.3s ease;
+  --tw-bg-opacity: 1;
+  background-color: rgba(17, 24, 39, var(--tw-bg-opacity));
 }

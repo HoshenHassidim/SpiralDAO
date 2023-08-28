@@ -17,8 +17,10 @@ export default function Problem({
   isOpenForNewSolutions,
   userAddress,
   status,
+  userPreviousRating,
 }) {
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(userPreviousRating);
+  const [previousRating, setPreviousRating] = useState(userPreviousRating);
   const [hover, setHover] = useState(0);
   const { address } = useAccount();
   const router = useRouter();
@@ -37,19 +39,20 @@ export default function Problem({
   });
 
   useEffect(() => {
-    if (rating) {
+    if (rating !== previousRating) {
       if (!address) {
         createNotification("Please connect your wallet to rate", "error");
       } else {
         write();
+        setPreviousRating(rating); // Set the new rating as the previous rating
       }
     }
-  }, [rating]);
+  }, [rating, previousRating, address, write]);
 
   if (!(isOpenForRating || isOpenForNewSolutions)) return null; // Don't render if none are true
 
   return (
-    <div className="cursor-pointer bg-gray-700 flex flex-col justify-between gap-5 rounded-lg p-5 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg">
+    <div className="cursor-pointer bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
       <span className="self-end">
         {userAddress?.toLowerCase() === creator
           ? "Mine"
@@ -78,9 +81,19 @@ export default function Problem({
                         : "text-gray-300"
                     }`}
                     onMouseEnter={() => setHover(index)}
-                    onMouseLeave={() => setHover(rating / 2)}
+                    onMouseLeave={() =>
+                      setHover(rating / 2 || userPreviousRating / 2)
+                    }
                   >
-                    <span className="sm:text-5xl text-4xl">&#9733;</span>
+                    <span
+                      className={`sm:text-5xl text-4xl ${
+                        index <= (hover || rating / 2 || userPreviousRating / 2)
+                          ? "text-yellow-300"
+                          : "text-gray-300"
+                      }`}
+                    >
+                      &#9733;
+                    </span>
                   </button>
                 );
               } else return null;
@@ -100,6 +113,8 @@ export default function Problem({
     </div>
   );
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
 
 // import { useState, useEffect } from "react";
 // import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
