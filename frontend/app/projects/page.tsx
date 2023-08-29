@@ -8,7 +8,7 @@ import { AiOutlinePlus } from "react-icons/ai";
 
 //graph
 import type { NextPage } from "next";
-import GET_PROJECTS_PAGE from "../../constants/subgraphQueryGetProject";
+import GET_PROJECTS_PAGE from "../../constants/subgraphQueries/subgraphQueryGetProject";
 import { useQuery } from "@apollo/client";
 import { useState, useEffect } from "react";
 //toast

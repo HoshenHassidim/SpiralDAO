@@ -10,8 +10,8 @@ import { useContractWrite, useAccount } from "wagmi";
 import addresses from "../../../constants/networkMapping.json";
 
 // Graph reading
-import GET_NEW_PROBLEMS from "../../../constants/subgraphQueries";
-import GET_PROBLEM from "../../../constants/subgraphQueryGetProblem";
+import GET_NEW_PROBLEMS from "../../../constants/subgraphQueries/subgraphQueryGetProblems";
+import GET_PROBLEM from "../../../constants/subgraphQueries/subgraphQueryGetProblem";
 import { useQuery } from "@apollo/client";
 
 // Toast notification
@@ -20,34 +20,11 @@ import abi from "../../../constants/Solutions.json";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "../../../components/Navbar.jsx";
-import { CustomError, ProblemDataType } from "@/common.types.js";
-
-interface ActiveProblemType {
-  id: string;
-  problemId: BigInt;
-  creator: string;
-  name: string;
-  ratingCount: BigInt;
-  ratingSum: BigInt;
-  solutions: ActiveSolutionType[];
-  isOpenForRating: boolean;
-  isOpenForNewSolutions: boolean;
-  blockNumber: BigInt;
-}
-
-interface ActiveSolutionType {
-  id: string;
-  solutionId: BigInt;
-  problemId: BigInt;
-  problem: ActiveProblemType;
-  creator: string;
-  name: string;
-  ratingCount: BigInt;
-  ratingSum: BigInt;
-  isOpenForRating: boolean;
-  hasProject: boolean;
-  blockNumber: BigInt;
-}
+import {
+  ActiveSolutionType,
+  CustomError,
+  ProblemDataType,
+} from "@/common.types.js";
 
 export default function ProblemPage({ params }: { params: { slug: string } }) {
   const [solution, setSolution] = useState();
@@ -114,7 +91,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
 
         <section className="flex flex-col justify-center items-center">
           <Link
-            href="/problems"
+            href="/engage"
             className="w-full mt-5 text-white opacity-80 font-semibold"
           >
             <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">

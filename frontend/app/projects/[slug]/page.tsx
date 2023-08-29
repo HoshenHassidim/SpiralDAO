@@ -18,7 +18,7 @@ import Link from "next/link";
 
 import Navbar from "../../../components/Navbar";
 
-import GET_PROJECTS_PAGE from "../../../constants/subgraphQueryGetProject";
+import GET_PROJECTS_PAGE from "../../../constants/subgraphQueries/subgraphQueryGetProject";
 import {
   ActiveProblemType,
   ActiveSolutionType,

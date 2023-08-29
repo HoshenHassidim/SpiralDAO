@@ -47,7 +47,7 @@ export default function Problem({
         setPreviousRating(rating); // Set the new rating as the previous rating
       }
     }
-  }, [rating, previousRating, address, write]);
+  }, [rating, previousRating, address]);
 
   if (!(isOpenForRating || isOpenForNewSolutions)) return null; // Don't render if none are true
 

@@ -115,11 +115,20 @@ export default function Navbar() {
           </Link>
 
           <Link
-            href="/problems"
+            href="/engage"
             className="w-full text-white opacity-80 font-semibold"
           >
             <li className="hover:bg-gray-500 py-4 px-6 w-full cursor-pointer">
-              Problems
+              Engage
+            </li>
+          </Link>
+
+          <Link
+            href="/opportunities"
+            className="w-full text-white opacity-80 font-semibold"
+          >
+            <li className="hover:bg-gray-500 py-4 px-6 w-full cursor-pointer">
+              Opportunities
             </li>
           </Link>
 

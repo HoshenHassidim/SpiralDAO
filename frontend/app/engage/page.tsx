@@ -4,11 +4,12 @@ import Navbar from "../../components/Navbar";
 import Problem from "../../components/Problem";
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
-import GET_NEW_PROBLEMS from "../../constants/subgraphQueries";
+import GET_NEW_PROBLEMS from "../../constants/subgraphQueries/subgraphQueryGetProblems";
 import { useQuery } from "@apollo/client";
 import { useState, useEffect } from "react";
 import { ActiveProblemType, UserProblemRating } from "@/common.types";
 import { useAccount } from "wagmi";
+import SubmitProblemModal from "@/components/SubmitProblemModal";
 
 function status(problem: ActiveProblemType) {
   if (problem.isOpenForRating) {
@@ -37,6 +38,7 @@ export default function EngagePage() {
   const [sortDate, setSortDate] = useState("Newest");
   const [filterRated, setFilterRated] = useState("All");
   const [isClient, setIsClient] = useState(false);
+  const [showProblemModal, setShowProblemModal] = useState(false);
 
   function getUserRatingForProblem(problemId: BigInt) {
     if (data && data.userProblemRatings) {
@@ -156,15 +158,7 @@ export default function EngagePage() {
             <option>Environment</option>
             <option>Social Issues</option>
           </select> */}
-          <label>Date Added:</label>
-          <select
-            className="input-field"
-            value={sortDate}
-            onChange={(e) => setSortDate(e.target.value)}
-          >
-            <option>Newest</option>
-            <option>Oldest</option>
-          </select>
+
           {isClient && address && (
             <div>
               <label>My Intervention:</label>
@@ -190,6 +184,16 @@ export default function EngagePage() {
               </select>
             </div>
           )}
+
+          <label>Date Added:</label>
+          <select
+            className="input-field"
+            value={sortDate}
+            onChange={(e) => setSortDate(e.target.value)}
+          >
+            <option>Newest</option>
+            <option>Oldest</option>
+          </select>
         </div>
 
         {/* <div className="flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
@@ -230,14 +234,55 @@ export default function EngagePage() {
         ))}
       </section> */}
 
-      <Link
+      <section className="section-padding flex flex-col items-center gap-5 dark:bg-neutral-gray bg-white">
+        <h2 className="text-center text-tech-blue mb-4 font-primary">
+          Can't find a challenge you're passionate about? Propose your own!
+        </h2>
+        <button
+          className="btn-primary"
+          onClick={() => setShowProblemModal(true)}
+        >
+          Submit a Problem
+        </button>
+      </section>
+
+      <SubmitProblemModal
+        isOpen={showProblemModal}
+        onClose={() => setShowProblemModal(false)}
+      />
+
+      <div className="fixed bottom-2 left-1/2 transform -translate-x-1/2 md:left-auto md:transform-none md:right-5 z-50 flex flex-col items-center p-3 rounded-md shadow-lg dark:bg-neutral-gray bg-democracy-beige">
+        <div className="text-tech-blue mb-2 max-w-xs w-full text-center">
+          <p className="font-secondary text-xs">Have a challenge in mind?</p>
+          <p className="font-secondary text-xs">
+            Can't find what you're passionate about?
+          </p>
+        </div>
+        <button
+          className="btn-primary"
+          onClick={() => setShowProblemModal(true)}
+        >
+          Propose your own!
+        </button>
+      </div>
+
+      {/* <div className="fixed bottom-5 right-5 z-50">
+        <button
+          className="bg-blue-500 text-white rounded px-4 py-2"
+          onClick={() => setShowProblemModal(true)}
+        >
+          Submit a Problem
+        </button>
+      </div> */}
+
+      {/* <Link
         className="fixed sm:bottom-5 sm:right-5 bottom-2 right-2"
         href="/engage/new"
       >
         <button className="transition-colors duration-150 bg-[#3AB3D7] hover:bg-blue-500  text-white rounded-full p-2">
           <AiOutlinePlus className="w-8 h-8" />
         </button>
-      </Link>
+      </Link> */}
     </div>
   );
 }

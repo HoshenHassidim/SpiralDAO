@@ -217,3 +217,69 @@ body.dark {
   --tw-bg-opacity: 1;
   background-color: rgba(17, 24, 39, var(--tw-bg-opacity));
 }
+
+/* Additional or Modified Styles */
+
+/* Inverted Primary Button */
+.btn-primary-inverted {
+  @apply border-tech-blue hover:border-future-neon bg-transparent text-tech-blue dark:text-democracy-beige hover:text-future-neon py-2 px-4 rounded transition-transform transform-gpu hover:scale-105 active:scale-95;
+}
+.btn-primary-inverted:hover {
+  @apply text-future-neon;
+}
+.btn-primary-inverted:disabled {
+  @apply bg-gray-400 cursor-not-allowed;
+}
+.btn-primary-inverted:focus {
+  @apply outline-none;
+}
+
+/* Light Mode and Dark Mode Body Text */
+.dark .body-text {
+  @apply text-democracy-beige;
+}
+
+/* Placeholder Color in Dark Mode for Input Fields */
+.dark .input-field::placeholder {
+  @apply text-democracy-beige opacity-60;
+}
+
+/* Enhanced Modal */
+.modal-content {
+  @apply bg-white dark:bg-neutral-gray p-5 rounded-lg shadow-2xl w-full max-w-lg border-2 border-transparent dark:border-democracy-beige transition-transform transform-gpu scale-95 hover:scale-100;
+}
+
+/* Enhanced Modal */
+.modal-content {
+  @apply bg-white dark:bg-neutral-gray p-5 rounded-lg shadow-2xl w-full max-w-lg border-2 border-transparent dark:border-democracy-beige transition-transform transform-gpu scale-95 hover:scale-100;
+}
+
+/* Enhanced Input Field */
+.enhanced-input {
+  @apply border rounded-lg shadow-inner p-2 w-full bg-white dark:bg-neutral-gray transition-colors focus:border-tech-blue dark:focus:border-democracy-beige placeholder-tech-blue dark:placeholder-democracy-beige;
+}
+
+/* Modal Backdrop */
+.backdrop-blur-md {
+  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Input field focus states */
+.enhanced-input:focus {
+  @apply ring-2 ring-tech-blue dark:ring-democracy-beige;
+}
+
+/* A better transition effect for modal */
+.modal-content {
+  @apply transform transition-transform ease-out duration-300 scale-95;
+}
+.modal-content:hover,
+.modal-content:focus {
+  @apply scale-100;
+}
+
+/* Placeholder color adjustment */
+.dark .enhanced-input::placeholder {
+  @apply text-democracy-beige opacity-70;
+}
