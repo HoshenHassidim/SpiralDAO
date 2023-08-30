@@ -14,6 +14,18 @@ export interface ActiveProblemType {
   status: string;
 }
 
+export interface ProblemCardProps {
+  id: string;
+  creator: string;
+  name: string;
+  ratingCount: BigInt;
+  isOpenForRating: boolean;
+  isOpenForNewSolutions: boolean;
+  status: string;
+  userAddress?: string;
+  userPreviousRating: BigInt;
+}
+
 export interface ActiveSolutionType {
   id: string;
   solutionId: BigInt;

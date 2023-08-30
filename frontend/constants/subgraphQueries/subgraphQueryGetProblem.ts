@@ -8,6 +8,18 @@ const GET_PROBLEM = gql`
       creator
       ratingSum
       ratingCount
+      solutions {
+        solutionId
+        name
+        creator
+        isOpenForRating
+        ratingCount
+      }
+    }
+    userSolutionRatings {
+      solutionId
+      rater
+      rating
     }
   }
 `;

@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "../../components/Navbar";
-import Problem from "../../components/Problem";
+import Problem from "../../components/ProblemCard";
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
 import GET_NEW_PROBLEMS from "../../constants/subgraphQueries/subgraphQueryGetProblems";
@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { ActiveProblemType, UserProblemRating } from "@/common.types";
 import { useAccount } from "wagmi";
 import SubmitProblemModal from "@/components/SubmitProblemModal";
+import ProblemsFilters from "@/components/ProblemsFiltrer";
 
 function status(problem: ActiveProblemType) {
   if (problem.isOpenForRating) {
@@ -35,10 +36,11 @@ export default function EngagePage() {
 
   const [filterStatus, setFilterStatus] = useState("All Problems");
   const [filterEngage, setFilterEngage] = useState("everything");
-  const [sortDate, setSortDate] = useState("Newest");
+  const [sortOption, setsortOption] = useState("Newest");
   const [filterRated, setFilterRated] = useState("All");
   const [isClient, setIsClient] = useState(false);
   const [showProblemModal, setShowProblemModal] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   function getUserRatingForProblem(problemId: BigInt) {
     if (data && data.userProblemRatings) {
@@ -111,13 +113,33 @@ export default function EngagePage() {
       : [];
 
   // Sorting logic based on the problemId (since sorting by date means sorting by problem ID on the backend)
-  if (sortDate === "Newest") {
+  if (sortOption === "Newest") {
     filteredProblems.sort((a: ActiveProblemType, b: ActiveProblemType) => {
       return b.problemId.valueOf() - a.problemId.valueOf();
     });
-  } else {
+  } else if (sortOption === "Oldest") {
     filteredProblems.sort((a: ActiveProblemType, b: ActiveProblemType) => {
       return a.problemId.valueOf() - b.problemId.valueOf();
+    });
+  } else if (sortOption === "Most Ratings") {
+    // sorting by highest ratings first
+    filteredProblems.sort((a: ActiveProblemType, b: ActiveProblemType) => {
+      return b.ratingCount.valueOf() - a.ratingCount.valueOf();
+    });
+  } else if (sortOption === "Fewest Ratings") {
+    // sorting by least ratings first
+    filteredProblems.sort((a: ActiveProblemType, b: ActiveProblemType) => {
+      return a.ratingCount.valueOf() - b.ratingCount.valueOf();
+    });
+  } else if (sortOption === "Most Solutions") {
+    // sorting by highest number of solutions first
+    filteredProblems.sort((a: ActiveProblemType, b: ActiveProblemType) => {
+      return b.solutions.length - a.solutions.length;
+    });
+  } else if (sortOption === "Fewest Solutions") {
+    // sorting by least number of solutions first
+    filteredProblems.sort((a: ActiveProblemType, b: ActiveProblemType) => {
+      return a.solutions.length - b.solutions.length;
     });
   }
 
@@ -126,104 +148,66 @@ export default function EngagePage() {
   }, []);
 
   return (
-    <div className="overflow-x-hidden">
-      <Navbar />
+    <div>
+      <div className="overflow-x-hidden overflow-y-scroll h-screen">
+        <Navbar />
 
-      <section className="section-padding flex flex-col items-center">
-        <h1 className="title text-center">
-          Engage with Challenges & Solutions
-        </h1>
-        <h2 className="subtitle text-center my-4">
-          Discover the myriad of problems posed by our community and contribute
-          your own insights or solutions.
-        </h2>
-      </section>
+        <section className="section-padding flex flex-col items-center">
+          <h1 className="title text-center">
+            Engage with Challenges & Solutions
+          </h1>
+          <h2 className="subtitle text-center my-4">
+            Discover the myriad of problems posed by our community and
+            contribute your own insights or solutions.
+          </h2>
+        </section>
 
-      <section className="section-padding flex flex-col md:flex-row md:justify-between items-start md:items-center bg-democracy-beige dark:bg-neutral-gray p-4 rounded-md">
-        <div className="flex flex-col md:flex-row gap-4">
-          <label>Filter By:</label>
-          {/* You'll need dropdown or select components for the following options */}
-          <select
-            className="input-field"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option>All Problems</option>
-            <option>Awaiting Ranking</option>
-            <option>In Solution Phase</option>
-          </select>
-          {/* <label>Category/Topic:</label>
-          <select className="input-field">
-            <option>Technology</option>
-            <option>Environment</option>
-            <option>Social Issues</option>
-          </select> */}
+        <section className="flex flex-col justify-center items-center">
+          <section className="flex flex-wrap flex-col md:flex-row md:justify-between items-center bg-democracy-beige dark:bg-neutral-gray p-2 md:p-4 rounded-md">
+            {/* Button to toggle filter visibility on small screens */}
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="md:hidden mb-2"
+            >
+              {isFilterOpen ? "Hide Filters" : "Show Filters"}
+            </button>
 
-          {isClient && address && (
-            <div>
-              <label>My Intervention:</label>
-              <select
-                className="input-field"
-                value={filterEngage}
-                onChange={(e) => setFilterEngage(e.target.value)}
-              >
-                <option value="everything">All Problems</option>
-                <option value="my problems">My Problems</option>
-                <option value="not my problem">Others' Problems</option>
-              </select>
+            {/* Hide filters on small screens when isFilterOpen is false, always show on larger screens */}
+            <ProblemsFilters
+              filterStatus={filterStatus}
+              setFilterStatus={setFilterStatus}
+              filterEngage={filterEngage}
+              setFilterEngage={setFilterEngage}
+              filterRated={filterRated}
+              setFilterRated={setFilterRated}
+              sortOption={sortOption}
+              setsortOption={setsortOption}
+              isClient={isClient}
+              address={address || null}
+              className={isFilterOpen ? "" : "hidden md:flex"}
+            />
+          </section>
+        </section>
 
-              <label>Rating:</label>
-              <select
-                className="input-field"
-                value={filterRated}
-                onChange={(e) => setFilterRated(e.target.value)}
-              >
-                <option>All</option>
-                <option>Rated</option>
-                <option>Not Rated</option>
-              </select>
-            </div>
-          )}
+        <section className="section-padding flex flex-col items-center gap-5">
+          {filteredProblems?.map((problem: ActiveProblemType) => (
+            <Problem
+              key={problem.problemId.toString()}
+              id={problem.problemId}
+              title={problem.name}
+              creator={problem.creator}
+              ratingCount={problem.ratingCount}
+              solutionCount={problem.solutions.length}
+              isOpenForRating={problem.isOpenForRating}
+              isOpenForNewSolutions={problem.isOpenForNewSolutions}
+              userAddress={address}
+              status={status(problem)}
+              userPreviousRating={getUserRatingForProblem(problem.problemId)}
+            />
+          ))}
+        </section>
 
-          <label>Date Added:</label>
-          <select
-            className="input-field"
-            value={sortDate}
-            onChange={(e) => setSortDate(e.target.value)}
-          >
-            <option>Newest</option>
-            <option>Oldest</option>
-          </select>
-        </div>
-
-        {/* <div className="flex flex-col md:flex-row gap-4 mt-4 md:mt-0">
-          <label>Sort By:</label>
-          <select className="input-field">
-            <option>Popularity</option>
-            <option>Recent Activity</option>
-            <option>Most Discussed</option>
-          </select>
-        </div> */}
-      </section>
-
-      <section className="section-padding flex flex-col items-center gap-5">
-        {filteredProblems?.map((problem: ActiveProblemType) => (
-          <Problem
-            key={problem.problemId.toString()}
-            id={problem.problemId}
-            title={problem.name}
-            creator={problem.creator}
-            ratingCount={problem.ratingCount}
-            isOpenForRating={problem.isOpenForRating}
-            isOpenForNewSolutions={problem.isOpenForNewSolutions}
-            userAddress={address}
-            status={status(problem)}
-            userPreviousRating={getUserRatingForProblem(problem.problemId)}
-          />
-        ))}
-      </section>
-
-      {/* <section className="flex flex-col items-center justify-center gap-5 p-5">
+        {/* <section className="flex flex-col items-center justify-center gap-5 p-5">
         {data?.activeProblems.map((problem: ProblemType) => (
           <Problem
             key={problem.problemId}
@@ -234,55 +218,38 @@ export default function EngagePage() {
         ))}
       </section> */}
 
-      <section className="section-padding flex flex-col items-center gap-5 dark:bg-neutral-gray bg-white">
-        <h2 className="text-center text-tech-blue mb-4 font-primary">
-          Can't find a challenge you're passionate about? Propose your own!
-        </h2>
-        <button
-          className="btn-primary"
-          onClick={() => setShowProblemModal(true)}
-        >
-          Submit a Problem
-        </button>
-      </section>
+        <section className="bottom-submit">
+          <h2 className="bottom-submit-text">
+            Can't find a challenge you're passionate about? Propose your own!
+          </h2>
+          <button
+            className="btn-primary"
+            onClick={() => setShowProblemModal(true)}
+          >
+            Submit a Problem
+          </button>
+        </section>
 
-      <SubmitProblemModal
-        isOpen={showProblemModal}
-        onClose={() => setShowProblemModal(false)}
-      />
+        <SubmitProblemModal
+          isOpen={showProblemModal}
+          onClose={() => setShowProblemModal(false)}
+        />
 
-      <div className="fixed bottom-2 left-1/2 transform -translate-x-1/2 md:left-auto md:transform-none md:right-5 z-50 flex flex-col items-center p-3 rounded-md shadow-lg dark:bg-neutral-gray bg-democracy-beige">
-        <div className="text-tech-blue mb-2 max-w-xs w-full text-center">
-          <p className="font-secondary text-xs">Have a challenge in mind?</p>
-          <p className="font-secondary text-xs">
-            Can't find what you're passionate about?
-          </p>
+        <div className="floating-submit">
+          <div className="floating-submit-text">
+            <p className="font-secondary text-xs">Have a challenge in mind?</p>
+            <p className="font-secondary text-xs">
+              Can't find what you're passionate about?
+            </p>
+          </div>
+          <button
+            className="btn-primary"
+            onClick={() => setShowProblemModal(true)}
+          >
+            Propose your own!
+          </button>
         </div>
-        <button
-          className="btn-primary"
-          onClick={() => setShowProblemModal(true)}
-        >
-          Propose your own!
-        </button>
       </div>
-
-      {/* <div className="fixed bottom-5 right-5 z-50">
-        <button
-          className="bg-blue-500 text-white rounded px-4 py-2"
-          onClick={() => setShowProblemModal(true)}
-        >
-          Submit a Problem
-        </button>
-      </div> */}
-
-      {/* <Link
-        className="fixed sm:bottom-5 sm:right-5 bottom-2 right-2"
-        href="/engage/new"
-      >
-        <button className="transition-colors duration-150 bg-[#3AB3D7] hover:bg-blue-500  text-white rounded-full p-2">
-          <AiOutlinePlus className="w-8 h-8" />
-        </button>
-      </Link> */}
     </div>
   );
 }

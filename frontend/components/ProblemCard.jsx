@@ -18,6 +18,7 @@ export default function Problem({
   userAddress,
   status,
   userPreviousRating,
+  solutionCount,
 }) {
   const [rating, setRating] = useState(userPreviousRating);
   const [previousRating, setPreviousRating] = useState(userPreviousRating);
@@ -103,12 +104,17 @@ export default function Problem({
       )}
 
       {isOpenForNewSolutions && !isOpenForRating && (
-        <button
-          className="btn-primary"
-          onClick={() => router.push("/engage/" + id)}
-        >
-          Propose/View Solutions
-        </button>
+        <div>
+          <div>
+            <p className="small-text">{solutionCount} solutions</p>
+          </div>
+          <button
+            className="btn-primary"
+            onClick={() => router.push("/engage/" + id)}
+          >
+            Propose/View Solutions
+          </button>
+        </div>
       )}
     </div>
   );

@@ -16,20 +16,21 @@ const GET_PROBLEMS_PAGE = gql`
       ratingCount
       isOpenForRating
       isOpenForNewSolutions
-      solutions(where: { isOpenForRating: true }) {
-        solutionId
-      }
     }
 
-    # userSolutionRatings(orderBy: blockNumber, orderDirection: desc) {
-    #   solutionId
-    #   rater
-    #   rating
-    # }
-    # activeSolutions(where: { isOpenForRating: true }) {
-    #   solutionId
-    #   problemId
-    # }
+    userSolutionRatings(orderBy: blockNumber, orderDirection: desc) {
+      solutionId
+      rater
+      rating
+    }
+    activeSolutions(orderBy: blockNumber, orderDirection: desc) {
+      solutionId
+      problemId
+      name
+      creator
+      ratingSum
+      ratingCount
+    }
   }
 `;
 export default GET_PROBLEMS_PAGE;

@@ -283,3 +283,19 @@ body.dark {
 .dark .enhanced-input::placeholder {
   @apply text-democracy-beige opacity-70;
 }
+
+.bottom-submit {
+  @apply section-padding flex flex-col items-center gap-5 dark:bg-neutral-gray bg-democracy-beige;
+}
+
+.bottom-submit-text {
+  @apply text-center text-tech-blue mb-4 font-primary;
+}
+
+.floating-submit {
+  @apply fixed bottom-2 left-1/2 transform -translate-x-1/2 md:left-auto md:transform-none md:right-5 z-50 flex flex-col items-center p-3 rounded-md shadow-lg dark:bg-neutral-gray bg-democracy-beige;
+}
+
+.floating-submit-text {
+  @apply text-tech-blue mb-2 max-w-xs w-full text-center;
+}
