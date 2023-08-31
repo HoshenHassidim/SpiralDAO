@@ -62,10 +62,10 @@ export default function Problem({
       <p className="body-text">{status}</p>
       <h3 className="title">{title}</h3>
       <p className="body-text">Brief description</p>
-      <p className="small-text">{ratingCount} ratings</p>
 
       {isOpenForRating && (
         <div>
+          <p className="small-text">{ratingCount} ratings</p>
           {/* <button className="btn-primary">Rank</button> */}
           <div className="flex items-center justify-center">
             {[...Array(5)].map((star, index) => {
@@ -108,12 +108,14 @@ export default function Problem({
           <div>
             <p className="small-text">{solutionCount} solutions</p>
           </div>
-          <button
-            className="btn-primary"
-            onClick={() => router.push("/engage/" + id)}
-          >
-            Propose/View Solutions
-          </button>
+          <div className=" flex flex-col items-center justify-center mt-4">
+            <button
+              className="btn-primary mt-4"
+              onClick={() => router.push("/engage/" + id)}
+            >
+              Propose/View Solutions
+            </button>
+          </div>
         </div>
       )}
     </div>

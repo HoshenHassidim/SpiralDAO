@@ -167,3 +167,19 @@ export interface UserTaskCompletionRating {
   rating: BigInt;
   blockNumber: BigInt;
 }
+
+export type HumanToOriginalKey =
+  | "awaiting-ranking"
+  | "in-solution-phase"
+  | "all-problems"
+  | "my-problems"
+  | "not-my-problems"
+  | "rated"
+  | "not-rated"
+  | "everything"
+  | "newest"
+  | "oldest"
+  | "most-ratings"
+  | "fewest-ratings"
+  | "most-solutions"
+  | "fewest-solutions";

@@ -83,7 +83,7 @@ h6 {
 
 /* Form Elements */
 .input-field {
-  @apply border-b border-tech-blue bg-transparent p-2 transition duration-300 ease-in-out;
+  @apply border-b border-tech-blue bg-transparent p-2 transition duration-300 ease-in-out dark:bg-neutral-gray;
 }
 .input-field:focus {
   @apply border-future-neon;
@@ -298,4 +298,9 @@ body.dark {
 
 .floating-submit-text {
   @apply text-tech-blue mb-2 max-w-xs w-full text-center;
+}
+
+.text-border {
+  text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff,
+    1px 1px 0 #fff;
 }

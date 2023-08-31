@@ -152,7 +152,7 @@ export default function EngagePage() {
       <div className="overflow-x-hidden overflow-y-scroll h-screen">
         <Navbar />
 
-        <section className="section-padding flex flex-col items-center">
+        <section className="section-padding flex flex-col items-center  bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
           <h1 className="title text-center">
             Engage with Challenges & Solutions
           </h1>

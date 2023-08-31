@@ -48,6 +48,11 @@ export default function Navbar() {
         />
       </a>
 
+      {/* Web3Button for mobile - Only displayed on small screens */}
+      <div className="sm:hidden">
+        <Web3Button />
+      </div>
+
       <button
         onClick={() => {
           setMobileNav(!mobileNav);
@@ -74,9 +79,9 @@ export default function Navbar() {
       >
         {/* Mobile navigation dropdown */}
         <ul className="flex flex-col bg-blue-500 items-center w-full text-base pt-5">
-          <div className="px-4">
+          {/* <div className="px-4">
             <Web3Button />
-          </div>
+          </div> */}
 
           {/* Theme Switch */}
           <div className="ml-5">
@@ -145,8 +150,24 @@ export default function Navbar() {
 
       {/* Desktop navigation links  */}
       <div className="hidden items-center gap-4 sm:flex p-3">
+        {/* Engage Button Link */}
+        <Link
+          href="/engage"
+          className="text-2xl font-semibold hover:text-white text-democracy-beige px-4 py-2 hover:bg-tech-blue rounded-md"
+        >
+          Engage
+        </Link>
+
+        {/* Opportunities Button Link */}
+        <Link
+          href="/opportunities"
+          className="text-2xl font-semibold hover:text-white text-democracy-beige px-4 py-2 hover:bg-tech-blue rounded-md"
+        >
+          Opportunities
+        </Link>
+
         {/* Engage Dropdown Menu */}
-        <div
+        {/* <div
           className="relative group hover:bg-blue-600 rounded-md"
           ref={engageRef}
         >
@@ -160,31 +181,31 @@ export default function Navbar() {
             Engage
           </button>
           {isEngageOpen && (
-            <div className="absolute left-0 w-48 text-base z-10 bg-white dark:bg-neutral-gray rounded-md">
+            <div className="absolute left-0 w-48 text-base z-10 bg-white dark:bg-neutral-gray dark:text-white rounded-md">
               <Link
                 href="/engage"
-                className="block px-4 py-2 hover:bg-gray-100 nav__link"
+                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-tech-blue nav__link"
               >
                 All Problems
               </Link>
               <Link
                 href="/problems-awaiting-ranking"
-                className="block px-4 py-2 hover:bg-gray-100 nav__link"
+                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-tech-blue nav__link"
               >
                 Problems Awaiting Ranking
               </Link>
               <Link
                 href="/problems-in-solution-phase"
-                className="block px-4 py-2 hover:bg-gray-100 nav__link"
+                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-tech-blue nav__link"
               >
                 Problems in Solution Phase
               </Link>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Opportunities Dropdown Menu */}
-        <div
+        {/* <div
           className="relative group hover:bg-blue-600 rounded-md"
           ref={opportunitiesRef}
         >
@@ -198,28 +219,28 @@ export default function Navbar() {
             Opportunities
           </button>
           {isOpportunitiesOpen && (
-            <div className="absolute left-0 w-48 text-base z-10 bg-white dark:bg-neutral-gray rounded-md">
+            <div className="absolute left-0 w-48 text-base z-10 bg-white dark:bg-neutral-gray  dark:text-white rounded-md">
               <Link
                 href="/opportunities"
-                className="block px-4 py-2 hover:bg-gray-100 nav__link"
+                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-tech-blue nav__link"
               >
                 All Opportunities
               </Link>
               <Link
                 href="/management-opportunities"
-                className="block px-4 py-2 hover:bg-gray-100 nav__link"
+                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-tech-blue nav__link"
               >
                 Management Opportunities
               </Link>
               <Link
                 href="/task-opportunities"
-                className="block px-4 py-2 hover:bg-gray-100 nav__link"
+                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-tech-blue nav__link"
               >
                 Task Opportunities
               </Link>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Search Bar */}
         {/* <div className="ml-10 relative">
