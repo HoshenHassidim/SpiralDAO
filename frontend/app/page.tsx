@@ -3,6 +3,7 @@
 // import { Web3Button } from "@web3modal/react";
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import Link from "next/link";
 // import Image from "next/image";
 // import { useAccount } from "wagmi";
 // import GetProblemCounter from "../components/GetProblemCounter";
@@ -26,10 +27,19 @@ export default function Home() {
             Empowering Solutions in the Digital Age
           </h1>
           <p className="max-w-md body-text">Connect. Collaborate. Create.</p>
-          <button className="btn-primary btn-spacing">Start Engaging</button>
-          <button className="btn-primary bg-white border-tech-blue text-tech-blue btn-spacing">
+
+          <Link
+            href="/engage"
+            className="btn-primary btn-spacing flex items-center justify-center"
+          >
+            Start Engaging
+          </Link>
+          {/* <Link
+            href="/engage"
+            className="btn-primary btn-spacing flex items-center justify-center"
+          >
             Find Opportunities
-          </button>
+          </Link> */}
         </div>
 
         <div>
