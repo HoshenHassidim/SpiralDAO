@@ -141,14 +141,14 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
       <div className="overflow-x-hidden overflow-y-scroll h-screen">
         <Navbar />
 
-        <Link
+        {/* <Link
           href="/engage"
           className="mt-5 text-white opacity-80 font-semibold"
         >
           <button className="btn-primary top-[6rem] left-2 fixed ">
             Back to Engage
           </button>
-        </Link>
+        </Link> */}
         {/* <Link
           href="/engage"
           className="w-full mt-5 text-white opacity-80 font-semibold"
