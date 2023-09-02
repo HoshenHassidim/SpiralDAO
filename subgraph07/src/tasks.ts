@@ -35,6 +35,7 @@ import {
   ActiveTaskOffer,
   UserTaskOfferRating,
   UserTaskCompletionRating,
+  Project,
 } from "../generated/schema";
 import {
   BigInt,
@@ -65,6 +66,11 @@ export function handleNewTask(event: NewTaskEvent): void {
   let task = new Task(idString);
   task.taskId = event.params.taskId;
   task.projectId = event.params.projectId;
+  let idStringProjectId = event.params.projectId.toString();
+  let project = Project.load(idStringProjectId);
+  if (project) {
+    task.project = project.id;
+  }
   task.taskName = event.params.taskName;
   task.taskValue = event.params.taskValue;
   task.performer = Address.fromString(

@@ -2401,6 +2401,23 @@ export class ActiveSolution extends Entity {
     this.set("problem", Value.fromString(value));
   }
 
+  get project(): string | null {
+    let value = this.get("project");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toString();
+    }
+  }
+
+  set project(value: string | null) {
+    if (!value) {
+      this.unset("project");
+    } else {
+      this.set("project", Value.fromString(<string>value));
+    }
+  }
+
   get creator(): Bytes {
     let value = this.get("creator");
     if (!value || value.kind == ValueKind.NULL) {
@@ -3202,6 +3219,19 @@ export class Project extends Entity {
     this.set("projectId", Value.fromBigInt(value));
   }
 
+  get solution(): string {
+    let value = this.get("solution");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set solution(value: string) {
+    this.set("solution", Value.fromString(value));
+  }
+
   get projectManager(): Bytes {
     let value = this.get("projectManager");
     if (!value || value.kind == ValueKind.NULL) {
@@ -3234,6 +3264,10 @@ export class Project extends Entity {
       this.get("id")!.toString(),
       "managementOffers"
     );
+  }
+
+  get tasks(): TaskLoader {
+    return new TaskLoader("Project", this.get("id")!.toString(), "tasks");
   }
 
   get blockNumber(): BigInt {
@@ -4689,6 +4723,19 @@ export class Task extends Entity {
 
   set projectId(value: BigInt) {
     this.set("projectId", Value.fromBigInt(value));
+  }
+
+  get project(): string {
+    let value = this.get("project");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set project(value: string) {
+    this.set("project", Value.fromString(value));
   }
 
   get taskName(): string {
@@ -6847,6 +6894,24 @@ export class ActiveManagementOfferLoader extends Entity {
   load(): ActiveManagementOffer[] {
     let value = store.loadRelated(this._entity, this._id, this._field);
     return changetype<ActiveManagementOffer[]>(value);
+  }
+}
+
+export class TaskLoader extends Entity {
+  _entity: string;
+  _field: string;
+  _id: string;
+
+  constructor(entity: string, id: string, field: string) {
+    super();
+    this._entity = entity;
+    this._id = id;
+    this._field = field;
+  }
+
+  load(): Task[] {
+    let value = store.loadRelated(this._entity, this._id, this._field);
+    return changetype<Task[]>(value);
   }
 }
 

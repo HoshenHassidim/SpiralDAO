@@ -24,6 +24,7 @@ import {
   Project,
   ActiveManagementOffer,
   UserManagementOfferRating,
+  ActiveSolution,
 } from "../generated/schema";
 import {
   BigInt,
@@ -54,6 +55,14 @@ export function handleNewProject(event: NewProjectEvent): void {
     "0x0000000000000000000000000000000000000000"
   );
   project.isOpenForManagementProposals = true;
+  if (!event.params.projectId.equals(BigInt.fromI32(0))) {
+    let idStringSolutionId = event.params.projectId.toString();
+    let solution = ActiveSolution.load(idStringSolutionId);
+    if (solution) {
+      project.solution = solution.id;
+    }
+  }
+  // project.solution = project.id;
   project.blockNumber = event.block.number;
   project.save();
 }

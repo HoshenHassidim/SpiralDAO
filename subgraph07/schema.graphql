@@ -203,6 +203,7 @@ type ActiveSolution @entity {
   solutionId: BigInt! # uint256
   problemId: BigInt! # uint256
   problem: ActiveProblem!
+  project: Project
   creator: Bytes! # address
   name: String! # string
   ratingCount: BigInt!
@@ -271,9 +272,11 @@ type SolutionRated @entity(immutable: true) {
 type Project @entity {
   id: ID!
   projectId: BigInt! # uint256
+  solution: ActiveSolution
   projectManager: Bytes! # address
   isOpenForManagementProposals: Boolean!
   managementOffers: [ActiveManagementOffer!]! @derivedFrom(field: "project")
+  tasks: [Task!]! @derivedFrom(field: "project")
   blockNumber: BigInt!
 }
 
@@ -393,6 +396,7 @@ type Task @entity {
   id: ID!
   taskId: BigInt! # uint256
   projectId: BigInt! # uint256
+  project: Project!
   taskName: String! # string
   taskValue: BigInt! # uint256
   performer: Bytes #! address
