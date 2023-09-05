@@ -1,0 +1,26 @@
+{
+  "fantom-testnet": {
+    "AuthorizationManagement": {
+      "address": "0x47f45182Bf21a800B37fBF359DF6DD8655D9B5B2",
+      "startBlock": 20355716
+    },
+    "TokenManagement": {
+      "address": "0x3E9Ea6e936c7Cd1772517D9F4520d60008529B7F"
+    },
+    "Membership": {
+      "address": "0x7E15B307279A0844fF093E422DdBC51ca3c6BD95"
+    },
+    "Problems": {
+      "address": "0xd779c647E31F3773459145CCd2eee95aC6b46566"
+    },
+    "Solutions": {
+      "address": "0xf632251DeE30244B5609d61164Ef880dB5059b00"
+    },
+    "Projects": {
+      "address": "0x39Cc98BA559A77a02d4742f3e2b672bfA4B2cDF5"
+    },
+    "Tasks": {
+      "address": "0xEA9B7A80E5A429c838cC6E494926453641382cF9"
+    }
+  }
+}
