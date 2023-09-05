@@ -101,14 +101,14 @@ describe("changeVote", function () {
 
         // Members rating the offer
         for (let i = 3; i < 7; i++) {
-            await projects.connect(accounts[i]).ratelManagementOffer(offerId, 6)
+            await projects.connect(accounts[i]).rateManagementOffer(offerId, 6)
         }
         const offerDetails = await projects.viewOfferDetails(offerId)
         expect(offerDetails[3]).to.equal(24) // Total rating
         expect(offerDetails[4]).to.equal(4) // Total number of raters
 
         for (let i = 3; i < 7; i++) {
-            await projects.connect(accounts[i]).ratelManagementOffer(offerId, 9)
+            await projects.connect(accounts[i]).rateManagementOffer(offerId, 9)
         }
         const offerDetails1 = await projects.viewOfferDetails(offerId)
 

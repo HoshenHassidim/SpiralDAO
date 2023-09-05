@@ -72,10 +72,10 @@ describe("Tasks Errors", function () {
         }
 
         await projects.connect(accounts[0]).proposeManagementOffer(1)
-        await projects.connect(accounts[2]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[3]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[4]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[5]).ratelManagementOffer(1, 10)
+        await projects.connect(accounts[2]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[3]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[4]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[5]).rateManagementOffer(1, 10)
 
         await projects.assignProjectManager(1)
 
@@ -277,7 +277,7 @@ describe("Tasks Errors", function () {
         await tasks.connect(accounts[4]).rateTaskOffer(offerId, 10)
         await tasks.connect(accounts[5]).rateTaskOffer(offerId, 10)
         await expect(tasks.connect(accounts[0]).completeTask(1)).to.be.revertedWith(
-            "taskNotAssigned"
+            "taskNotInProgress"
         )
     })
 

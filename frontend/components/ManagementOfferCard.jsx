@@ -25,7 +25,7 @@ export default function ManagementOfferCard({
   const { write } = useContractWrite({
     address: addresses[4002].Projects[0],
     abi: abi,
-    functionName: "ratelManagementOffer",
+    functionName: "rateManagementOffer",
     args: [managementOfferId, rating],
     onError(error) {
       createNotification(error.metaMessages[0], "error");

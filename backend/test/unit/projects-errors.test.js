@@ -119,10 +119,10 @@ describe("Projects Errors", function () {
         let hasManager = await projects.doesProjectHaveManager(0)
         expect(hasManager).to.be.false
         await projects.connect(accounts[1]).proposeManagementOffer(0)
-        await projects.connect(accounts[2]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[3]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[4]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[5]).ratelManagementOffer(1, 10)
+        await projects.connect(accounts[2]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[3]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[4]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[5]).rateManagementOffer(1, 10)
         await projects.assignProjectManager(0)
         hasManager = await projects.doesProjectHaveManager(0)
         expect(hasManager).to.be.true
@@ -135,10 +135,10 @@ describe("Projects Errors", function () {
 
     it("Should revert if project not open for proposals", async function () {
         await projects.connect(accounts[0]).proposeManagementOffer(1)
-        await projects.connect(accounts[2]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[3]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[4]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[5]).ratelManagementOffer(1, 10)
+        await projects.connect(accounts[2]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[3]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[4]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[5]).rateManagementOffer(1, 10)
 
         await projects.assignProjectManager(1)
         await projects.connect()
@@ -168,11 +168,11 @@ describe("Projects Errors", function () {
         const offerId = await projects.getManagementOfferCounter()
 
         await expect(
-            projects.connect(accounts[1]).ratelManagementOffer(offerId, 0)
+            projects.connect(accounts[1]).rateManagementOffer(offerId, 0)
         ).to.be.revertedWith("ratingOutOfRange")
 
         await expect(
-            projects.connect(accounts[1]).ratelManagementOffer(offerId, 11)
+            projects.connect(accounts[1]).rateManagementOffer(offerId, 11)
         ).to.be.revertedWith("ratingOutOfRange")
     })
 
@@ -181,7 +181,7 @@ describe("Projects Errors", function () {
         const offerId = await projects.getManagementOfferCounter()
 
         await expect(
-            projects.connect(accounts[0]).ratelManagementOffer(offerId, 10)
+            projects.connect(accounts[0]).rateManagementOffer(offerId, 10)
         ).to.be.revertedWith("managerCannotRateOwnOffer")
     })
 
@@ -192,16 +192,16 @@ describe("Projects Errors", function () {
         await projects.connect(accounts[0]).cancelManagementOffer(offerId)
 
         await expect(
-            projects.connect(accounts[1]).ratelManagementOffer(offerId, 10)
+            projects.connect(accounts[1]).rateManagementOffer(offerId, 10)
         ).to.be.revertedWith("offerNotActive")
     })
 
     it("Should revert if people have begun to rate removal offer", async function () {
         await projects.connect(accounts[0]).proposeManagementOffer(1)
-        await projects.connect(accounts[2]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[3]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[4]).ratelManagementOffer(1, 10)
-        await projects.connect(accounts[5]).ratelManagementOffer(1, 10)
+        await projects.connect(accounts[2]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[3]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[4]).rateManagementOffer(1, 10)
+        await projects.connect(accounts[5]).rateManagementOffer(1, 10)
 
         await projects.assignProjectManager(1)
 
@@ -220,8 +220,8 @@ describe("Projects Errors", function () {
         const offerId1 = await projects.getManagementOfferCounter()
         const offerId2 = offerId1 - 1
 
-        await projects.connect(accounts[2]).ratelManagementOffer(offerId1, 10)
-        await projects.connect(accounts[2]).ratelManagementOffer(offerId2, 8)
+        await projects.connect(accounts[2]).rateManagementOffer(offerId1, 10)
+        await projects.connect(accounts[2]).rateManagementOffer(offerId2, 8)
 
         await expect(projects.connect(accounts[1]).assignProjectManager(1)).to.be.revertedWith(
             "insufficientTotalRatersForAllOffers"

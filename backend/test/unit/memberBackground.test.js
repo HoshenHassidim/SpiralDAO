@@ -140,7 +140,7 @@ describe("MemberBackground", function () {
 
             const offerId = await projects.getManagementOfferCounter() //create offer Id
             for (let i = 3; i < 7; i++) {
-                await projects.connect(accounts[i]).ratelManagementOffer(offerId, 9)
+                await projects.connect(accounts[i]).rateManagementOffer(offerId, 9)
             } //people 3,4,5,6 rate offer as 9
             projectId = solutionId //assigns projectId
             projects.assignProjectManager(projectId) //assigns project manager

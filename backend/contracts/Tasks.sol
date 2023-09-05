@@ -130,6 +130,7 @@ contract Tasks {
     error onlyProposalCreator();
     error insufficientTotalRatersForAllOffers();
     error mustBeAuthorised();
+    error taskNotInProgress();
 
     // Events
     event NewTask(uint256 taskId, uint256 projectId, string taskName, uint256 taskValue); // Event emitted when a new task is added
@@ -505,6 +506,7 @@ contract Tasks {
     function completeTask(uint256 _taskId) external {
         if (_taskId > taskCounter || _taskId == 0 || tasks[_taskId].status == TaskStatus.DELETED)
             revert invalidID();
+        if (tasks[_taskId].status != TaskStatus.IN_PROGRESS) revert taskNotInProgress();
         if (tasks[_taskId].assignedOfferId < 1) revert taskNotAssigned(); // I don't think you need this case, but ask Choshen
 
         if (tasks[_taskId].performer != msg.sender) revert onlyAssignedPerformerCanComplete();

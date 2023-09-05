@@ -244,7 +244,7 @@ contract Projects {
 
     // External function to rate a management offer
 
-    function ratelManagementOffer(uint256 _offerId, uint256 _rating) external {
+    function rateManagementOffer(uint256 _offerId, uint256 _rating) external {
         if (_offerId <= 0 || _offerId > offerCounter) revert invalidID();
         if (_rating < 1 || _rating > MAX_RATING) revert ratingOutOfRange();
 
@@ -505,7 +505,7 @@ contract Projects {
     }
 
     function doesProjectExist(uint256 projectId) public view returns (bool) {
-        return projectId >= 0 && projectId <= projectCounter;
+        return projects[projectId].hasManager || projects[projectId].isOpenForManagementProposals;
     }
 
     function doesProjectHaveManager(uint256 projectId) public view returns (bool) {

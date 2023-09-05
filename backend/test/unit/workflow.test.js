@@ -183,11 +183,11 @@ describe("Workflow", function () {
 
     it("Should allow members to rate the management offer", async function () {
         // Member 1 rating the offer
-        await projects.connect(accounts[0]).ratelManagementOffer(offerId, 7)
+        await projects.connect(accounts[0]).rateManagementOffer(offerId, 7)
         // Member 2 rating the offer
-        await projects.connect(accounts[1]).ratelManagementOffer(offerId, 9)
+        await projects.connect(accounts[1]).rateManagementOffer(offerId, 9)
         // Member 3 rating the offer
-        await projects.connect(accounts[3]).ratelManagementOffer(offerId, 8)
+        await projects.connect(accounts[3]).rateManagementOffer(offerId, 8)
 
         const offerDetails = await projects.viewOfferDetails(offerId)
 
@@ -200,7 +200,7 @@ describe("Workflow", function () {
     })
 
     it("Should assign the project manager if the average rating is above 7", async function () {
-        await projects.connect(accounts[4]).ratelManagementOffer(offerId2, 8)
+        await projects.connect(accounts[4]).rateManagementOffer(offerId2, 8)
         await projects.assignProjectManager(1)
 
         const projectManager = await projects.getProjectManager(1)

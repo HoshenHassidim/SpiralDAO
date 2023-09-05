@@ -86,7 +86,7 @@ describe("removeManager", function () {
         await projects.connect(projectManagerAccount).proposeManagementOffer(solutionId)
         offerId = await projects.getManagementOfferCounter()
         for (let i = 3; i < 7; i++) {
-            await projects.connect(accounts[i]).ratelManagementOffer(offerId, 9)
+            await projects.connect(accounts[i]).rateManagementOffer(offerId, 9)
         }
         projectId = solutionId
         projects.assignProjectManager(projectId)
@@ -161,7 +161,7 @@ describe("removeManager", function () {
         expect(offerDetails[5]).to.be.true
 
         for (let i = 0; i < 4; i++) {
-            await projects.connect(accounts[i]).ratelManagementOffer(offerId, 9)
+            await projects.connect(accounts[i]).rateManagementOffer(offerId, 9)
         }
         projects.assignProjectManager(projectId)
 
