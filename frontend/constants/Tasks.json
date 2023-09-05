@@ -80,6 +80,7 @@
   },
   { "inputs": [], "name": "taskNotAssigned", "type": "error" },
   { "inputs": [], "name": "taskNotCompleted", "type": "error" },
+  { "inputs": [], "name": "taskNotInProgress", "type": "error" },
   { "inputs": [], "name": "taskNotInVerificationStage", "type": "error" },
   { "inputs": [], "name": "taskNotOpenForAssigning", "type": "error" },
   { "inputs": [], "name": "taskNotOpenForCancellation", "type": "error" },

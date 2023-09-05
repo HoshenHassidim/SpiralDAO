@@ -7,6 +7,9 @@ contract AuthorizationManagement {
     // The admin is the account that has all permissions
     address private admin;
 
+    //Count of authorized contracts
+    uint256 private authorizedContractsCount = 0;
+
     // A mapping of authorized contracts that can perform certain actions
     mapping(address => bool) private authorizedContracts;
 
@@ -44,6 +47,7 @@ contract AuthorizationManagement {
         if (contractAddress == address(0)) revert addressCannotBeZero();
         if (authorizedContracts[contractAddress]) revert alreadyAuthorised();
         authorizedContracts[contractAddress] = true;
+        authorizedContractsCount++;
         emit AuthorizationGranted(contractAddress);
     }
 
@@ -51,6 +55,7 @@ contract AuthorizationManagement {
     function revokeContractAuthorization(address contractAddress) external onlyAdmin {
         if (!authorizedContracts[contractAddress]) revert contractWasNotAuthorised();
         authorizedContracts[contractAddress] = false;
+        authorizedContractsCount--;
         emit AuthorizationRevoked(contractAddress);
     }
 
@@ -70,5 +75,10 @@ contract AuthorizationManagement {
     // Function to get the admin address
     function getAdmin() public view returns (address) {
         return admin;
+    }
+
+    // Function to get the number of authorized contracts
+    function getAuthorizedContractsCount() public view returns (uint256) {
+        return authorizedContractsCount;
     }
 }

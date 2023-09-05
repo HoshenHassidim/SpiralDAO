@@ -158,7 +158,7 @@ contract Problems {
         if (bytes(problems[_problemId].name).length <= 0) revert problemDoesNotExist(); //If the problem entered doesn't have a name (it doesn't exist) then an error is emitted
         if (_problemId <= 0 || _problemId > problemCounter) revert invalidProblemID(); //If the problem id is less than 0 or greater than the problem counter, an error will be emitted
         Problem storage problem = problems[_problemId]; //problem entered is now saved in a variable
-        if (!problem.openForRating) revert problemClosedForRating(); //If the openForRating variable is false, an error will occur as the problem is not open for rating
+        // if (!problem.openForRating) revert problemClosedForRating(); //If the openForRating variable is false, an error will occur as the problem is not open for rating
 
         // The problem must have at least MIN_RATING_COUNT ratings
         if (problem.ratingCount < MIN_RATING_COUNT) {

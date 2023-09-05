@@ -21,6 +21,7 @@
     "type": "constructor"
   },
   { "inputs": [], "name": "IDOutofRange", "type": "error" },
+  { "inputs": [], "name": "ProblemNotOpenForSolutions", "type": "error" },
   { "inputs": [], "name": "creatorCannotRateOwnProblem", "type": "error" },
   { "inputs": [], "name": "invalidID", "type": "error" },
   { "inputs": [], "name": "mustBeAuthorised", "type": "error" },
