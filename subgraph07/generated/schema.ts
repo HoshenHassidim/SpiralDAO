@@ -3219,17 +3219,21 @@ export class Project extends Entity {
     this.set("projectId", Value.fromBigInt(value));
   }
 
-  get solution(): string {
+  get solution(): string | null {
     let value = this.get("solution");
     if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
+      return null;
     } else {
       return value.toString();
     }
   }
 
-  set solution(value: string) {
-    this.set("solution", Value.fromString(value));
+  set solution(value: string | null) {
+    if (!value) {
+      this.unset("solution");
+    } else {
+      this.set("solution", Value.fromString(<string>value));
+    }
   }
 
   get projectManager(): Bytes {
@@ -5130,8 +5134,8 @@ export class UserTaskCompletionRating extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get offerId(): BigInt {
-    let value = this.get("offerId");
+  get taskId(): BigInt {
+    let value = this.get("taskId");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
@@ -5139,8 +5143,8 @@ export class UserTaskCompletionRating extends Entity {
     }
   }
 
-  set offerId(value: BigInt) {
-    this.set("offerId", Value.fromBigInt(value));
+  set taskId(value: BigInt) {
+    this.set("taskId", Value.fromBigInt(value));
   }
 
   get rater(): Bytes {

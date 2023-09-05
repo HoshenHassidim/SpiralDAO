@@ -341,7 +341,7 @@ export function handleTaskExecutionRated(event: TaskExecutionRatedEvent): void {
       userTaskCompletionRating = new UserTaskCompletionRating(
         userTaskOfferRatingIdString
       );
-      userTaskCompletionRating.offerId = event.params.taskId;
+      userTaskCompletionRating.taskId = event.params.taskId;
       userTaskCompletionRating.rater = event.params.rater;
       userTaskCompletionRating.rating = newRating;
       userTaskCompletionRating.blockNumber = event.block.number;

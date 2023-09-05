@@ -429,7 +429,7 @@ type UserTaskOfferRating @entity {
 
 type UserTaskCompletionRating @entity {
   id: ID!
-  offerId: BigInt! # uint256
+  taskId: BigInt! # uint256
   rater: Bytes! # address
   rating: BigInt! # uint256
   blockNumber: BigInt!
