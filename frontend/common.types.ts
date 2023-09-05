@@ -43,9 +43,11 @@ export interface ActiveSolutionType {
 export interface ProjectType {
   id: string;
   projectId: BigInt;
-  projectManager: string; // Assuming Bytes translates to string in TypeScript for the address. Adjust if needed.
+  projectManager: string;
   isOpenForManagementProposals: boolean;
   managementOffers: ActiveManagementOfferType[];
+  tasks: Task[];
+  solution?: ActiveSolutionType;
   blockNumber: BigInt;
 }
 
@@ -130,9 +132,10 @@ export interface Task {
   id: string; // ID
   taskId: BigInt;
   projectId: BigInt;
+  project: ProjectType;
   taskName: string;
   taskValue: BigInt;
-  performer?: string; // Address
+  performer: string; // Address
   completionRatingSum: BigInt;
   numberOfCompletionRaters: BigInt;
   status: string;
@@ -162,7 +165,7 @@ export interface UserTaskOfferRating {
 
 export interface UserTaskCompletionRating {
   id: string; // ID
-  offerId: BigInt;
+  taskId: BigInt;
   rater: string; // Address
   rating: BigInt;
   blockNumber: BigInt;

@@ -246,7 +246,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
         <SubmitSolutionModal
           isOpen={showSolutionModal}
           onClose={() => setShowSolutionModal(false)}
-          solutionId={params.slug}
+          problemId={params.slug}
         />
         <div className="floating-submit">
           <div className="floating-submit-text">

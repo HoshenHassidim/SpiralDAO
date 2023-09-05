@@ -1,33 +1,42 @@
-// components/SubmitProblemModal.tsx
+// components/SubmitTaskModal.tsx
 import React, { useState, useEffect } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
-import abi from "../constants/Problems.json";
+import abi from "../constants/Tasks.json";
 import addresses from "../constants/networkMapping.json";
 import { useContractWrite, useAccount } from "wagmi";
 import createNotification from "../createNotification.js";
 import { useRouter } from "next/navigation";
 import { CustomError } from "@/common.types";
 
-interface SubmitProblemModalProps {
+const MinTaskValue = 10;
+
+interface SubmitTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
+  projectId: string;
 }
 
-const SubmitProblemModal: React.FC<SubmitProblemModalProps> = ({
+const SubmitTaskModal: React.FC<SubmitTaskModalProps> = ({
   isOpen,
   onClose,
+  projectId,
 }) => {
-  const { register, handleSubmit } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
   const [name, setName] = useState<string | undefined>();
+  const [taskValue, setTaskValue] = useState<number | undefined>();
   const [submitCount, setSubmitCount] = useState(0);
 
   const { address } = useAccount();
 
   const { data, isLoading, isSuccess, write } = useContractWrite({
-    address: addresses[4002].Problems[0] as `0x${string}`,
+    address: addresses[4002].Tasks[0] as `0x${string}`,
     abi: abi,
-    functionName: "raiseProblem",
-    args: [name],
+    functionName: "addTask",
+    args: [projectId, name, taskValue],
     onError(error: CustomError) {
       createNotification(
         error.metaMessages ? error.metaMessages[0] : "An error occurred",
@@ -35,7 +44,7 @@ const SubmitProblemModal: React.FC<SubmitProblemModalProps> = ({
       );
     },
     onSuccess(data) {
-      createNotification("Problem posted", "success");
+      createNotification("Task posted", "success");
     },
   });
 
@@ -43,20 +52,28 @@ const SubmitProblemModal: React.FC<SubmitProblemModalProps> = ({
 
   useEffect(() => {
     if (isSuccess) {
-      //   createNotification("Problem Posted Successfully", "success");
+      //   createNotification("Task Posted Successfully", "success");
       onClose();
-      //   router.push("/problems");
+      //   router.push("/tasks");
       router.refresh();
     }
   }, [isSuccess]);
 
   const onSubmit = async (data: any) => {
     if (!address) {
-      createNotification("Please connect wallet to post a problem", "error");
+      createNotification("Please connect wallet to post a task", "error");
+      return;
+    }
+    if (data.taskValue <= MinTaskValue) {
+      createNotification(
+        `Task value should be more than ${MinTaskValue}`,
+        "error"
+      );
       return;
     }
 
-    setName(data.problemTitle);
+    setName(data.taskTitle);
+    setTaskValue(data.taskValue);
     setSubmitCount((prevCount) => prevCount + 1);
   };
 
@@ -72,24 +89,49 @@ const SubmitProblemModal: React.FC<SubmitProblemModalProps> = ({
     <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md">
       <div className="modal-content">
         <h3 className="text-xl mb-4 text-tech-blue dark:text-democracy-beige">
-          Submit Your Problem
+          Submit Your Task
         </h3>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
             <label
-              htmlFor="problemTitle"
+              htmlFor="taskTitle"
               className="block text-sm mb-2 text-tech-blue dark:text-democracy-beige"
             >
-              Problem Title:
+              Task Title:
             </label>
             <input
-              {...register("problemTitle")}
+              {...register("taskTitle")}
               type="text"
-              id="problemTitle"
+              id="taskTitle"
               className="enhanced-input w-full"
-              placeholder="Enter the problem title"
+              placeholder="Enter the task title"
             />
           </div>
+          <div className="mb-4">
+            <label
+              htmlFor="taskValue"
+              className="block text-sm mb-2 text-tech-blue dark:text-democracy-beige"
+            >
+              Task Value:
+            </label>
+            <input
+              {...register("taskValue", {
+                validate: (value) =>
+                  value > MinTaskValue ||
+                  `Minimum value should be more than ${MinTaskValue}`,
+              })}
+              type="number"
+              id="taskValue"
+              className="enhanced-input w-full"
+              placeholder={`Enter the task value (should be more than ${MinTaskValue})`}
+            />
+            {errors.taskValue?.message && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.taskValue.message as string}
+              </p>
+            )}
+          </div>
+
           <div className="flex justify-end gap-2">
             <button
               type="button"
@@ -108,4 +150,4 @@ const SubmitProblemModal: React.FC<SubmitProblemModalProps> = ({
   );
 };
 
-export default SubmitProblemModal;
+export default SubmitTaskModal;

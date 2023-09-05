@@ -1,19 +1,17 @@
 import { gql } from "@apollo/client";
 
 // See more example queries on https://thegraph.com/explorer/subgraph/protofire/maker-protocol
-const GET_PROJECTS_PAGE = gql`
-  query {
-    projects {
+const GET_ManagementOffers_PAGE = gql`
+  query ($id: String!) {
+    projects(where: { projectId: $id }) {
       projectId
       projectManager
       isOpenForManagementProposals
-      tasks {
-        taskId
-        taskValue
-        status
-      }
       managementOffers {
         offerId
+        proposer
+        ratingCount
+        isActive
       }
       solution {
         name
@@ -22,6 +20,11 @@ const GET_PROJECTS_PAGE = gql`
         }
       }
     }
+    userManagementOfferRatings {
+      offerId
+      rater
+      rating
+    }
   }
 `;
-export default GET_PROJECTS_PAGE;
+export default GET_ManagementOffers_PAGE;

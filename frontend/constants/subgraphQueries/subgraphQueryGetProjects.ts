@@ -13,7 +13,7 @@ const GET_PROJECTS_PAGE = gql`
         status
       }
       managementOffers {
-        offerId
+        proposer
       }
       solution {
         name

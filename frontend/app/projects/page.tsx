@@ -2,13 +2,14 @@
 
 import Navbar from "../../components/Navbar";
 import Project from "../../components/Project";
+import ProjectCard from "../../components/ProjectCard";
 
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
 
 //graph
 import type { NextPage } from "next";
-import GET_PROJECTS_PAGE from "../../constants/subgraphQueries/subgraphQueryGetProject";
+import GET_PROJECTS_PAGE from "../../constants/subgraphQueries/subgraphQueryGetProjects";
 import { useQuery } from "@apollo/client";
 import { useState, useEffect } from "react";
 //toast
@@ -19,6 +20,7 @@ import {
   ErrorType,
   ProjectType,
 } from "@/common.types";
+import { useAccount } from "wagmi";
 
 export default function Projects() {
   const [error, setError] = useState<ErrorType | null>(null);
@@ -27,11 +29,14 @@ export default function Projects() {
     loading: projectLoading,
     error: subgraphQueryError,
     data: projectData,
-  } = useQuery(GET_PROJECTS_PAGE);
+  } = useQuery(GET_PROJECTS_PAGE, {
+    pollInterval: 500,
+  });
 
   if (projectData) {
     console.log(projectData);
   }
+  const { address, isConnecting, isDisconnected } = useAccount();
 
   useEffect(() => {
     if (error) {
@@ -49,44 +54,37 @@ export default function Projects() {
       <section className="flex flex-col items-center justify-center gap-5 p-5">
         {projectData &&
           projectData.projects.map((project: ProjectType) => {
-            // <Problem key={project.projectID} id={project.projectID} title={project.name} creator={project.creator} setError={setError}/>
-            // project.projectId
-            let solution = projectData.activeSolutions.find(
-              (p: ActiveSolutionType) =>
-                p.hasProject && p.solutionId == project.projectId
-            );
-            console.log("solution found:", solution);
-
-            if (solution) {
-              console.log("Matching solution found:", solution);
-              let problem = projectData.activeProblems.find(
-                (p: ActiveProblemType) => p.problemId === solution.problemId
-              );
-
-              if (problem) {
-                console.log("Matching problem for the solution:", problem);
-
-                return (
-                  <Project
-                    key={solution.solutionId}
-                    id={solution.solutionId}
-                    solutionTitle={solution.name}
-                    solutionCreator={solution.creator}
-                    problemTitle={problem.name}
-                    problemCreator={problem.creator}
-                    setError={setError}
-                  />
-                );
-              } else {
-                console.log(
-                  "No matching problem found for the solution:",
-                  solution
+            if (project.projectId != BigInt(0)) {
+              let managementOffersCount = project.managementOffers.length;
+              let areProposed = false;
+              if (address) {
+                areProposed = project.managementOffers.some(
+                  (offer) =>
+                    offer.proposer.toLowerCase() === address.toLowerCase()
                 );
               }
-            } else {
-              console.log(
-                "No matching solution found for the project:",
-                project
+              let openTasksCount = project.tasks.filter(
+                (task) => task.status === "OPEN"
+              ).length;
+              return (
+                console.log("project.projectId", project.projectId),
+                (
+                  <ProjectCard
+                    key={project.projectId.toString()}
+                    projectId={project.projectId}
+                    solutionName={project.solution?.name}
+                    problemName={project.solution?.problem.name}
+                    managementOffersCount={managementOffersCount}
+                    isOpenForManagementProposals={
+                      project.isOpenForManagementProposals
+                    }
+                    tasksCount={project.tasks.length}
+                    projectManager={project.projectManager}
+                    areProposed={areProposed}
+                    openTasksCount={openTasksCount}
+                    userAddress={address || null}
+                  />
+                )
               );
             }
           })}

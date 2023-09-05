@@ -166,6 +166,14 @@ export default function Navbar() {
           Opportunities
         </Link>
 
+        {/* Projects Button Link */}
+        <Link
+          href="/projects"
+          className="text-2xl font-semibold hover:text-white text-democracy-beige px-4 py-2 hover:bg-tech-blue rounded-md"
+        >
+          Projects
+        </Link>
+
         {/* Engage Dropdown Menu */}
         {/* <div
           className="relative group hover:bg-blue-600 rounded-md"

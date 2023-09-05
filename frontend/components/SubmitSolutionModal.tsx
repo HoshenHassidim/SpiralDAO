@@ -11,16 +11,14 @@ import { CustomError } from "@/common.types";
 interface SubmitSolutionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  solutionId: string;
+  problemId: string;
 }
 
 const SubmitSolutionModal: React.FC<SubmitSolutionModalProps> = ({
   isOpen,
   onClose,
-  solutionId,
+  problemId,
 }) => {
-  if (!isOpen) return null;
-
   const { register, handleSubmit } = useForm();
   const [name, setName] = useState<string | undefined>();
   const [submitCount, setSubmitCount] = useState(0);
@@ -31,7 +29,7 @@ const SubmitSolutionModal: React.FC<SubmitSolutionModalProps> = ({
     address: addresses[4002].Solutions[0] as `0x${string}`,
     abi: abi,
     functionName: "proposeSolution",
-    args: [solutionId, name],
+    args: [problemId, name],
     onError(error: CustomError) {
       createNotification(
         error.metaMessages ? error.metaMessages[0] : "An error occurred",
@@ -69,6 +67,8 @@ const SubmitSolutionModal: React.FC<SubmitSolutionModalProps> = ({
       write();
     }
   }, [name, address, submitCount]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md">

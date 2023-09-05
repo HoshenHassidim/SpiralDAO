@@ -59,6 +59,7 @@ export default function Problem({
           ? "Mine"
           : creator.substr(0, 4) + "..." + creator.substr(creator.length - 4)}
       </span>
+      <p className="body-text">{id}</p>
       <p className="body-text">{status}</p>
       <h3 className="title">{title}</h3>
       <p className="body-text">Brief description</p>

@@ -1,23 +1,23 @@
 import { useState } from "react";
-import { AiFillHeart, AiOutlineHeart } from "react-icons/ai"; // You might need different icons
 import { useContractWrite, useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
 import createNotification from "../createNotification.js";
 import abi from "../constants/Projects.json";
 import addresses from "../constants/networkMapping.json";
 
-export default function Project({
+export default function ProjectCard({
   projectId,
   problemName,
   solutionName,
-  status,
-  managerOffersCount,
-  isLookingForManager,
+  managementOffersCount,
+  isOpenForManagementProposals,
   tasksCount,
-  managerAddress,
+  projectManager,
   userAddress,
+  areProposed,
+  openTasksCount,
 }) {
-  const { address } = useAccount();
+  // const { address } = useAccount();
   const router = useRouter();
 
   const { write } = useContractWrite({
@@ -32,57 +32,91 @@ export default function Project({
       createNotification("Management Offer Proposed", "success");
     },
   });
+  // console.log(areProposed);
+
+  //function to check if the user is the manager of the project
+  function isManager() {
+    if (projectManager) {
+      return projectManager.toLowerCase() === userAddress?.toLowerCase();
+    }
+    return false;
+  }
 
   return (
-    <div className="cursor-pointer bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
+    <div className=" bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
       <span className="self-end">{`Project ID: ${projectId}`}</span>
-      <p className="body-text">{status}</p>
       <h3 className="title">{`Problem: ${problemName}`}</h3>
       <h4 className="subtitle">{`Solution: ${solutionName}`}</h4>
 
-      {isLookingForManager && status === "Initiation" && (
+      {isOpenForManagementProposals ? (
         <div>
-          <p className="small-text">{`${managerOffersCount} offers to manage`}</p>
+          <p className="small-text">{`${managementOffersCount} offers to manage`}</p>
           <button
             className="btn-primary mt-2"
-            onClick={() => router.push(`/offers/${projectId}`)}
+            onClick={() => router.push(`/managementOffers/${projectId}`)}
           >
             View Offers
           </button>
-          <button
-            className="btn-secondary mt-2"
-            onClick={() => router.push(`/offer/${projectId}`)}
-          >
-            Offer to Manage
-          </button>
+          {areProposed === true ? (
+            <p className="small-text">{`You have already offered to manage this project`}</p>
+          ) : (
+            <button className="btn-primary mt-2" onClick={() => write()}>
+              Offer to Manage
+            </button>
+          )}
         </div>
+      ) : (
+        <p className="small-text">{`Manager: ${
+          userAddress?.toLowerCase() === projectManager
+            ? "You"
+            : projectManager.substr(0, 4) +
+              "..." +
+              projectManager.substr(projectManager.length - 4)
+        }
+        `}</p>
       )}
 
-      {status === "Ongoing" && (
+      {tasksCount != 0 && (
         <div>
-          <p className="small-text">{`Manager: ${
-            userAddress?.toLowerCase() === managerAddress
-              ? "Mine"
-              : managerAddress
-          }`}</p>
-          <p className="small-text">{`${tasksCount} open tasks`}</p>
-          <button
+          <p className="small-text">{`${tasksCount} tasks`}</p>
+          {/* <button
             className="btn-primary mt-2"
-            onClick={() => router.push(`/project/${projectId}`)}
+            onClick={() => router.push(`/tasks/${projectId}`)} // Adjust this path to correctly point to the tasks page.
           >
-            More Details
-          </button>
+            View Open Tasks
+          </button> */}
         </div>
       )}
 
-      {userAddress?.toLowerCase() === managerAddress && (
+      {openTasksCount != 0 && (
+        <div>
+          <p className="small-text">{`${openTasksCount} open tasks`}</p>
+          {!isManager() && (
+            <button
+              className="btn-primary mt-2"
+              onClick={() => router.push(`/ProjectTasks/${projectId}`)} // Adjust this path to correctly point to the tasks page.
+            >
+              View Tasks
+            </button>
+          )}
+        </div>
+      )}
+
+      {isManager() && (
         <button
-          className="btn-tertiary mt-2"
-          onClick={() => router.push(`/manage/${projectId}`)}
+          className="btn-primary mt-2"
+          onClick={() => router.push(`/ProjectTasks/${projectId}`)}
         >
           Manage Project
         </button>
       )}
+
+      {/* <button
+        className="btn-secondary mt-2"
+        onClick={() => router.push(`/projectDetails/${projectId}`)} // Adjust this path to correctly point to the project details page.
+      >
+        More Details
+      </button> */}
     </div>
   );
 }
