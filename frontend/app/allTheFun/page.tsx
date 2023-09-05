@@ -16,8 +16,26 @@ import { CustomError } from "@/common.types";
 
 export default function ManagementOffers() {
   const [problemId, setProblemId] = useState("");
+  const [solutionId, setsolutionId] = useState("");
   const [name, setName] = useState("");
   const [projectId, setProjectId] = useState("");
+  const [taskId, setTaskId] = useState("");
+
+  const { write: writeMeetsRatingCriteria } = useContractWrite({
+    address: addresses[4002].Problems[0] as `0x${string}`,
+    abi: problemsabi,
+    functionName: "meetsRatingCriteria",
+    args: [problemId],
+    onError(error: CustomError) {
+      createNotification(
+        error.metaMessages ? error.metaMessages[0] : "An error occurred",
+        "error"
+      );
+    },
+    onSuccess(data) {
+      createNotification("Dont Forget to Check", "success");
+    },
+  });
 
   const { write: writeProposeSolution } = useContractWrite({
     address: addresses[4002].Solutions[0] as `0x${string}`,
@@ -32,6 +50,22 @@ export default function ManagementOffers() {
     },
     onSuccess(data) {
       createNotification("Solution Proposed", "success");
+    },
+  });
+
+  const { write: writeCanBecomeProject } = useContractWrite({
+    address: addresses[4002].Solutions[0] as `0x${string}`,
+    abi: solutionsabi,
+    functionName: "canBecomeProject",
+    args: [solutionId],
+    onError(error: CustomError) {
+      createNotification(
+        error.metaMessages ? error.metaMessages[0] : "An error occurred",
+        "error"
+      );
+    },
+    onSuccess(data) {
+      createNotification("Dont Forget to Check", "success");
     },
   });
 
@@ -63,7 +97,39 @@ export default function ManagementOffers() {
       );
     },
     onSuccess(data) {
-      createNotification("Management Offer Proposed", "success");
+      createNotification("Dont Forget to Check", "success");
+    },
+  });
+
+  const { write: writeAssignTask } = useContractWrite({
+    address: addresses[4002].Tasks[0] as `0x${string}`,
+    abi: tasksabi,
+    functionName: "assignTask",
+    args: [taskId],
+    onError(error: CustomError) {
+      createNotification(
+        error.metaMessages ? error.metaMessages[0] : "An error occurred",
+        "error"
+      );
+    },
+    onSuccess(data) {
+      createNotification("Dont Forget to Check", "success");
+    },
+  });
+
+  const { write: writeVerifyTask } = useContractWrite({
+    address: addresses[4002].Tasks[0] as `0x${string}`,
+    abi: tasksabi,
+    functionName: "verifyTask",
+    args: [taskId],
+    onError(error: CustomError) {
+      createNotification(
+        error.metaMessages ? error.metaMessages[0] : "An error occurred",
+        "error"
+      );
+    },
+    onSuccess(data) {
+      createNotification("Dont Forget to Check", "success");
     },
   });
 
@@ -77,12 +143,34 @@ export default function ManagementOffers() {
         </section>
 
         <section className="bottom-submit">
+          <h2 className="bottom-submit-text">Problems</h2>
+          <input
+            type="text"
+            placeholder="Problem ID"
+            value={problemId}
+            onChange={(e) => setProblemId(e.target.value)}
+          />
+          <button
+            className="btn-primary"
+            onClick={() => writeMeetsRatingCriteria()}
+          >
+            Meets Rating Criteria
+          </button>
+        </section>
+
+        <section className="bottom-submit">
           <h2 className="bottom-submit-text">Solutions</h2>
           <input
             type="text"
             placeholder="Problem ID"
             value={problemId}
             onChange={(e) => setProblemId(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Solution ID"
+            value={solutionId}
+            onChange={(e) => setsolutionId(e.target.value)}
           />
           <input
             type="text"
@@ -95,6 +183,12 @@ export default function ManagementOffers() {
             onClick={() => writeProposeSolution()}
           >
             Propose Solution
+          </button>
+          <button
+            className="btn-primary"
+            onClick={() => writeCanBecomeProject()}
+          >
+            Can Become Project
           </button>
         </section>
 
@@ -123,7 +217,24 @@ export default function ManagementOffers() {
             className="btn-primary"
             onClick={() => writeAssignProjectManager()}
           >
-            Propose Management Offer
+            Assign Project Manager
+          </button>
+        </section>
+
+        <section className="bottom-submit">
+          <h2 className="bottom-submit-text">Tasks</h2>
+          <input
+            type="text"
+            placeholder="Task ID"
+            value={taskId}
+            onChange={(e) => setTaskId(e.target.value)}
+          />
+          <button className="btn-primary" onClick={() => writeAssignTask()}>
+            Assign Task
+          </button>
+
+          <button className="btn-primary" onClick={() => writeVerifyTask()}>
+            Verify Task
           </button>
         </section>
       </div>
