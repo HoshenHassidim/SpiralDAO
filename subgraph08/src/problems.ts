@@ -47,7 +47,7 @@ export function handleNewProblem(event: NewProblemEvent): void {
   activeProblem.ratingCount = BigInt.fromI32(0);
   activeProblem.ratingSum = BigInt.fromI32(0);
   activeProblem.isOpenForRating = true;
-  activeProblem.isOpenForNewSolutions = true;
+  activeProblem.isOpenForNewSolutions = false;
   activeProblem.blockNumber = event.block.number;
   activeProblem.save();
 }
@@ -166,6 +166,7 @@ export function handleProblemRatingCriteriaMet(
   let activeProblem = ActiveProblem.load(idString);
   if (activeProblem) {
     activeProblem.isOpenForRating = false;
+    activeProblem.isOpenForNewSolutions = true;
     activeProblem.save();
   }
 }
