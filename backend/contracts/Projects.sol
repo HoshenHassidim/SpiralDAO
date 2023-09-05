@@ -22,7 +22,7 @@ contract Projects {
 
     // Project structure
     struct Project {
-        uint256 solutionId;
+        uint256 projectId;
         bool isOpenForManagementProposals;
         bool isOpenForManagmentRemovalProposal;
         address projectManager;
@@ -56,7 +56,7 @@ contract Projects {
     error IDMustBePositive();
     error solutionDoesNotMeetCriteria();
     error invalidID();
-    error solutionIDMustBePositive();
+    error projectIdMustBePositive();
     error projectNotOpenForProposals();
     error userAlreadyProposed();
     error onlyManager();
@@ -72,7 +72,7 @@ contract Projects {
     error managerHasBeenAssigned();
     error mustBeAuthorised();
 
-    // Project ID to Project mapping (solutionId is used as projectId)
+    // Project ID to Project mapping
     mapping(uint256 => Project) private projects;
 
     // Project ID to array of Offer IDs mapping
@@ -132,22 +132,22 @@ contract Projects {
     }
 
     // Private function to create a new project from a solution
-    function createProject(uint256 _solutionId) private {
-        if (_solutionId <= 0) revert IDMustBePositive();
-        if (!solutionsContract.canBecomeProjectView(_solutionId))
+    function createProject(uint256 _projectId) private {
+        if (_projectId <= 0) revert IDMustBePositive();
+        if (!solutionsContract.canBecomeProjectView(_projectId))
             revert solutionDoesNotMeetCriteria();
-        if (projectToOffers[_solutionId].length == 0) {
-            solutionsContract.canBecomeProject(_solutionId);
+        if (projectToOffers[_projectId].length == 0) {
+            solutionsContract.canBecomeProject(_projectId);
         }
         // Retrieve problem and solution creators
         (address problemCreator, address solutionCreator) = solutionsContract.getCreators(
-            _solutionId
+            _projectId
         );
         projectCounter++;
 
         // Create a new token contract for the project with problem and solution creators as parameters
         tokenManagementContract.newProjectToken(
-            _solutionId,
+            _projectId,
             "ProjectToken",
             "PT",
             problemCreator,
@@ -157,24 +157,24 @@ contract Projects {
         membershipContract.proposedProblemAndSolutionAccepted(problemCreator, solutionCreator);
 
         // Create new project and store it in the mapping
-        projects[_solutionId] = Project(_solutionId, true, false, address(0), false);
+        projects[_projectId] = Project(_projectId, true, false, address(0), false);
 
-        emit NewProject(_solutionId); // Emit the event
+        emit NewProject(_projectId); // Emit the event
     }
 
     // External function to propose a management offer for a project
 
-    function proposeManagementOffer(uint256 _solutionId) external {
-        // if (solutionsContract.getSolutionCounter() < _solutionId || _solutionId == 0)
-        if (solutionsContract.getSolutionCounter() < _solutionId || _solutionId < 0)
+    function proposeManagementOffer(uint256 _projectId) external {
+        // if (solutionsContract.getSolutionCounter() < _projectId || _projectId == 0)
+        if (solutionsContract.getSolutionCounter() < _projectId || _projectId < 0)
             revert invalidID();
-        if (_solutionId != 0) {
-            if (projects[_solutionId].solutionId == 0) {
-                createProject(_solutionId); // Check if the solution has a project, if not, create one
+        if (_projectId != 0) {
+            if (projects[_projectId].projectId == 0) {
+                createProject(_projectId); // Check if the solution has a project, if not, create one
             }
         }
 
-        uint256 projectId = _solutionId; // The project ID is the same as the solutionId
+        uint256 projectId = _projectId; // The project ID is the same as the projectId
 
         // Ensuring that the project is open for management proposals
         if (!projects[projectId].isOpenForManagementProposals) revert projectNotOpenForProposals();
@@ -468,9 +468,9 @@ contract Projects {
 
         Project storage project = projects[_projectId];
 
-        // Return the project details: projectId (same as solutionId), isOpenForManagementProposals
+        // Return the project details: projectId (same as projectId), isOpenForManagementProposals
         return (
-            project.solutionId,
+            project.projectId,
             project.isOpenForManagementProposals,
             project.isOpenForManagmentRemovalProposal
         );
