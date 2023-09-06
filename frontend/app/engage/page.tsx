@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "../../components/Navbar";
-import Problem from "../../components/ProblemCard";
+import ProblemCard from "../../components/ProblemCard";
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
 import GET_NEW_PROBLEMS from "../../constants/subgraphQueries/subgraphQueryGetProblems";
@@ -11,16 +11,6 @@ import { ActiveProblemType, UserProblemRating } from "@/common.types";
 import { useAccount } from "wagmi";
 import SubmitProblemModal from "@/components/SubmitProblemModal";
 import ProblemsFilters from "@/components/ProblemsFiltrer";
-
-function status(problem: ActiveProblemType) {
-  if (problem.isOpenForRating) {
-    return "Awaiting Ranking";
-  } else if (problem.isOpenForNewSolutions) {
-    return "In Solution Phase";
-  } else {
-    return "Closed";
-  }
-}
 
 export default function EngagePage() {
   const { address, isConnecting, isDisconnected } = useAccount();
@@ -64,12 +54,10 @@ export default function EngagePage() {
           // Handle Status filter
           switch (filterStatus) {
             case "Awaiting Ranking":
-              meetsStatusCondition =
-                problem.isOpenForRating && problem.isOpenForNewSolutions;
+              meetsStatusCondition = problem.isOpenForRating;
               break;
             case "In Solution Phase":
-              meetsStatusCondition =
-                problem.isOpenForNewSolutions && !problem.isOpenForRating;
+              meetsStatusCondition = problem.isOpenForNewSolutions;
               break;
             default: // For "All Problems"
               meetsStatusCondition = true;
@@ -191,17 +179,23 @@ export default function EngagePage() {
 
         <section className="section-padding flex flex-col items-center gap-5">
           {filteredProblems?.map((problem: ActiveProblemType) => (
-            <Problem
+            // <ProblemCard
+            //   key={problem.problemId.toString()}
+            //   problemId={problem.problemId}
+            //   name={problem.name}
+            //   creator={problem.creator}
+            //   ratingCount={problem.ratingCount}
+            //   solutionCount={problem.solutions.length}
+            //   isOpenForRating={problem.isOpenForRating}
+            //   isOpenForNewSolutions={problem.isOpenForNewSolutions}
+            //   userAddress={address}
+            //   userPreviousRating={getUserRatingForProblem(problem.problemId)}
+            // />
+            <ProblemCard
               key={problem.problemId.toString()}
-              id={problem.problemId}
-              title={problem.name}
-              creator={problem.creator}
-              ratingCount={problem.ratingCount}
+              {...problem}
               solutionCount={problem.solutions.length}
-              isOpenForRating={problem.isOpenForRating}
-              isOpenForNewSolutions={problem.isOpenForNewSolutions}
               userAddress={address}
-              status={status(problem)}
               userPreviousRating={getUserRatingForProblem(problem.problemId)}
             />
           ))}

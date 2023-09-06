@@ -9,12 +9,13 @@ import { useRouter } from "next/navigation";
 import createNotification from "../createNotification.js";
 
 export default function ManagementOfferCard({
-  managementOfferId,
+  offerId,
   proposer,
   ratingCount,
   isActive,
   userAddress,
   userPreviousRating,
+  projectId,
 }) {
   const [rating, setRating] = useState(userPreviousRating);
   const [previousRating, setPreviousRating] = useState(userPreviousRating);
@@ -26,7 +27,7 @@ export default function ManagementOfferCard({
     address: addresses[4002].Projects[0],
     abi: abi,
     functionName: "rateManagementOffer",
-    args: [managementOfferId, rating],
+    args: [offerId, rating],
     onError(error) {
       createNotification(error.metaMessages[0], "error");
     },
@@ -50,8 +51,8 @@ export default function ManagementOfferCard({
 
   return (
     <div className="bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
-      <span className="self-end">{`Offer ID: ${managementOfferId}`}</span>
-      {/* <p className="body-text">{managementOfferId}</p> */}
+      <span className="self-end">{`Offer ID: ${offerId}`}</span>
+      {/* <p className="body-text">{offerId}</p> */}
       <h3 className="title">{`Manager: ${
         userAddress?.toLowerCase() === proposer
           ? "Mine"
@@ -100,7 +101,7 @@ export default function ManagementOfferCard({
       {/* {isOpenForNewSolutions && !isOpenForRating && (
         <button
           className="btn-primary"
-          onClick={() => router.push("/engage/" + managementOfferId)}
+          onClick={() => router.push("/engage/" + offerId)}
         >
           Propose/View Solutions
         </button>

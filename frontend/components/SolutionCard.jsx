@@ -9,8 +9,8 @@ import { useRouter } from "next/navigation";
 import createNotification from "../createNotification.js";
 
 export default function SolutionCard({
-  id,
-  title,
+  solutionId,
+  name,
   creator,
   ratingCount,
   isOpenForRating,
@@ -28,7 +28,7 @@ export default function SolutionCard({
     address: addresses[4002].Solutions[0],
     abi: abi,
     functionName: "rateSolution",
-    args: [id, rating],
+    args: [solutionId, rating],
     onError(error) {
       createNotification(error.metaMessages[0], "error");
     },
@@ -57,8 +57,8 @@ export default function SolutionCard({
           ? "Mine"
           : creator.substr(0, 4) + "..." + creator.substr(creator.length - 4)}
       </span>
-      <p className="body-text">{id}</p>
-      <h3 className="title">{title}</h3>
+      <p className="body-text">{solutionId}</p>
+      <h3 className="name">{name}</h3>
       <p className="body-text">Brief description</p>
       <p className="small-text">{ratingCount} ratings</p>
 
@@ -104,7 +104,7 @@ export default function SolutionCard({
       {/* {isOpenForNewSolutions && !isOpenForRating && (
         <button
           className="btn-primary"
-          onClick={() => router.push("/engage/" + id)}
+          onClick={() => router.push("/engage/" + solutionId)}
         >
           Propose/View Solutions
         </button>

@@ -1,7 +1,6 @@
 "use client";
 
 import Navbar from "../../components/Navbar";
-import Project from "../../components/Project";
 import ProjectCard from "../../components/ProjectCard";
 
 import Link from "next/link";
@@ -82,7 +81,7 @@ export default function Projects() {
                     projectManager={project.projectManager}
                     areProposed={areProposed}
                     openTasksCount={openTasksCount}
-                    userAddress={address || null}
+                    userAddress={address}
                   />
                 )
               );

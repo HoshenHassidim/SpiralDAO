@@ -268,11 +268,9 @@ export default function ManagementOffers({
             (managementOffer: ActiveManagementOfferType) => (
               <ManagementOfferCard
                 key={managementOffer.offerId.toString()}
-                managementOfferId={managementOffer.offerId}
-                proposer={managementOffer.proposer}
-                ratingCount={managementOffer.ratingCount}
-                isActive={managementOffer.isActive}
+                {...managementOffer}
                 userAddress={address}
+                projectId={params.slug}
                 userPreviousRating={getUserRatingForManagementOffer(
                   managementOffer.offerId
                 )}

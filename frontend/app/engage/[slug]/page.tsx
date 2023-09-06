@@ -222,11 +222,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
           {filteredSolutions?.map((solution: ActiveSolutionType) => (
             <SolutionCard
               key={solution.solutionId.toString()}
-              id={solution.solutionId}
-              title={solution.name}
-              creator={solution.creator}
-              ratingCount={solution.ratingCount}
-              isOpenForRating={solution.isOpenForRating}
+              {...solution}
               userAddress={address}
               userPreviousRating={getUserRatingForSolution(solution.solutionId)}
             />

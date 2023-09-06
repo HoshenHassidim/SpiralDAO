@@ -8,15 +8,14 @@ import { useContractWrite, useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
 import createNotification from "../createNotification.js";
 
-export default function Problem({
-  id,
-  title,
+export default function ProblemCard({
+  problemId,
+  name,
   creator,
   ratingCount,
   isOpenForRating,
   isOpenForNewSolutions,
   userAddress,
-  status,
   userPreviousRating,
   solutionCount,
 }) {
@@ -30,7 +29,7 @@ export default function Problem({
     address: addresses[4002].Problems[0],
     abi: abi,
     functionName: "rateProblem",
-    args: [id, rating],
+    args: [problemId, rating],
     onError(error) {
       createNotification(error.metaMessages[0], "error");
     },
@@ -38,6 +37,16 @@ export default function Problem({
       createNotification("Rated Successfully", "success");
     },
   });
+
+  function status(isOpenForRating, isOpenForNewSolutions) {
+    if (isOpenForRating) {
+      return "Awaiting Ranking";
+    }
+    if (isOpenForNewSolutions) {
+      return "In Solution Phase";
+    }
+    return "Closed";
+  }
 
   useEffect(() => {
     if (rating !== previousRating) {
@@ -59,9 +68,11 @@ export default function Problem({
           ? "Mine"
           : creator.substr(0, 4) + "..." + creator.substr(creator.length - 4)}
       </span>
-      <p className="body-text">{id}</p>
-      <p className="body-text">{status}</p>
-      <h3 className="title">{title}</h3>
+      <p className="body-text">{problemId}</p>
+      <p className="body-text">
+        {status(isOpenForRating, isOpenForNewSolutions)}
+      </p>
+      <h3 className="name">{name}</h3>
       <p className="body-text">Brief description</p>
 
       {isOpenForRating && (
@@ -112,7 +123,7 @@ export default function Problem({
           <div className=" flex flex-col items-center justify-center mt-4">
             <button
               className="btn-primary mt-4"
-              onClick={() => router.push("/engage/" + id)}
+              onClick={() => router.push("/engage/" + problemId)}
             >
               Propose/View Solutions
             </button>
@@ -138,8 +149,8 @@ export default function Problem({
 // import createNotification from "../createNotification.js";
 
 // export default function Problem({
-//   id,
-//   title,
+//   problemId,
+//   name,
 //   creator,
 //   ratingCount,
 //   isOpenForRating,
@@ -158,7 +169,7 @@ export default function Problem({
 //     address: addresses[4002].Problems[0],
 //     abi: abi,
 //     functionName: "rateProblem",
-//     args: [id, rating],
+//     args: [problemId, rating],
 //     onError(error) {
 //       createNotification(error.metaMessages[0], "error");
 //     },
@@ -180,7 +191,7 @@ export default function Problem({
 //   return (
 //     <div
 //       onClick={() => {
-//         router.push("/engage/" + id);
+//         router.push("/engage/" + problemId);
 //       }}
 //       className="cursor-pointer bg-gray-700 flex flex-col justify-between gap-5 rounded-lg p-5 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg"
 //     >
@@ -192,7 +203,7 @@ export default function Problem({
 //           : creator.substr(0, 4) + "..." + creator.substr(creator.length - 4)}
 //       </span>
 
-//       <h3 className="title">{title}</h3>
+//       <h3 className="name">{name}</h3>
 //       <p className="body-text">Brief description</p>
 
 //       <p className="small-text">{ratingCount} likes</p>
@@ -232,7 +243,7 @@ export default function Problem({
 // return (
 //   <div
 //     onClick={() => {
-//       router.push("/engage/" + id);
+//       router.push("/engage/" + problemId);
 //     }}
 //     className="cursor-pointer bg-gray-700 flex flex-col justify-between gap-5 rounded-lg  p-5 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg"
 //   >
@@ -257,7 +268,7 @@ export default function Problem({
 //           ? "Mine"
 //           : creator.substr(0, 4) + "..." + creator.substr(creator.length - 4)}
 //       </span>
-//       <h2 className="text-lg font-bold mb-5 ">{title}</h2>
+//       <h2 className="text-lg font-bold mb-5 ">{name}</h2>
 //       <p className="text-sm line-clamp-6">
 //         Booking event venues and spaces as a small business owner or startup
 //         founder is frustrating. Sourcing affordable locations from traditional

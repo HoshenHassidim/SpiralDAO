@@ -24,6 +24,7 @@ import {
   Task,
   UserTaskOfferRating,
 } from "@/common.types.js";
+import { Noto_Sans_Telugu } from "next/font/google";
 
 export default function TaskOffers({ params }: { params: { slug: string } }) {
   const [taskOffer, setTaskOffer] = useState();
@@ -247,10 +248,7 @@ export default function TaskOffers({ params }: { params: { slug: string } }) {
           {filteredTaskOffers?.map((taskOffer: ActiveTaskOffer) => (
             <TaskOfferCard
               key={taskOffer.offerId.toString()}
-              taskOfferId={taskOffer.offerId}
-              offeror={taskOffer.offeror}
-              ratingCount={taskOffer.ratingCount}
-              isActive={taskOffer.isActive}
+              {...taskOffer}
               userAddress={address}
               userPreviousRating={getUserRatingForTaskOffer(taskOffer.offerId)}
             />

@@ -257,16 +257,9 @@ export default function Tasks({ params }: { params: { slug: string } }) {
             return (
               <TaskCard
                 key={task.taskId.toString()}
-                taskId={task.taskId}
-                projectId={params.slug}
-                status={task.status}
-                taskName={task.taskName}
-                taskValue={task.taskValue}
+                {...task}
                 offersCount={offersCount}
-                performer={task.performer}
-                numberOfCompletionRaters={task.numberOfCompletionRaters}
                 userPreviousRating={getUserRatingForTaskCompletion(task.taskId)}
-                completionRatingSum={task.completionRatingSum}
                 areProposed={areProposed}
               />
             );

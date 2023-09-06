@@ -9,11 +9,12 @@ import { useRouter } from "next/navigation";
 import createNotification from "../createNotification.js";
 
 export default function TaskOfferCard({
-  taskOfferId,
+  offerId,
   offeror,
   ratingCount,
   isActive,
   userAddress,
+  taskId,
   userPreviousRating,
 }) {
   const [rating, setRating] = useState(userPreviousRating);
@@ -26,7 +27,7 @@ export default function TaskOfferCard({
     address: addresses[4002].Tasks[0],
     abi: abi,
     functionName: "rateTaskOffer",
-    args: [taskOfferId, rating],
+    args: [offerId, rating],
     onError(error) {
       createNotification(error.metaMessages[0], "error");
     },
@@ -50,8 +51,8 @@ export default function TaskOfferCard({
 
   return (
     <div className="bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
-      <span className="self-end">{`Offer ID: ${taskOfferId}`}</span>
-      {/* <p className="body-text">{taskOfferId}</p> */}
+      <span className="self-end">{`Offer ID: ${offerId}`}</span>
+      {/* <p className="body-text">{offerId}</p> */}
       <h3 className="title">{`Preformer: ${
         userAddress?.toLowerCase() === offeror
           ? "Mine"
@@ -100,7 +101,7 @@ export default function TaskOfferCard({
       {/* {isOpenForNewSolutions && !isOpenForRating && (
         <button
           className="btn-primary"
-          onClick={() => router.push("/engage/" + taskOfferId)}
+          onClick={() => router.push("/engage/" + offerId)}
         >
           Propose/View Solutions
         </button>
