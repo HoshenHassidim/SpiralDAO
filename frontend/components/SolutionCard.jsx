@@ -17,6 +17,7 @@ export default function SolutionCard({
   userAddress,
   // status,
   userPreviousRating,
+  hasProject,
 }) {
   const [rating, setRating] = useState(userPreviousRating);
   const [previousRating, setPreviousRating] = useState(userPreviousRating);
@@ -48,10 +49,10 @@ export default function SolutionCard({
     }
   }, [rating, previousRating, address]);
 
-  if (!isOpenForRating) return null; // Don't render if none are true
+  // if (!isOpenForRating) return null; // Don't render if none are true
 
   return (
-    <div className="cursor-pointer bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
+    <div className="bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
       <span className="self-end">
         {userAddress?.toLowerCase() === creator
           ? "Mine"
@@ -101,14 +102,16 @@ export default function SolutionCard({
         </div>
       )}
 
-      {/* {isOpenForNewSolutions && !isOpenForRating && (
+      {hasProject && (
         <button
           className="btn-primary"
-          onClick={() => router.push("/engage/" + solutionId)}
+          onClick={() => router.push(`/projects/${solutionId}`)}
         >
-          Propose/View Solutions
+          View Project
         </button>
-      )} */}
+      )}
+
+      {!hasProject && !isOpenForRating && <p className="body-text">Closed</p>}
     </div>
   );
 }

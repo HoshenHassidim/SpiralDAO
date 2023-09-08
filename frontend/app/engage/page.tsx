@@ -7,7 +7,11 @@ import { AiOutlinePlus } from "react-icons/ai";
 import GET_NEW_PROBLEMS from "../../constants/subgraphQueries/subgraphQueryGetProblems";
 import { useQuery } from "@apollo/client";
 import { useState, useEffect } from "react";
-import { ActiveProblemType, UserProblemRating } from "@/common.types";
+import {
+  ActiveProblemType,
+  ActiveSolutionType,
+  UserProblemRating,
+} from "@/common.types";
 import { useAccount } from "wagmi";
 import SubmitProblemModal from "@/components/SubmitProblemModal";
 import ProblemsFilters from "@/components/ProblemsFiltrer";
@@ -178,27 +182,24 @@ export default function EngagePage() {
         </section>
 
         <section className="section-padding flex flex-col items-center gap-5">
-          {filteredProblems?.map((problem: ActiveProblemType) => (
-            // <ProblemCard
-            //   key={problem.problemId.toString()}
-            //   problemId={problem.problemId}
-            //   name={problem.name}
-            //   creator={problem.creator}
-            //   ratingCount={problem.ratingCount}
-            //   solutionCount={problem.solutions.length}
-            //   isOpenForRating={problem.isOpenForRating}
-            //   isOpenForNewSolutions={problem.isOpenForNewSolutions}
-            //   userAddress={address}
-            //   userPreviousRating={getUserRatingForProblem(problem.problemId)}
-            // />
-            <ProblemCard
-              key={problem.problemId.toString()}
-              {...problem}
-              solutionCount={problem.solutions.length}
-              userAddress={address}
-              userPreviousRating={getUserRatingForProblem(problem.problemId)}
-            />
-          ))}
+          {filteredProblems?.map((problem: ActiveProblemType) => {
+            let projectId: BigInt = BigInt(0);
+            problem.solutions.some((solution: ActiveSolutionType) => {
+              if (solution.hasProject) {
+                projectId = solution.solutionId;
+              }
+            });
+            return (
+              <ProblemCard
+                key={problem.problemId.toString()}
+                {...problem}
+                solutionCount={problem.solutions.length}
+                userAddress={address}
+                userPreviousRating={getUserRatingForProblem(problem.problemId)}
+                projectId={projectId}
+              />
+            );
+          })}
         </section>
 
         {/* <section className="flex flex-col items-center justify-center gap-5 p-5">

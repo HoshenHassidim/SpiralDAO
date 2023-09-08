@@ -14,6 +14,7 @@ const GET_PROBLEM = gql`
         creator
         isOpenForRating
         ratingCount
+        hasProject
       }
     }
     userSolutionRatings {

@@ -94,7 +94,7 @@ export default function ProjectCard({
           {!isManager() && (
             <button
               className="btn-primary mt-2"
-              onClick={() => router.push(`/ProjectTasks/${projectId}`)} // Adjust this path to correctly point to the tasks page.
+              onClick={() => router.push(`/projectTasks/${projectId}`)} // Adjust this path to correctly point to the tasks page.
             >
               View Tasks
             </button>
@@ -105,7 +105,7 @@ export default function ProjectCard({
       {isManager() && (
         <button
           className="btn-primary mt-2"
-          onClick={() => router.push(`/ProjectTasks/${projectId}`)}
+          onClick={() => router.push(`/projectTasks/${projectId}`)}
         >
           Manage Project
         </button>

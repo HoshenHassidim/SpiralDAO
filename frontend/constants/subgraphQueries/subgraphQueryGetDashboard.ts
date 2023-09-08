@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
 // See more example queries on https://thegraph.com/explorer/subgraph/protofire/maker-protocol
-const GET_PersonalArea_PAGE = gql`
+const GET_Dashboard_PAGE = gql`
   query ($id: String!) {
     tokenBalances(where: { member: $id }) {
       member
@@ -16,8 +16,9 @@ const GET_PersonalArea_PAGE = gql`
       ratingCount
       isOpenForRating
       isOpenForNewSolutions
-      solutions(where: { isOpenForRating: true }) {
+      solutions {
         solutionId
+        hasProject
       }
     }
 
@@ -27,6 +28,7 @@ const GET_PersonalArea_PAGE = gql`
       creator
       isOpenForRating
       ratingCount
+      hasProject
     }
 
     projects(where: { projectManager: $id }) {
@@ -81,4 +83,4 @@ const GET_PersonalArea_PAGE = gql`
     }
   }
 `;
-export default GET_PersonalArea_PAGE;
+export default GET_Dashboard_PAGE;

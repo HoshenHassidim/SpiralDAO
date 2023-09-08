@@ -9,7 +9,7 @@ import TaskCard from "@/components/TaskCard";
 import TaskOfferCard from "@/components/TaskOfferCard";
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
-import GET_PersonalArea_PAGE from "@/constants/subgraphQueries/subgraphQueryGetPersonalArea";
+import GET_Dashboard_PAGE from "@/constants/subgraphQueries/subgraphQueryGetDashboard";
 import { useQuery } from "@apollo/client";
 import { useState, useEffect, use } from "react";
 import {
@@ -26,7 +26,6 @@ import { useAccount } from "wagmi";
 import SubmitProblemModal from "@/components/SubmitProblemModal";
 import ProblemsFilters from "@/components/ProblemsFiltrer";
 import { Web3Button } from "@web3modal/react";
-import Tasks from "../ProjectTasks/[slug]/page";
 
 type SectionProps = {
   title: string;
@@ -42,7 +41,7 @@ function Section({ title, children }: SectionProps) {
   );
 }
 
-export default function PersonalAreaPage() {
+export default function DashboardPage() {
   const { address, isConnecting, isDisconnected } = useAccount();
   const [isTokenBalancesCollapsed, setIsTokenBalancesCollapsed] =
     useState(false);
@@ -95,7 +94,7 @@ export default function PersonalAreaPage() {
     loading,
     error: subgraphQueryError,
     data,
-  } = useQuery(GET_PersonalArea_PAGE, {
+  } = useQuery(GET_Dashboard_PAGE, {
     variables: { id: address },
     pollInterval: 500,
   });
@@ -135,9 +134,9 @@ export default function PersonalAreaPage() {
     <div className="overflow-x-hidden overflow-y-scroll h-screen">
       <Navbar />
       <section className="section-padding flex flex-col items-center  bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
-        <h1 className="title text-center">Welcome to your personal area</h1>
+        <h1 className="title text-center">Welcome to your Dashboard</h1>
         <h2 className="subtitle text-center my-4">
-          The personal area is where you can see your token balance and all the
+          The Dashboard is where you can see your token balance and all the
           problems, solutions, projects, management offers and tasks you are
           involved in.
         </h2>
@@ -235,27 +234,32 @@ export default function PersonalAreaPage() {
       )} */}
 
       {Array.isArray(data?.activeProblems) &&
-        data?.activeProblems.length !== 0 &&
-        data?.activeProblems.some(
-          (problem: ActiveProblemType) =>
-            problem.isOpenForRating || problem.isOpenForNewSolutions
-        ) && (
-          <Section title="Active Problems">
+        data?.activeProblems.length !== 0 && (
+          <Section title="Your Problems">
             <button className="btn-primary" onClick={toggleProblemsSection}>
               {isProblemsSectionCollapsed ? "Show Problems" : "Hide Problems"}
             </button>
 
             {!isProblemsSectionCollapsed && (
               <>
-                {data?.activeProblems.map((problem: ActiveProblemType) => (
-                  <ProblemCard
-                    key={problem.problemId.toString()}
-                    {...problem}
-                    solutionCount={problem.solutions.length}
-                    userAddress={address}
-                    userPreviousRating={0}
-                  />
-                ))}
+                {data?.activeProblems.map((problem: ActiveProblemType) => {
+                  let projectId: BigInt = BigInt(0);
+                  problem.solutions.some((solution: ActiveSolutionType) => {
+                    if (solution.hasProject) {
+                      projectId = solution.solutionId;
+                    }
+                  });
+                  return (
+                    <ProblemCard
+                      key={problem.problemId.toString()}
+                      {...problem}
+                      solutionCount={problem.solutions.length}
+                      userAddress={address}
+                      userPreviousRating={0}
+                      projectId={projectId}
+                    />
+                  );
+                })}
               </>
             )}
           </Section>
@@ -281,11 +285,11 @@ export default function PersonalAreaPage() {
         )} */}
 
       {Array.isArray(data?.activeSolutions) &&
-        data?.activeSolutions.length !== 0 &&
-        data?.activeSolutions.some(
-          (solution: ActiveSolutionType) => solution.isOpenForRating
-        ) && (
-          <Section title="Active Solutions">
+        data?.activeSolutions.length !== 0 && (
+          // data?.activeSolutions.some(
+          //   (solution: ActiveSolutionType) => solution.isOpenForRating
+          // ) &&
+          <Section title="Your Solutions">
             <button className="btn-primary" onClick={toggleSolutionsSection}>
               {isSolutionsSectionCollapsed
                 ? "Show Solutions"
@@ -453,10 +457,10 @@ export default function PersonalAreaPage() {
 //           <div>
 // <section className="section-padding flex flex-col items-center  bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
 //   <h1 className="title text-center">
-//     Welcome to your personal area
+//     Welcome to your Dashboard
 //   </h1>
 //   <h2 className="subtitle text-center my-4">
-//     The personal area is where you can see your token balance and
+//     The Dashboard is where you can see your token balance and
 //     all the problems, solutions, projects, management offers and
 //     tasks you are involved in.
 //   </h2>

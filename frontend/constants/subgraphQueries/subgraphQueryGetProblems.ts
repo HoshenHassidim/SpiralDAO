@@ -16,8 +16,9 @@ const GET_PROBLEMS_PAGE = gql`
       ratingCount
       isOpenForRating
       isOpenForNewSolutions
-      solutions(where: { isOpenForRating: true }) {
+      solutions {
         solutionId
+        hasProject
       }
     }
 

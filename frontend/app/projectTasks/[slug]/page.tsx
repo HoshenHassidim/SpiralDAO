@@ -10,7 +10,7 @@ import SubmitTaskModal from "@/components/SubmitTaskModal";
 import { useContractWrite, useAccount } from "wagmi";
 import addresses from "../../../constants/networkMapping.json";
 // Graph reading
-import GET_PROJECT_TASKS_PAGE from "@/constants/subgraphQueries/subgraphQueryGetProjectForManagerPage";
+import GET_PROJECT_TASKS_PAGE from "@/constants/subgraphQueries/subgraphQueryGetProjectTasksPage";
 import { useQuery } from "@apollo/client";
 // Toast notification
 import createNotification from "../../../createNotification.js";

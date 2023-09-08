@@ -32,9 +32,6 @@ export default function Projects() {
     pollInterval: 500,
   });
 
-  if (projectData) {
-    console.log(projectData);
-  }
   const { address, isConnecting, isDisconnected } = useAccount();
 
   useEffect(() => {

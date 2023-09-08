@@ -57,7 +57,7 @@ export default function Problem({
   if (!(isOpenForRating || isOpenForNewSolutions)) return null; // Don't render if none are true
 
   return (
-    <div className="cursor-pointer bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
+    <div className="bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
       <span className="self-end">
         {userAddress?.toLowerCase() === creator
           ? "Mine"
@@ -81,14 +81,14 @@ export default function Problem({
                     key={index}
                     onClick={() => setRating(BigInt(index * 2))}
                     className={`z-20 bg-transparent border-none outline-none cursor-pointer ${
-                      index <= (Number(hover) || (Number(rating) / 2))
+                      index <= (Number(hover) || Number(rating) / 2)
                         ? "text-yellow-300"
                         : "text-gray-300"
                     }`}
                     onMouseEnter={() => setHover(Number(index))}
                     onMouseLeave={() =>
                       setHover(
-                        (Number(rating) / 2) || (Number(userPreviousRating) / 2)
+                        Number(rating) / 2 || Number(userPreviousRating) / 2
                       )
                     }
                   >
@@ -96,8 +96,8 @@ export default function Problem({
                       className={`sm:text-5xl text-4xl ${
                         index <=
                         Number(
-                          (Number(hover || rating) / 2) ||
-                            (Number(userPreviousRating) / 2)
+                          Number(hover || rating) / 2 ||
+                            Number(userPreviousRating) / 2
                         )
                           ? "text-yellow-300"
                           : "text-gray-300"
