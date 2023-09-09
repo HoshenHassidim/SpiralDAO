@@ -57,7 +57,7 @@ export default function Problem({
   if (!(isOpenForRating || isOpenForNewSolutions)) return null; // Don't render if none are true
 
   return (
-    <div className="bg-neutral-gray flex flex-col justify-between gap-5 rounded-lg p-6 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon">
+    <div className="card">
       <span className="self-end">
         {userAddress?.toLowerCase() === creator
           ? "Mine"

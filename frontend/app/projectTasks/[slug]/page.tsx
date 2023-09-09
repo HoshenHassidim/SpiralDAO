@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 
-import TaskCard from "../../../components/TaskCard";
+import TaskCard from "../../../components/Cards/TaskCard";
 import SubmitTaskModal from "@/components/SubmitTaskModal";
 // import TasksFilters from "@/components/TasksFiltrer";
 

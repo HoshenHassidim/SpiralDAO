@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "../../components/Navbar";
-import ProjectCard from "../../components/ProjectCard";
+import ProjectCard from "../../components/Cards/ProjectCard";
 
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";

@@ -2,8 +2,8 @@
 
 import Navbar from "../../components/Navbar";
 import Footer from "@/components/Footer";
-import ProjectCard from "../../components/ProjectCard";
-import TaskCard from "@/components/TaskCard";
+import ProjectCard from "../../components/Cards/ProjectCard";
+import TaskCard from "@/components/Cards/TaskCard";
 
 //graph
 import GET_OPPORTUNITIES_PAGE from "@/constants/subgraphQueries/subgraphQueryGetProjectForOpportunitiesPage";

@@ -48,14 +48,14 @@ h6 {
   @apply bg-neutral-gray text-democracy-beige;
 }
 .dark .card {
-  @apply bg-neutral-gray text-democracy-beige shadow-md transition-colors duration-300 ease-in-out;
+  @apply transition-colors duration-300 ease-in-out;
 }
 .dark .subtitle,
 .dark .title {
   @apply text-white;
 }
 .dark .btn-primary {
-  @apply bg-blue-600 text-white;
+  @applybg-tech-blue text-white;
 }
 .dark .btn-primary:hover {
   @apply bg-blue-700;
@@ -80,7 +80,7 @@ h6 {
   @apply shadow-md hover:shadow-lg bg-tech-blue text-white py-2 px-4 rounded transition-transform transform-gpu hover:scale-105 active:scale-95;
 }
 .btn-primary:hover {
-  @apply bg-blue-600;
+  @applybg-tech-blue;
 }
 .btn-primary:disabled {
   @apply bg-gray-400 cursor-not-allowed;
@@ -108,9 +108,9 @@ h6 {
 .section-padding {
   @apply p-4 sm:p-6;
 }
-.card-spacing {
+/* .card-spacing {
   @apply m-6;
-}
+} */
 .btn-spacing {
   @apply my-2 mx-1;
 }
@@ -131,7 +131,7 @@ h6 {
 
 /* Cards & Popups */
 .card {
-  @apply bg-white shadow-lg transition-shadow duration-300 hover:shadow-xl transform hover:-translate-y-1;
+  @apply bg-neutral-gray flex flex-col justify-between gap-1.5 sm:gap-3 rounded-lg p-6 px-8 py-4 max-w-sm w-5/6 text-white transition-transform transform-gpu hover:shadow-xl hover:bg-gradient-to-r hover:from-tech-blue hover:to-future-neon;
 }
 
 /* Icons & Badges */

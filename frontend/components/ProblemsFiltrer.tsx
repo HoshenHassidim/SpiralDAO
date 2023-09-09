@@ -37,6 +37,7 @@ const ProblemsFilters: React.FC<ProblemsFiltersProps> = ({
         value={filterStatus}
         onChange={(e) => setFilterStatus(e.target.value)}
       >
+        <option>Active Problems</option>
         <option>All Problems</option>
         <option>Awaiting Ranking</option>
         <option>In Solution Phase</option>

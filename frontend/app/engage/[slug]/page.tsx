@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 
-import SolutionCard from "../../../components/SolutionCard";
+import SolutionCard from "../../../components/Cards/SolutionCard";
 import SubmitSolutionModal from "@/components/SubmitSolutionModal";
 import SolutionsFilters from "@/components/SolutionsFiltrer";
 

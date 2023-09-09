@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 
-import ManagementOfferCard from "../../../components/ManagementOfferCard";
+import ManagementOfferCard from "../../../components/Cards/ManagementOfferCard";
 // import SubmitManagementOfferModal from "@/components/SubmitManagementOfferModal";
 // import ManagementOffersFilters from "@/components/ManagementOffersFiltrer";
 
@@ -270,7 +270,7 @@ export default function ManagementOffers({
                 key={managementOffer.offerId.toString()}
                 {...managementOffer}
                 userAddress={address}
-                projectId={params.slug}
+                projectId={null}
                 userPreviousRating={getUserRatingForManagementOffer(
                   managementOffer.offerId
                 )}

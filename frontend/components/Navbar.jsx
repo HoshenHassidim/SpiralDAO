@@ -195,7 +195,7 @@ export default function Navbar() {
 
         {/* Engage Dropdown Menu */}
         {/* <div
-          className="relative group hover:bg-blue-600 rounded-md"
+          className="relative group hover:bg-tech-blue rounded-md"
           ref={engageRef}
         >
           <button
@@ -233,7 +233,7 @@ export default function Navbar() {
 
         {/* Opportunities Dropdown Menu */}
         {/* <div
-          className="relative group hover:bg-blue-600 rounded-md"
+          className="relative group hover:bg-tech-blue rounded-md"
           ref={opportunitiesRef}
         >
           <button

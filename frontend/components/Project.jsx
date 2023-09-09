@@ -52,7 +52,7 @@ export default function Project({
       onClick={() => {
         router.push("/projects/" + id);
       }}
-      className="cursor-pointer bg-gray-700 flex flex-col justify-between gap-5 rounded-lg  p-5 px-8 py-4 max-w-sm max-h-xs w-5/6 text-white transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg"
+      className="cursor-pointer bg-gray-700 flex flex-col justify-between gap-5 rounded-lg  p-5 px-8 py-4 max-w-sm w-5/6 text-white transition-transform transform-gpu hover:-translate-y-1 hover:shadow-lg"
     >
       <div className="absolute top-5 -right-10 w-10 h-10 rounded-r-full bg-[#3AB3D7] flex items-center">
         <button

@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "../../components/Navbar";
-import ProblemCard from "../../components/ProblemCard";
+import ProblemCard from "../../components/Cards/ProblemCard";
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
 import GET_NEW_PROBLEMS from "../../constants/subgraphQueries/subgraphQueryGetProblems";
@@ -28,7 +28,7 @@ export default function EngagePage() {
     pollInterval: 500,
   });
 
-  const [filterStatus, setFilterStatus] = useState("All Problems");
+  const [filterStatus, setFilterStatus] = useState("Active Problems");
   const [filterEngage, setFilterEngage] = useState("everything");
   const [sortOption, setsortOption] = useState("Newest");
   const [filterRated, setFilterRated] = useState("All");
@@ -63,8 +63,12 @@ export default function EngagePage() {
             case "In Solution Phase":
               meetsStatusCondition = problem.isOpenForNewSolutions;
               break;
-            default: // For "All Problems"
+            case "All Problems":
               meetsStatusCondition = true;
+              break;
+            default: // For "All open problems"
+              meetsStatusCondition =
+                problem.isOpenForNewSolutions || problem.isOpenForRating;
           }
 
           if (address) {

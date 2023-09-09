@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 
-import TaskOfferCard from "../../../components/TaskOfferCard";
+import TaskOfferCard from "../../../components/Cards/TaskOfferCard";
 // import SubmitTaskOfferModal from "@/components/SubmitTaskOfferModal";
 // import TaskOffersFilters from "@/components/TaskOffersFiltrer";
 
@@ -250,6 +250,7 @@ export default function TaskOffers({ params }: { params: { slug: string } }) {
               key={taskOffer.offerId.toString()}
               {...taskOffer}
               userAddress={address}
+              taskId={null}
               userPreviousRating={getUserRatingForTaskOffer(taskOffer.offerId)}
             />
           ))}

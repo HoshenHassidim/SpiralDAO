@@ -71,7 +71,7 @@ export default function PrjectPage({ params }: { params: { slug: string } }) {
               className="btn btn-primary"
               onClick={() => router.push(`/projectTasks/${params.slug}`)}
             >
-              View Open Tasks of this Project
+              View Project Tasks
             </button>
           )}
         </section>

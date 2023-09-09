@@ -1,12 +1,12 @@
 "use client";
 
 import Navbar from "../../components/Navbar";
-import ProblemCard from "@/components/ProblemCard";
-import SolutionCard from "@/components/SolutionCard";
-import ProjectCard from "@/components/ProjectCard";
-import ManagementOfferCard from "@/components/ManagementOfferCard";
-import TaskCard from "@/components/TaskCard";
-import TaskOfferCard from "@/components/TaskOfferCard";
+import ProblemCard from "@/components/Cards/ProblemCard";
+import SolutionCard from "@/components/Cards/SolutionCard";
+import ProjectCard from "@/components/Cards/ProjectCard";
+import ManagementOfferCard from "@/components/Cards/ManagementOfferCard";
+import TaskCard from "@/components/Cards/TaskCard";
+import TaskOfferCard from "@/components/Cards/TaskOfferCard";
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
 import GET_Dashboard_PAGE from "@/constants/subgraphQueries/subgraphQueryGetDashboard";
@@ -380,7 +380,6 @@ export default function DashboardPage() {
                       key={managementOffer.offerId.toString()}
                       {...managementOffer}
                       userAddress={address}
-                      projectId={managementOffer.projectId}
                       userPreviousRating={0}
                     />
                   )
