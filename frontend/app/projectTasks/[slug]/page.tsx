@@ -177,42 +177,58 @@ export default function Tasks({ params }: { params: { slug: string } }) {
               <h1 className="title text-center mb-1">
                 Manage The Project To Success
               </h1>
-              <h2 className="text-3xl font-semibold">
+              <h2 className="subtitle font-semibold text-center">
+                {/* if there no project or it not open looking for manager give masege */}
                 {data?.projects.length == 0
-                  ? "Sorry, this project does not exist"
+                  ? "Project not found"
                   : !error &&
                     data &&
                     data.projects.length > 0 &&
-                    data.projects[0].name}
+                    data.projects[0].solution.name}
+                <br />
+                to address the challenge of:
+                <br />
+                {data?.projects[0].solution.problem.name}
               </h2>
               <h3 className="text-lg text-tech-blue mt-2">ID: {params.slug}</h3>
               {/* Display the creator of the project if available */}
               {/* <p className="mt-1 text-sm">Created by: {projectCreator}</p> */}
             </section>
 
-            <section className="bottom-submit">
-              <h2 className="bottom-submit-text">
-                Have a unique approach to address this challenge?
-              </h2>
+            <section className="flex flex-col items-center gap-5 dark:bg-neutral-gray bg-democracy-beige p-2">
+              <h2 className="bottom-submit-text">Need to Add a New Task?</h2>
               <button
                 className="btn-primary"
                 onClick={() => setShowTaskModal(true)}
               >
-                Propose Your Task
+                Upload Task
               </button>
             </section>
           </div>
         ) : (
           <section className="section-padding flex flex-col items-center bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
-            <h1 className="title text-center mb-1">Project Challenge</h1>
-            <h2 className="text-3xl font-semibold">
+            <h1 className="title text-center mb-1">Project Tasks</h1>
+            <h2 className="subtitle font-semibold text-center">
+              {/* if there no project or it not open looking for manager give masege */}
               {data?.projects.length == 0
-                ? "Sorry, this project does not exist"
+                ? "Project not found"
                 : !error &&
                   data &&
                   data.projects.length > 0 &&
-                  data.projects[0].name}
+                  data.projects[0].solution.name}
+              <br />
+              to address the challenge of:
+              <br />
+              {data?.projects[0].solution.problem.name}
             </h2>
+            <p className="text-xs font-bold mb-4 text-democracy-beige">
+              Manager:{" "}
+              {data?.projects[0].projectManager.substr(0, 4) +
+                "..." +
+                data?.projects[0].projectManager.substr(
+                  data?.projects[0].projectManager.length - 4
+                )}
+            </p>
             <h3 className="text-lg text-tech-blue mt-2">ID: {params.slug}</h3>
             {/* Display the creator of the project if available */}
             {/* <p className="mt-1 text-sm">Created by: {projectCreator}</p> */}
@@ -244,7 +260,7 @@ export default function Tasks({ params }: { params: { slug: string } }) {
         </section>
         <section className="section-padding flex flex-col items-center gap-5">
           {filteredTasks?.length !== 0 && (
-            <h3 className="text-2xl font-bold">Proposed Tasks</h3>
+            <h3 className="text-2xl font-bold">Project Tasks</h3>
           )}
           {filteredTasks?.map((task: Task) => {
             let offersCount = task.taskOffers.length;
@@ -273,16 +289,18 @@ export default function Tasks({ params }: { params: { slug: string } }) {
         {isManager() && (
           <div className="floating-submit">
             <div className="floating-submit-text">
-              <p className="font-secondary text-xs">See room for innovation?</p>
               <p className="font-secondary text-xs">
-                Share your insights and tasks with the community.
+                Got an important task on your mind?
+              </p>
+              <p className="font-secondary text-xs">
+                Ensure it's added to the project's list.
               </p>
             </div>
             <button
               className="btn-primary"
               onClick={() => setShowTaskModal(true)}
             >
-              Submit a Task
+              Add Task
             </button>
           </div>
         )}

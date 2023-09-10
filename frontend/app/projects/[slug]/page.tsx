@@ -35,7 +35,7 @@ export default function PrjectPage({ params }: { params: { slug: string } }) {
     (task: Task) => task.status === "OPEN"
   ).length;
   console.log(openTasksCount);
-  // console.log(data);
+  console.log(data);
 
   return (
     <div>
@@ -45,17 +45,23 @@ export default function PrjectPage({ params }: { params: { slug: string } }) {
         {/* // Presentation of the project: */}
 
         <section className="section-padding flex flex-col items-center bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
-          <h1 className="title text-center mb-1">Project Challenge</h1>
-          <h2 className="text-3xl font-semibold">
+          <h1 className="title text-center mb-3">Featured Project</h1>
+          <h2 className="subtitle font-semibold text-center">
             {data?.projects.length == 0
-              ? "Sorry, this project does not exist"
-              : !error &&
-                data &&
+              ? "Oops! This project seems to be missing."
+              : data &&
                 data.projects.length > 0 &&
-                data.projects[0].name}
+                data.projects[0].solution.name}
+            <br />
+            in order to solve:
+            <br />
+            {data?.projects[0].solution.problem.name}
           </h2>
-          <h3 className="text-lg text-tech-blue mt-2">ID: {params.slug}</h3>
+          <h3 className="text-lg text-tech-blue mt-2">
+            Reference ID: {params.slug}
+          </h3>
         </section>
+
         <section className="section-padding flex flex-col items-center bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
           {data?.projects[0].isOpenForManagementProposals == true && (
             <button

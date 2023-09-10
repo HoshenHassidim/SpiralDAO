@@ -42,6 +42,14 @@ export default function Opportunities() {
     <div className="overflow-x-hidden overflow-y-scroll h-screen">
       <Navbar />
 
+      <section className="section-padding flex flex-col items-center bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
+        <h1 className="title text-center">Opportunities</h1>
+        <h2 className="subtitle text-center my-4">
+          Explore projects to manage or tasks to preform. Shape the future with
+          your skills.
+        </h2>
+      </section>
+
       <section className="flex flex-col items-center justify-center gap-5 p-5">
         {combinedItems.map((item) => {
           if (item.__typename === "Project") {

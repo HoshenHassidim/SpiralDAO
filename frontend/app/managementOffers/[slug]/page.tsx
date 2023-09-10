@@ -169,49 +169,30 @@ export default function ManagementOffers({
       <div className="overflow-x-hidden overflow-y-scroll h-screen">
         <Navbar />
 
-        {/* <Link
-          href="/engage"
-          className="mt-5 text-white opacity-80 font-semibold"
-        >
-          <button className="btn-primary top-[6rem] left-2 fixed ">
-            Back to Engage
-          </button>
-        </Link> */}
-        {/* <Link
-          href="/engage"
-          className="w-full mt-5 text-white opacity-80 font-semibold"
-        >
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Back to Engage
-          </button>
-        </Link> */}
-
         {/* // Presentation of the project: */}
         <section className="section-padding flex flex-col items-center bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
-          <h1 className="title text-center mb-1">Project Challenge</h1>
-          <h2 className="text-3xl font-semibold">
+          <h1 className="title text-center mb-1">
+            Project Management Proposals{" "}
+          </h1>
+          <h2 className="subtitle font-semibold text-center">
             {/* if there no project or it not open looking for manager give masege */}
             {data?.projects.length == 0
-              ? "Sorry, this project does not exist"
+              ? "Project not found"
               : !error &&
                 data &&
                 data.projects.length > 0 &&
-                data.projects[0].name}
+                data.projects[0].solution.name}
+            <br />
+            to address the challenge of:
+            <br />
+            {data?.projects[0].solution.problem.name}
           </h2>
           {data?.projects && (
             <h2 className="text-3xl font-semibold">
               {/* if there no project or it not looking for manager give masege */}
               {!data.projects[0].isOpenForManagementProposals
-                ? "Sorry, this project is not looking for a manager"
-                : !error &&
-                  data && (
-                    <>
-                      {data.projects[0].solution && (
-                        <span>{data.projects[0].solution.name}</span>
-                      )}
-                      <span> Management Offers</span>
-                    </>
-                  )}
+                ? "Sorry, this project is not seeking a manager currently"
+                : !error && data && <></>}
             </h2>
           )}
           <h3 className="text-lg text-tech-blue mt-2">ID: {params.slug}</h3>
@@ -262,7 +243,7 @@ export default function ManagementOffers({
         </section>
         <section className="section-padding flex flex-col items-center gap-5">
           {filteredManagementOffers?.length !== 0 && (
-            <h3 className="text-2xl font-bold">Proposed ManagementOffers</h3>
+            <h3 className="text-2xl font-bold">Management Proposals</h3>
           )}
           {filteredManagementOffers?.map(
             (managementOffer: ActiveManagementOfferType) => (
@@ -280,26 +261,23 @@ export default function ManagementOffers({
         </section>
         <section className="bottom-submit">
           <h2 className="bottom-submit-text">
-            Have a unique approach to address this challenge?
+            Ready to Lead this Challenge to Success?
           </h2>
           <button className="btn-primary" onClick={() => write()}>
-            Propose Your ManagementOffer
+            Step Up & Offer Your Leadership
           </button>
         </section>
-        {/* <SubmitManagementOfferModal
-          isOpen={showManagementOfferModal}
-          onClose={() => setShowManagementOfferModal(false)}
-          managementOfferId={params.slug}
-        /> */}
         <div className="floating-submit">
           <div className="floating-submit-text">
-            <p className="font-secondary text-xs">See room for innovation?</p>
             <p className="font-secondary text-xs">
-              Share your insights and managementOffers with the community.
+              Got the vision and strategy?
+            </p>
+            <p className="font-secondary text-xs">
+              Present your management proposal and lead the way.
             </p>
           </div>
           <button className="btn-primary" onClick={() => write()}>
-            Submit a ManagementOffer
+            Become The Leader
           </button>
         </div>
       </div>

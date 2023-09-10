@@ -155,26 +155,9 @@ export default function TaskOffers({ params }: { params: { slug: string } }) {
       <div className="overflow-x-hidden overflow-y-scroll h-screen">
         <Navbar />
 
-        {/* <Link
-          href="/engage"
-          className="mt-5 text-white opacity-80 font-semibold"
-        >
-          <button className="btn-primary top-[6rem] left-2 fixed ">
-            Back to Engage
-          </button>
-        </Link> */}
-        {/* <Link
-          href="/engage"
-          className="w-full mt-5 text-white opacity-80 font-semibold"
-        >
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Back to Engage
-          </button>
-        </Link> */}
-
         {/* // Presentation of the task: */}
         <section className="section-padding flex flex-col items-center bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
-          <h1 className="title text-center mb-1">Task Challenge</h1>
+          <h1 className="title text-center mb-1">Task</h1>
           <h2 className="text-3xl font-semibold">
             {/* if there no task or it not open looking for performer give masege */}
             {data?.tasks.length == 0
@@ -199,24 +182,7 @@ export default function TaskOffers({ params }: { params: { slug: string } }) {
           {/* Display the creator of the task if available */}
           {/* <p className="mt-1 text-sm">Created by: {taskCreator}</p> */}
         </section>
-        {/* <section className="section-padding flex flex-col items-center">
-          <h1 className="title text-center">Dive Deep into This Challenge </h1>
-          <h2 className="subtitle text-center my-4">
-            Explore the community's proposed taskOffers and share your unique
-            perspective or taskOffer to this task.
-          </h2>
 
-          task ID:
-          {params.slug}
-          <h2 className="text-lg">
-            {data?.tasks.length == 0
-              ? "Sorry, this task does not exist"
-              : !error &&
-                data &&
-                data.tasks.length > 0 &&
-                data.tasks[0].name}
-          </h2>
-        </section> */}
         <section className="flex flex-col justify-center items-center">
           <section className="flex flex-wrap flex-col md:flex-row md:justify-between items-center bg-democracy-beige dark:bg-neutral-gray p-2 md:p-4 rounded-md">
             {/* Button to toggle filter visibility on small screens */}
@@ -256,27 +222,20 @@ export default function TaskOffers({ params }: { params: { slug: string } }) {
           ))}
         </section>
         <section className="bottom-submit">
-          <h2 className="bottom-submit-text">
-            Have a unique approach to address this challenge?
-          </h2>
+          <h2 className="bottom-submit-text">Ready to Tackle the Task?</h2>
           <button className="btn-primary" onClick={() => write()}>
-            Propose Your TaskOffer
+            Offer Your Expertise
           </button>
         </section>
-        {/* <SubmitTaskOfferModal
-          isOpen={showTaskOfferModal}
-          onClose={() => setShowTaskOfferModal(false)}
-          taskOfferId={params.slug}
-        /> */}
         <div className="floating-submit">
           <div className="floating-submit-text">
-            <p className="font-secondary text-xs">See room for innovation?</p>
+            <p className="font-secondary text-xs">Got the skills?</p>
             <p className="font-secondary text-xs">
-              Share your insights and taskOffers with the community.
+              Put yourself forward and make a difference with your Offer.
             </p>
           </div>
           <button className="btn-primary" onClick={() => write()}>
-            Submit a TaskOffer
+            Step Up with a Offer
           </button>
         </div>
       </div>

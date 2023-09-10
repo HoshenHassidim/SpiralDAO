@@ -154,8 +154,8 @@ export default function EngagePage() {
             Engage with Challenges & Solutions
           </h1>
           <h2 className="subtitle text-center my-4">
-            Discover the myriad of problems posed by our community and
-            contribute your own insights or solutions.
+            Explore community-driven challenges. Submit your own, propose
+            solutions, voice your ratings, and collaborate on impactful ideas.
           </h2>
         </section>
 

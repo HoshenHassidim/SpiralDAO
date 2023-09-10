@@ -18,10 +18,10 @@ export default function DemoInstructions() {
         <div className="flex justify-center items-center p-10 flex-col md:flex-row text-center">
           <div className="flex flex-col gap-4 max-w-xl mx-auto">
             <h1 className="text-3xl sm:text-5xl text-tech-blue font-bold ">
-              Demo Instructions
+              Prototype Instructions
             </h1>
             <p className="text-2xl">
-              Follow the steps below to setup and use the demo.
+              Follow the steps below to setup and use the prototype.
             </p>
           </div>
         </div>
@@ -113,7 +113,7 @@ export default function DemoInstructions() {
                 Get Some Test Money (FTM)
               </h3>
               <ul className="list-disc pl-2">
-                <li>Before using the demo, you need test money (FTM).</li>
+                <li>Before using the prototype, you need test money (FTM).</li>
                 <li>
                   First, find your account address in MetaMask. It starts with
                   "0X" followed by letters and numbers.
@@ -138,8 +138,8 @@ export default function DemoInstructions() {
               </h3>
               <ul className="list-disc pl-2">
                 <li>
-                  Once you're on the demo website, find the "connect wallet"
-                  button. It's usually located at the top of the page.
+                  Once you're on the prototype website, find the "connect
+                  wallet" button. It's usually located at the top of the page.
                 </li>
                 <li>
                   Click on it to link your MetaMask wallet to the website.
@@ -155,11 +155,11 @@ export default function DemoInstructions() {
         <div className="flex flex-col items-center py-5 px-5 text-center lg:py-5">
           <h2 className="text-4xl font-bold mb-2">Ready to Dive In?</h2>
           <p className="max-w-lg mb-4">
-            Now that you're all set up, explore the demo and experience the
+            Now that you're all set up, explore the prototype and experience the
             functionalities firsthand!
           </p>
-          <Link href="/page">
-            <button className="btn-primary">Start the Demo</button>
+          <Link href="/">
+            <button className="btn-primary">Start the Prototype</button>
           </Link>
         </div>
       </div>

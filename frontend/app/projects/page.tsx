@@ -46,6 +46,15 @@ export default function Projects() {
     <div className="overflow-x-hidden">
       <Navbar />
 
+      <section className="section-padding flex flex-col items-center  bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
+        <h1 className="title text-center">Community Projects</h1>
+        <h2 className="subtitle text-center my-4">
+          Collaborate, contribute, and co-create.
+          <br />
+          Dive into the ongoing challenges and see how you can make an impact.
+        </h2>
+      </section>
+
       {/* <ToastContainer /> */}
       <section className="flex flex-col items-center justify-center gap-5 p-5">
         {projectData &&

@@ -35,9 +35,12 @@ export default function Home() {
       <div className="flex justify-center items-center p-10 flex-col md:flex-row">
         <div className="flex flex-col sm:gap-10 gap-1">
           <h1 className="text-3xl sm:text-5xl text-tech-blue font-bold ">
-            Empowering Solutions in the Digital Age
+            The Future of Collaborative Innovation
           </h1>
-          <p className="max-w-md text-2xl">Connect. Collaborate. Create.</p>
+          <p className="max-w-auto text-2xl">
+            Engage with Innovators. Collaborate on Ideas. Find Opportunities.
+            Create the Future. Together
+          </p>
 
           <Link
             href="/engage"
@@ -67,7 +70,7 @@ export default function Home() {
       <div>
         {/* Brief Overview */}
         <div className="flex flex-col items-center gap-0 py-1 px-5 section-padding text-center lg:py-0">
-          <h2 className="text-4xl font-bold">Our Mission</h2>
+          <h2 className="text-4xl font-bold">Why We're Here</h2>
           <button
             onClick={toggleBriefOverview}
             className="text-tech-blue text-sm border border-tech-blue px-2 py-1 rounded"
@@ -101,11 +104,8 @@ export default function Home() {
                 <div className="p-6 rounded-full bg-tech-blue">
                   <span className="text-3xl font-bold text-white">1</span>
                 </div>
-                <h3 className="text-xl font-semibold">Highlight Challenges</h3>
-                <p>
-                  Anyone can suggest a problem with just a title for the demo
-                  (and more details in the full version).
-                </p>
+                <h3 className="text-xl font-semibold">Spot a Challenge</h3>
+                <p>Anyone can suggest a challenges or problems easily.</p>
               </div>
 
               {/* Step 2 */}
@@ -198,16 +198,17 @@ export default function Home() {
 
         {/* Demo/Prototype Highlights */}
         <div className="flex flex-col items-center py-1 px-5 section-padding text-center lg:py-5">
-          <h2 className="text-4xl font-bold mb-2">Demo Highlights</h2>
+          <h2 className="text-4xl font-bold mb-2">Inside the Prototype</h2>
           <p className="max-w-lg mb-4">
-            Our current demo provides a snapshot of our platform's potential,
-            designed to gather your invaluable feedback. While it reflects our
-            foundational process, the real-world application will evolve based
-            on community insights.
+            Take a sneak peek into our platform's capabilities. Your feedback
+            shapes its evolution, adapting it closer to real-world needs.
           </p>
-          <Link href="/feedback">
-            <button className="btn-primary">Give Feedback</button>
+          <Link href="/demoInstructions">
+            <button className="btn-primary mb-3">Prototype Instructions</button>
           </Link>
+          {/* <Link href="/feedback">
+            <button className="btn-primary">Give Feedback</button>
+          </Link> */}
         </div>
 
         {/* Join Community */}
