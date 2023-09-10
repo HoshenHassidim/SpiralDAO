@@ -29,7 +29,7 @@ export default function Home() {
   if (!mounted) return <></>;
 
   return (
-    <div className="h-screen overflow-x-hidden bg-gradient-to-br from-background-white via-transparent to-tech-blue dark:bg-neutral-gray">
+    <div className="h-screen overflow-x-hidden bg-gradient-to-br from-white via-transparent to-tech-blue dark:bg-neutral-gray dark:from-neutral-gray dark:via-neutral-gray dark:to-tech-blue">
       <Navbar />
       {/* Hero Section */}
       <div className="flex justify-center items-center p-10 flex-col md:flex-row">
@@ -152,7 +152,7 @@ export default function Home() {
                 <h3 className="text-xl font-semibold">Role Nominations</h3>
                 <p>
                   Take the lead! Nominate yourself for management or specific
-                  tasks. Our community votes on who fits best.{" "}
+                  tasks. Our community votes on who fits best.
                 </p>
               </div>
 
@@ -166,7 +166,7 @@ export default function Home() {
                 </h3>
                 <p>
                   Complete tasks, earn feedback, and upon satisfactory
-                  performance, receive tokens as rewards.{" "}
+                  performance, receive tokens as rewards.
                 </p>
               </div>
 
@@ -180,7 +180,7 @@ export default function Home() {
                 </h3>
                 <p>
                   Both managers and task executors earn an additional incentive
-                  in platform tokens.{" "}
+                  in platform tokens.
                 </p>
               </div>
 
@@ -218,7 +218,7 @@ export default function Home() {
             shaping our collective future. Your voice is pivotal. Let's
             co-create!
           </p>
-          <Link href="/community">
+          <Link href="https://t.me/SPIRAL_DAO">
             <button className="btn-primary">Join Now</button>
           </Link>
         </div>

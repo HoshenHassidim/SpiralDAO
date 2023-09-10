@@ -55,7 +55,7 @@ h6 {
   @apply text-white;
 }
 .dark .btn-primary {
-  @applybg-tech-blue text-white;
+  @apply bg-tech-blue text-white;
 }
 .dark .btn-primary:hover {
   @apply bg-blue-700;
@@ -80,7 +80,7 @@ h6 {
   @apply shadow-md hover:shadow-lg bg-tech-blue text-white py-2 px-4 rounded transition-transform transform-gpu hover:scale-105 active:scale-95;
 }
 .btn-primary:hover {
-  @applybg-tech-blue;
+  @apply bg-tech-blue;
 }
 .btn-primary:disabled {
   @apply bg-gray-400 cursor-not-allowed;
@@ -297,11 +297,11 @@ body.dark {
 }
 
 .bottom-submit-text {
-  @apply text-center text-tech-blue mb-4 font-primary;
+  @apply text-center text-tech-blue mb-4 font-primary hidden sm:block;
 }
 
 .floating-submit {
-  @apply w-11/12 sm:w-auto p-2 sm:p-3 fixed bottom-2 left-1/2 sm:left-1/2 transform -translate-x-1/2 sm:-translate-x-1/2 md:left-auto md:transform-none md:right-5 z-50 flex flex-col items-center rounded-md shadow-lg dark:bg-neutral-gray bg-democracy-beige border-dotted border-2 border-tech-blue;
+  @apply w-11/12 sm:w-auto p-2 sm:p-3 fixed  bottom-0.5 sm:bottom-10 left-1/2 sm:left-1/2 transform -translate-x-1/2 sm:-translate-x-1/2 md:left-auto md:transform-none md:right-5 z-50 flex flex-col items-center rounded-md shadow-lg dark:bg-neutral-gray bg-democracy-beige border-dotted border-2 border-tech-blue;
 }
 
 .floating-submit-text {

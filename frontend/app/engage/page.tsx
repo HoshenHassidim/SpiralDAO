@@ -15,6 +15,7 @@ import {
 import { useAccount } from "wagmi";
 import SubmitProblemModal from "@/components/SubmitProblemModal";
 import ProblemsFilters from "@/components/ProblemsFiltrer";
+import Footer from "@/components/Footer";
 
 export default function EngagePage() {
   const { address, isConnecting, isDisconnected } = useAccount();
@@ -249,6 +250,7 @@ export default function EngagePage() {
           </button>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

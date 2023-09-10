@@ -26,6 +26,7 @@ import { useAccount } from "wagmi";
 import SubmitProblemModal from "@/components/SubmitProblemModal";
 import ProblemsFilters from "@/components/ProblemsFiltrer";
 import { Web3Button } from "@web3modal/react";
+import Footer from "@/components/Footer";
 
 type SectionProps = {
   title: string;
@@ -443,6 +444,7 @@ export default function DashboardPage() {
           )}
         </Section>
       )}
+      <Footer />
     </div>
   );
 }
