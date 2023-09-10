@@ -45,7 +45,7 @@ export default function Opportunities() {
       <section className="section-padding flex flex-col items-center bg-democracy-beige dark:bg-neutral-gray p-6 rounded-md border-b-4 border-tech-blue">
         <h1 className="title text-center">Opportunities</h1>
         <h2 className="subtitle text-center my-4">
-          Explore projects to manage or tasks to preform. Shape the future with
+          Explore projects to manage or tasks to perform. Shape the future with
           your skills.
         </h2>
       </section>

@@ -118,7 +118,7 @@ export default function TaskOfferCard({
   //     <span className="self-end">{`Offer ID: ${offerId}`}</span>
   //     {taskId && <span className="self-end">{`Task ID: ${taskId}`}</span>}
   //     {/* <p className="body-text">{offerId}</p> */}
-  //     <h3 className="title">{`Preformer: ${
+  //     <h3 className="title">{`performer: ${
   //       userAddress?.toLowerCase() === offeror
   //         ? "Mine"
   //         : offeror.substr(0, 4) + "..." + offeror.substr(offeror.length - 4)

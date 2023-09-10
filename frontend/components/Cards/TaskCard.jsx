@@ -114,7 +114,7 @@ export default function TaskCard({
             </button>
             {areProposed === true ? (
               <p className="small-text text-democracy-beige text-xs mb-2">
-                You have already offered to preform this task
+                You have already offered to perform this task
               </p>
             ) : (
               <button
@@ -127,7 +127,7 @@ export default function TaskCard({
                   }
                 }}
               >
-                Offer to Preform
+                Offer to perform
               </button>
             )}
           </div>
@@ -222,7 +222,7 @@ export default function TaskCard({
   //           View Offers
   //         </button>
   //         {areProposed === true ? (
-  //           <p className="small-text">{`You have already offered to preform this task`}</p>
+  //           <p className="small-text">{`You have already offered to perform this task`}</p>
   //         ) : (
   //           <button
   //             className="btn-primary mt-2"
@@ -234,7 +234,7 @@ export default function TaskCard({
   //               }
   //             }}
   //           >
-  //             Offer to Preform
+  //             Offer to perform
   //           </button>
   //         )}
   //       </div>
