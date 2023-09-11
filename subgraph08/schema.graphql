@@ -138,6 +138,7 @@ type ActiveProblem @entity {
   ratingCount: BigInt!
   ratingSum: BigInt!
   solutions: [ActiveSolution!]! @derivedFrom(field: "problem")
+  ratings: [UserProblemRating!]! @derivedFrom(field: "problem")
   isOpenForRating: Boolean!
   isOpenForNewSolutions: Boolean!
   blockNumber: BigInt!
@@ -146,6 +147,7 @@ type ActiveProblem @entity {
 type UserProblemRating @entity {
   id: ID!
   problemId: BigInt! # uint256
+  problem: ActiveProblem!
   rater: Bytes! # address
   rating: BigInt! # uint256
   blockNumber: BigInt!

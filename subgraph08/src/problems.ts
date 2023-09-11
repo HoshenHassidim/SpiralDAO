@@ -131,6 +131,8 @@ export function handleProblemRated(event: ProblemRatedEvent): void {
       userProblemRating.problemId = event.params.problemId;
       userProblemRating.rater = event.params.rater;
       userProblemRating.rating = newRating;
+      userProblemRating.problem = activeProblem.id;
+
       userProblemRating.blockNumber = event.block.number;
       userProblemRating.save();
 

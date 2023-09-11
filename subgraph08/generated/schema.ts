@@ -1637,6 +1637,14 @@ export class ActiveProblem extends Entity {
     );
   }
 
+  get ratings(): UserProblemRatingLoader {
+    return new UserProblemRatingLoader(
+      "ActiveProblem",
+      this.get("id")!.toString(),
+      "ratings"
+    );
+  }
+
   get isOpenForRating(): boolean {
     let value = this.get("isOpenForRating");
     if (!value || value.kind == ValueKind.NULL) {
@@ -1731,6 +1739,19 @@ export class UserProblemRating extends Entity {
 
   set problemId(value: BigInt) {
     this.set("problemId", Value.fromBigInt(value));
+  }
+
+  get problem(): string {
+    let value = this.get("problem");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toString();
+    }
+  }
+
+  set problem(value: string) {
+    this.set("problem", Value.fromString(value));
   }
 
   get rater(): Bytes {
@@ -6880,6 +6901,24 @@ export class ActiveSolutionLoader extends Entity {
   load(): ActiveSolution[] {
     let value = store.loadRelated(this._entity, this._id, this._field);
     return changetype<ActiveSolution[]>(value);
+  }
+}
+
+export class UserProblemRatingLoader extends Entity {
+  _entity: string;
+  _field: string;
+  _id: string;
+
+  constructor(entity: string, id: string, field: string) {
+    super();
+    this._entity = entity;
+    this._id = id;
+    this._field = field;
+  }
+
+  load(): UserProblemRating[] {
+    let value = store.loadRelated(this._entity, this._id, this._field);
+    return changetype<UserProblemRating[]>(value);
   }
 }
 

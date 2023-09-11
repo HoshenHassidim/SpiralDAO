@@ -9,7 +9,7 @@ import {
   AuthorizationRevoked,
   AuthorizedContract,
 } from "../generated/schema";
-import { BigInt, Bytes, store } from "@graphprotocol/graph-ts";
+import { store } from "@graphprotocol/graph-ts";
 
 export function handleAdminChanged(event: AdminChangedEvent): void {
   let entity = new AdminChanged(

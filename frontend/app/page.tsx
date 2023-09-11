@@ -105,7 +105,10 @@ export default function Home() {
                   <span className="text-3xl font-bold text-white">1</span>
                 </div>
                 <h3 className="text-xl font-semibold">Spot a Challenge</h3>
-                <p>Anyone can suggest a challenges or problems easily.</p>
+                <p>
+                  Spot challenges that impact many or suggest a problem you've
+                  noticed.
+                </p>
               </div>
 
               {/* Step 2 */}
@@ -113,10 +116,10 @@ export default function Home() {
                 <div className="p-6 rounded-full bg-tech-blue">
                   <span className="text-3xl font-bold text-white">2</span>
                 </div>
-                <h3 className="text-xl font-semibold">Rate & Validate</h3>
+                <h3 className="text-xl font-semibold">Engage & Rate</h3>
                 <p>
-                  Problems are listed on our Engage page. Rate them and help
-                  determine which challenges truly matter.
+                  Challenges are up for voting on the Engage page. Help pick the
+                  pressing ones.
                 </p>
               </div>
 
@@ -125,10 +128,10 @@ export default function Home() {
                 <div className="p-6 rounded-full bg-tech-blue">
                   <span className="text-3xl font-bold text-white">3</span>
                 </div>
-                <h3 className="text-xl font-semibold">Solutions Phase</h3>
+                <h3 className="text-xl font-semibold">Solution Proposals</h3>
                 <p>
-                  Approved problems shift into the solutions phase. Share your
-                  ideas and rate others to decide the best approach.
+                  Top-rated challenges enter the solution phase. Pitch ideas and
+                  evaluate others.
                 </p>
               </div>
 
@@ -137,10 +140,10 @@ export default function Home() {
                 <div className="p-6 rounded-full bg-tech-blue">
                   <span className="text-3xl font-bold text-white">4</span>
                 </div>
-                <h3 className="text-xl font-semibold">Project Initiation</h3>
+                <h3 className="text-xl font-semibold">Project Creation</h3>
                 <p>
-                  Winning solutions ascend to the Projects page, and the journey
-                  from concept to creation begins.
+                  Selected solutions evolve into projects. Managers add tasks
+                  and the building starts!
                 </p>
               </div>
 
@@ -149,10 +152,10 @@ export default function Home() {
                 <div className="p-6 rounded-full bg-tech-blue">
                   <span className="text-3xl font-bold text-white">5</span>
                 </div>
-                <h3 className="text-xl font-semibold">Role Nominations</h3>
+                <h3 className="text-xl font-semibold">Role Proposals</h3>
                 <p>
-                  Take the lead! Nominate yourself for management or specific
-                  tasks. Our community votes on who fits best.
+                  Step up! Offer to manage projects or take on tasks. Members
+                  vote on who fits best for each role.
                 </p>
               </div>
 
@@ -161,12 +164,10 @@ export default function Home() {
                 <div className="p-6 rounded-full bg-tech-blue">
                   <span className="text-3xl font-bold text-white">6</span>
                 </div>
-                <h3 className="text-xl font-semibold">
-                  Task Execution & Reward
-                </h3>
+                <h3 className="text-xl font-semibold">Open Opportunities</h3>
                 <p>
-                  Complete tasks, earn feedback, and upon satisfactory
-                  performance, receive tokens as rewards.
+                  Check out the Opportunities page. All open tasks and projects
+                  await your proposals.
                 </p>
               </div>
 
@@ -175,12 +176,10 @@ export default function Home() {
                 <div className="p-6 rounded-full bg-tech-blue">
                   <span className="text-3xl font-bold text-white">7</span>
                 </div>
-                <h3 className="text-xl font-semibold">
-                  Earning Spiral DAO Tokens
-                </h3>
+                <h3 className="text-xl font-semibold">Task Verification</h3>
                 <p>
-                  Both managers and task executors earn an additional incentive
-                  in platform tokens.
+                  Once a task is finished, the community reviews it. Upon
+                  positive feedback, the task is marked as completed.
                 </p>
               </div>
 
@@ -189,10 +188,124 @@ export default function Home() {
                 <div className="p-6 rounded-full bg-tech-blue">
                   <span className="text-3xl font-bold text-white">8</span>
                 </div>
+                <h3 className="text-xl font-semibold">
+                  Token Rewards & Compensation
+                </h3>
+                <p>
+                  Everyone, from challenge and solution proposers to project
+                  managers and task performers, receives both project tokens and
+                  additional Spiral DAO platform tokens.
+                </p>
+              </div>
+
+              {/* Step 9 */}
+              <div className="flex flex-col items-center gap-4">
+                <div className="p-6 rounded-full bg-tech-blue">
+                  <span className="text-3xl font-bold text-white">9</span>
+                </div>
                 <h3 className="text-xl font-semibold">Your Dashboard</h3>
-                <p>Track all your contributions and rewards in one place. </p>
+                <p>
+                  Track all your problems, solutions, projects, tasks and
+                  rewards in one place.
+                </p>
               </div>
             </div>
+
+            // <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-2">
+            //   {/* Step 1 */}
+            //   <div className="flex flex-col items-center gap-4">
+            //     <div className="p-6 rounded-full bg-tech-blue">
+            //       <span className="text-3xl font-bold text-white">1</span>
+            //     </div>
+            //     <h3 className="text-xl font-semibold">Spot a Challenge</h3>
+            //     <p>Anyone can suggest challenges or problems easily.</p>
+            //   </div>
+
+            //   {/* Step 2 */}
+            //   <div className="flex flex-col items-center gap-4">
+            //     <div className="p-6 rounded-full bg-tech-blue">
+            //       <span className="text-3xl font-bold text-white">2</span>
+            //     </div>
+            //     <h3 className="text-xl font-semibold">Rate & Validate</h3>
+            //     <p>
+            //       Problems are listed on our Engage page. Rate them and help
+            //       determine which challenges truly matter.
+            //     </p>
+            //   </div>
+
+            //   {/* Step 3 */}
+            //   <div className="flex flex-col items-center gap-4">
+            //     <div className="p-6 rounded-full bg-tech-blue">
+            //       <span className="text-3xl font-bold text-white">3</span>
+            //     </div>
+            //     <h3 className="text-xl font-semibold">Solutions Phase</h3>
+            //     <p>
+            //       Approved problems shift into the solutions phase. Share your
+            //       ideas and rate others to decide the best approach.
+            //     </p>
+            //   </div>
+
+            //   {/* Step 4 */}
+            //   <div className="flex flex-col items-center gap-4">
+            //     <div className="p-6 rounded-full bg-tech-blue">
+            //       <span className="text-3xl font-bold text-white">4</span>
+            //     </div>
+            //     <h3 className="text-xl font-semibold">Project Initiation</h3>
+            //     <p>
+            //       Winning solutions ascend to the Projects page, and the journey
+            //       from concept to creation begins.
+            //     </p>
+            //   </div>
+
+            //   {/* Step 5 */}
+            //   <div className="flex flex-col items-center gap-4">
+            //     <div className="p-6 rounded-full bg-tech-blue">
+            //       <span className="text-3xl font-bold text-white">5</span>
+            //     </div>
+            //     <h3 className="text-xl font-semibold">Role Nominations</h3>
+            //     <p>
+            //       Take the lead! Nominate yourself for project management or specific
+            //       tasks. Our community votes on who fits best.
+            //     </p>
+            //   </div>
+
+            //   {/* Step 6 */}
+            //   <div className="flex flex-col items-center gap-4">
+            //     <div className="p-6 rounded-full bg-tech-blue">
+            //       <span className="text-3xl font-bold text-white">6</span>
+            //     </div>
+            //     <h3 className="text-xl font-semibold">
+            //       Task Execution & Reward
+            //     </h3>
+            //     <p>
+            //       Complete tasks, earn feedback, and upon satisfactory
+            //       performance, receive project tokens.
+            //     </p>
+            //   </div>
+
+            //   {/* Step 7 */}
+            //   <div className="flex flex-col items-center gap-4">
+            //     <div className="p-6 rounded-full bg-tech-blue">
+            //       <span className="text-3xl font-bold text-white">7</span>
+            //     </div>
+            //     <h3 className="text-xl font-semibold">
+            //       Earning Spiral DAO Tokens
+            //     </h3>
+            //     <p>
+            //       Both managers and task executors earn an additional incentive
+            //       in platform tokens.
+            //     </p>
+            //   </div>
+
+            //   {/* Step 8 */}
+            //   <div className="flex flex-col items-center gap-4">
+            //     <div className="p-6 rounded-full bg-tech-blue">
+            //       <span className="text-3xl font-bold text-white">8</span>
+            //     </div>
+            //     <h3 className="text-xl font-semibold">Your Dashboard</h3>
+            //     <p>Track all your contributions and rewards in one place. </p>
+            //   </div>
+            // </div>
           )}
         </div>
 
