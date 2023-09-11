@@ -155,43 +155,38 @@ export default function Navbar() {
               </li>
             </Link>
           )}
-          <div className="gap-2 mb-2 sm:mb-0">
-            {/* <FaTelegramPlane size={18} /> */}
-            <div className="w-full text-white opacity-80 font-semibold">
-              <a
-                href="https://t.me/SPIRAL_DAO"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:bg-gray-500 py-4 px-6 w-full cursor-pointer block"
-              >
-                Join the community
-              </a>
-            </div>
-          </div>
 
-          <div className="mb-2 sm:mb-0">
-            <div className="w-full text-white opacity-80 font-semibold">
-              <a
-                href="https://docs.google.com/forms/d/e/1FAIpQLScnqhqIL0o_b2A79WHBftioGFg5z0wunPpLUaIFr_316K_9Qw/viewform?usp=sf_link"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:bg-gray-500 py-4 px-6 w-full cursor-pointer block"
-              >
-                Give us Feedback
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <Link
-              href="/contact"
-              className="w-full text-white opacity-80 font-semibold"
+          {/* <FaTelegramPlane size={18} /> */}
+          <div className="w-full text-white opacity-80 font-semibold">
+            <a
+              href="https://t.me/SPIRAL_DAO"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:bg-gray-500 py-4 px-6 w-full cursor-pointer block"
             >
-              <div className="hover:bg-gray-500 py-4 px-6 w-full cursor-pointer">
-                Contact Us
-              </div>
-            </Link>
+              Join the community
+            </a>
           </div>
+
+          <div className="w-full text-white opacity-80 font-semibold">
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLScnqhqIL0o_b2A79WHBftioGFg5z0wunPpLUaIFr_316K_9Qw/viewform?usp=sf_link"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:bg-gray-500 py-4 px-6 w-full cursor-pointer block"
+            >
+              Give us Feedback
+            </a>
+          </div>
+
+          <Link
+            href="/contact"
+            className="w-full text-white opacity-80 font-semibold"
+          >
+            <div className="hover:bg-gray-500 py-4 px-6 w-full cursor-pointer">
+              Contact Us
+            </div>
+          </Link>
         </ul>
       </div>
 
