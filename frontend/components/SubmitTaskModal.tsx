@@ -8,7 +8,7 @@ import createNotification from "../createNotification.js";
 import { useRouter } from "next/navigation";
 import { CustomError } from "@/common.types";
 
-const MinTaskValue = 10;
+const MinTaskValue = 1000;
 
 interface SubmitTaskModalProps {
   isOpen: boolean;
