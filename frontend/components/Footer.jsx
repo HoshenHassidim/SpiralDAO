@@ -23,7 +23,7 @@ const Footer = () => {
           {/* Feedback section */}
           <div className="mb-2 sm:mb-0">
             <a
-              href="https://docs.google.com/forms/"
+              href="https://docs.google.com/forms/d/e/1FAIpQLScnqhqIL0o_b2A79WHBftioGFg5z0wunPpLUaIFr_316K_9Qw/viewform?usp=sf_link"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:underline"

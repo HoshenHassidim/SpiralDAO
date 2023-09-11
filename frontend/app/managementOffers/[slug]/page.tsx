@@ -24,6 +24,7 @@ import {
   ProjectType,
   UserManagementOfferRating,
 } from "@/common.types.js";
+import Footer from "@/components/Footer";
 
 export default function ManagementOffers({
   params,
@@ -280,6 +281,7 @@ export default function ManagementOffers({
             Become The Leader
           </button>
         </div>
+        <Footer />
       </div>
     </div>
   );

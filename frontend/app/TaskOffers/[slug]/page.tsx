@@ -25,6 +25,7 @@ import {
   UserTaskOfferRating,
 } from "@/common.types.js";
 import { Noto_Sans_Telugu } from "next/font/google";
+import Footer from "@/components/Footer";
 
 export default function TaskOffers({ params }: { params: { slug: string } }) {
   const [taskOffer, setTaskOffer] = useState();
@@ -238,6 +239,7 @@ export default function TaskOffers({ params }: { params: { slug: string } }) {
             Step Up with a Offer
           </button>
         </div>
+        <Footer />
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ import Navbar from "../../../components/Navbar";
 
 import GET_PROJECTS_PAGE from "../../../constants/subgraphQueries/subgraphQueryGetProject";
 import { Task } from "@/common.types";
+import Footer from "@/components/Footer";
 
 export default function PrjectPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
@@ -81,6 +82,7 @@ export default function PrjectPage({ params }: { params: { slug: string } }) {
             </button>
           )}
         </section>
+        <Footer />
       </div>
     </div>
   );

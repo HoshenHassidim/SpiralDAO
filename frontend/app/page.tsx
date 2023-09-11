@@ -206,9 +206,9 @@ export default function Home() {
           <Link href="/demoInstructions">
             <button className="btn-primary mb-3">Prototype Instructions</button>
           </Link>
-          {/* <Link href="/feedback">
+          <Link href="https://docs.google.com/forms/d/e/1FAIpQLScnqhqIL0o_b2A79WHBftioGFg5z0wunPpLUaIFr_316K_9Qw/viewform?usp=sf_link">
             <button className="btn-primary">Give Feedback</button>
-          </Link> */}
+          </Link>
         </div>
 
         {/* Join Community */}

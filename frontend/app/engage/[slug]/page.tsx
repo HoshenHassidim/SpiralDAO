@@ -24,6 +24,7 @@ import {
   ProblemDataType,
   UserSolutionRating,
 } from "@/common.types.js";
+import Footer from "@/components/Footer";
 
 export default function ProblemPage({ params }: { params: { slug: string } }) {
   const [solution, setSolution] = useState();
@@ -219,6 +220,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
             Share Your Insight
           </button>
         </div>
+        <Footer />
       </div>
     </div>
   );

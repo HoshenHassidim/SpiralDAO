@@ -24,6 +24,7 @@ import {
   ProjectType,
   UserTaskCompletionRating,
 } from "@/common.types.js";
+import Footer from "@/components/Footer";
 
 export default function Tasks({ params }: { params: { slug: string } }) {
   const [task, setTask] = useState();
@@ -304,6 +305,7 @@ export default function Tasks({ params }: { params: { slug: string } }) {
             </button>
           </div>
         )}
+        <Footer />
       </div>
     </div>
   );
