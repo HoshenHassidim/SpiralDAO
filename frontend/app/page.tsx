@@ -219,6 +219,10 @@ export default function Home() {
           <p className="max-w-lg mb-4">
             Take a sneak peek into our platform's capabilities. Your feedback
             shapes its evolution, adapting it closer to real-world needs.
+            <br />
+            Do note that our prototype runs on the Fantom testnet, the products
+            and tokens within have no real-world value — they're purely for
+            exploration and feedback.
           </p>
           <Link href="/demoInstructions">
             <button className="btn-primary mb-3">Prototype Instructions</button>

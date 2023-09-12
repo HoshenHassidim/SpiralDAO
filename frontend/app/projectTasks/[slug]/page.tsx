@@ -235,18 +235,18 @@ export default function Tasks({ params }: { params: { slug: string } }) {
             {/* <p className="mt-1 text-sm">Created by: {projectCreator}</p> */}
           </section>
         )}
-        <section className="flex flex-col justify-center items-center">
-          <section className="flex flex-wrap flex-col md:flex-row md:justify-between items-center bg-democracy-beige dark:bg-neutral-gray p-2 md:p-4 rounded-md">
-            {/* Button to toggle filter visibility on small screens */}
-            <button
+        {/* <section className="flex flex-col justify-center items-center">
+          <section className="flex flex-wrap flex-col md:flex-row md:justify-between items-center bg-democracy-beige dark:bg-neutral-gray p-2 md:p-4 rounded-md"> */}
+        {/* Button to toggle filter visibility on small screens */}
+        {/* <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="md:hidden mb-2"
             >
               {isFilterOpen ? "Hide Filters" : "Show Filters"}
-            </button>
+            </button> */}
 
-            {/* Hide filters on small screens when isFilterOpen is false, always show on larger screens */}
-            {/* <TasksFilters
+        {/* Hide filters on small screens when isFilterOpen is false, always show on larger screens */}
+        {/* <TasksFilters
               filterEngage={filterEngage}
               setFilterEngage={setFilterEngage}
               filterRated={filterRated}
@@ -257,8 +257,8 @@ export default function Tasks({ params }: { params: { slug: string } }) {
               address={address || null}
               className={isFilterOpen ? "" : "hidden md:flex"}
             /> */}
-          </section>
-        </section>
+        {/* </section>
+        </section> */}
         <section className="section-padding flex flex-col items-center gap-5">
           {filteredTasks?.length !== 0 && (
             <h3 className="text-2xl font-bold">Project Tasks</h3>

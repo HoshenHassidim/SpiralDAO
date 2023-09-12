@@ -184,18 +184,18 @@ export default function TaskOffers({ params }: { params: { slug: string } }) {
           {/* <p className="mt-1 text-sm">Created by: {taskCreator}</p> */}
         </section>
 
-        <section className="flex flex-col justify-center items-center">
-          <section className="flex flex-wrap flex-col md:flex-row md:justify-between items-center bg-democracy-beige dark:bg-neutral-gray p-2 md:p-4 rounded-md">
-            {/* Button to toggle filter visibility on small screens */}
-            <button
+        {/* <section className="flex flex-col justify-center items-center">
+          <section className="flex flex-wrap flex-col md:flex-row md:justify-between items-center bg-democracy-beige dark:bg-neutral-gray p-2 md:p-4 rounded-md"> */}
+        {/* Button to toggle filter visibility on small screens */}
+        {/* <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="md:hidden mb-2"
             >
               {isFilterOpen ? "Hide Filters" : "Show Filters"}
-            </button>
+            </button> */}
 
-            {/* Hide filters on small screens when isFilterOpen is false, always show on larger screens */}
-            {/* <TaskOffersFilters
+        {/* Hide filters on small screens when isFilterOpen is false, always show on larger screens */}
+        {/* <TaskOffersFilters
               filterEngage={filterEngage}
               setFilterEngage={setFilterEngage}
               filterRated={filterRated}
@@ -206,8 +206,8 @@ export default function TaskOffers({ params }: { params: { slug: string } }) {
               address={address || null}
               className={isFilterOpen ? "" : "hidden md:flex"}
             /> */}
-          </section>
-        </section>
+        {/* </section>
+        </section> */}
         <section className="section-padding flex flex-col items-center gap-5">
           {filteredTaskOffers?.length !== 0 && (
             <h3 className="text-2xl font-bold">Proposed Task Offers</h3>

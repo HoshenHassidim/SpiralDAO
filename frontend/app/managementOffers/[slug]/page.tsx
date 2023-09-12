@@ -218,18 +218,18 @@ export default function ManagementOffers({
                 data.projects[0].name}
           </h2>
         </section> */}
-        <section className="flex flex-col justify-center items-center">
-          <section className="flex flex-wrap flex-col md:flex-row md:justify-between items-center bg-democracy-beige dark:bg-neutral-gray p-2 md:p-4 rounded-md">
-            {/* Button to toggle filter visibility on small screens */}
-            <button
+        {/* <section className="flex flex-col justify-center items-center">
+          <section className="flex flex-wrap flex-col md:flex-row md:justify-between items-center bg-democracy-beige dark:bg-neutral-gray p-2 md:p-4 rounded-md"> */}
+        {/* Button to toggle filter visibility on small screens */}
+        {/* <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="md:hidden mb-2"
             >
               {isFilterOpen ? "Hide Filters" : "Show Filters"}
-            </button>
+            </button> */}
 
-            {/* Hide filters on small screens when isFilterOpen is false, always show on larger screens */}
-            {/* <ManagementOffersFilters
+        {/* Hide filters on small screens when isFilterOpen is false, always show on larger screens */}
+        {/* <ManagementOffersFilters
               filterEngage={filterEngage}
               setFilterEngage={setFilterEngage}
               filterRated={filterRated}
@@ -240,8 +240,8 @@ export default function ManagementOffers({
               address={address || null}
               className={isFilterOpen ? "" : "hidden md:flex"}
             /> */}
-          </section>
-        </section>
+        {/* </section>
+        </section> */}
         <section className="section-padding flex flex-col items-center gap-5">
           {filteredManagementOffers?.length !== 0 && (
             <h3 className="text-2xl font-bold">Management Proposals</h3>
