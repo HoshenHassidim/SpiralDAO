@@ -21,7 +21,7 @@ export default function Home() {
   useEffect(() => setMounted(true), []);
   // const { address, isConnecting, isDisconnected } = useAccount();
   const [isBriefOverviewExpanded, setBriefOverviewExpanded] = useState(true);
-  const [isHowItWorksExpanded, setHowItWorksExpanded] = useState(false);
+  const [isHowItWorksExpanded, setHowItWorksExpanded] = useState(true);
 
   const toggleBriefOverview = () => setBriefOverviewExpanded((prev) => !prev);
   const toggleHowItWorks = () => setHowItWorksExpanded((prev) => !prev);
@@ -71,12 +71,12 @@ export default function Home() {
         {/* Brief Overview */}
         <div className="flex flex-col items-center gap-0 py-1 px-5 section-padding text-center lg:py-0">
           <h2 className="text-4xl font-bold">Why We're Here</h2>
-          <button
+          {/* <button
             onClick={toggleBriefOverview}
             className="text-tech-blue text-sm border border-tech-blue px-2 py-1 rounded"
           >
             {isBriefOverviewExpanded ? "Hide" : "Show"}
-          </button>
+          </button> */}
           {isBriefOverviewExpanded && (
             <p className="max-w-lg py-4 gap-1">
               Our platform is a dynamic community-driven space where anyone can
@@ -210,102 +210,6 @@ export default function Home() {
                 </p>
               </div>
             </div>
-
-            // <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-2">
-            //   {/* Step 1 */}
-            //   <div className="flex flex-col items-center gap-4">
-            //     <div className="p-6 rounded-full bg-tech-blue">
-            //       <span className="text-3xl font-bold text-white">1</span>
-            //     </div>
-            //     <h3 className="text-xl font-semibold">Spot a Challenge</h3>
-            //     <p>Anyone can suggest challenges or problems easily.</p>
-            //   </div>
-
-            //   {/* Step 2 */}
-            //   <div className="flex flex-col items-center gap-4">
-            //     <div className="p-6 rounded-full bg-tech-blue">
-            //       <span className="text-3xl font-bold text-white">2</span>
-            //     </div>
-            //     <h3 className="text-xl font-semibold">Rate & Validate</h3>
-            //     <p>
-            //       Problems are listed on our Engage page. Rate them and help
-            //       determine which challenges truly matter.
-            //     </p>
-            //   </div>
-
-            //   {/* Step 3 */}
-            //   <div className="flex flex-col items-center gap-4">
-            //     <div className="p-6 rounded-full bg-tech-blue">
-            //       <span className="text-3xl font-bold text-white">3</span>
-            //     </div>
-            //     <h3 className="text-xl font-semibold">Solutions Phase</h3>
-            //     <p>
-            //       Approved problems shift into the solutions phase. Share your
-            //       ideas and rate others to decide the best approach.
-            //     </p>
-            //   </div>
-
-            //   {/* Step 4 */}
-            //   <div className="flex flex-col items-center gap-4">
-            //     <div className="p-6 rounded-full bg-tech-blue">
-            //       <span className="text-3xl font-bold text-white">4</span>
-            //     </div>
-            //     <h3 className="text-xl font-semibold">Project Initiation</h3>
-            //     <p>
-            //       Winning solutions ascend to the Projects page, and the journey
-            //       from concept to creation begins.
-            //     </p>
-            //   </div>
-
-            //   {/* Step 5 */}
-            //   <div className="flex flex-col items-center gap-4">
-            //     <div className="p-6 rounded-full bg-tech-blue">
-            //       <span className="text-3xl font-bold text-white">5</span>
-            //     </div>
-            //     <h3 className="text-xl font-semibold">Role Nominations</h3>
-            //     <p>
-            //       Take the lead! Nominate yourself for project management or specific
-            //       tasks. Our community votes on who fits best.
-            //     </p>
-            //   </div>
-
-            //   {/* Step 6 */}
-            //   <div className="flex flex-col items-center gap-4">
-            //     <div className="p-6 rounded-full bg-tech-blue">
-            //       <span className="text-3xl font-bold text-white">6</span>
-            //     </div>
-            //     <h3 className="text-xl font-semibold">
-            //       Task Execution & Reward
-            //     </h3>
-            //     <p>
-            //       Complete tasks, earn feedback, and upon satisfactory
-            //       performance, receive project tokens.
-            //     </p>
-            //   </div>
-
-            //   {/* Step 7 */}
-            //   <div className="flex flex-col items-center gap-4">
-            //     <div className="p-6 rounded-full bg-tech-blue">
-            //       <span className="text-3xl font-bold text-white">7</span>
-            //     </div>
-            //     <h3 className="text-xl font-semibold">
-            //       Earning Spiral DAO Tokens
-            //     </h3>
-            //     <p>
-            //       Both managers and task executors earn an additional incentive
-            //       in platform tokens.
-            //     </p>
-            //   </div>
-
-            //   {/* Step 8 */}
-            //   <div className="flex flex-col items-center gap-4">
-            //     <div className="p-6 rounded-full bg-tech-blue">
-            //       <span className="text-3xl font-bold text-white">8</span>
-            //     </div>
-            //     <h3 className="text-xl font-semibold">Your Dashboard</h3>
-            //     <p>Track all your contributions and rewards in one place. </p>
-            //   </div>
-            // </div>
           )}
         </div>
 

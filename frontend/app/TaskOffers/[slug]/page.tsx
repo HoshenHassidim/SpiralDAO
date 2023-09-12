@@ -174,7 +174,7 @@ export default function TaskOffers({ params }: { params: { slug: string } }) {
                   data && (
                     <>
                       {data.tasks[0] && <span>{data.tasks[0].taskName}</span>}
-                      <span> Task Offers</span>
+                      {/* <span> Task Offers</span> */}
                     </>
                   )}
             </h2>
